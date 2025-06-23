@@ -1,0 +1,28 @@
+# fly.toml für den Mailer-Dienst
+
+app = 'wasserqualitaet-vg-bitter-frost-7826'
+primary_region = 'ams'
+
+[build]
+  # DIESE ZEILE WURDE KORRIGIERT: Wir verwenden den offiziellen Paketo-Builder.
+  builder = "paketobuildpacks/builder:base"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[processes]
+  app = "npm start"
+  send-digest = "node send-digest.js"
+
+[[schedule]]
+  cron = "0 23 * * *"
+  process = "send-digest"
+
+  [[mounts]]
+  source = "mailer_data"
+  destination = "/data"
