@@ -3,11 +3,6 @@
 app = 'wasserqualitaet-vg' # Ihr Frontend-App-Name
 primary_region = 'fra'
 
-[build]
-  # NEU: Übergibt die Backend-URL als "Build-Argument"
-  [build.args]
-    VITE_API_BASE_URL = "https://wasserqualitaet-vg-bitter-frost-7826.fly.dev"
-
 [http_service]
   internal_port = 8080
   force_https = true

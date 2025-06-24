@@ -7,7 +7,14 @@ import AppShowcaseComponent from './components/AppShowcaseComponent';
 import HeroSection from './components/HeroSection';
 import LoginModal from './components/LoginModal';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+// NEUE, ROBUSTE DEFINITION der API-URL
+// Prüft, ob wir im lokalen Entwicklungsmodus sind, indem sie den Hostnamen der Webseite ausliest.
+const isDevelopment = window.location.hostname === 'localhost';
+
+// Setzt die URL basierend auf der erkannten Umgebung
+const API_BASE_URL = isDevelopment 
+  ? '' // Im lokalen Entwicklungsmodus (localhost) ist die URL leer, damit der Vite-Proxy greift.
+  : 'https://wasserqualitaet-vg-bitter-frost-7826.fly.dev'; // Die feste Live-URL des Backends.
 
 //const API_URL = 'http://localhost:3001';
 
