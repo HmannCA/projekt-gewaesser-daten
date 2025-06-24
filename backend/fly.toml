@@ -9,10 +9,10 @@ primary_region = 'fra'
 [env]
   PORT = "8080"
 
-# NEU & ENTSCHEIDEND: Definiert, wie persistente Volumes eingebunden werden
 [mounts]
-  source = "app_data" # Der Name des Volumes auf Fly.io
-  destination = "/data" # Der Pfad innerhalb des Containers, wo die Daten gespeichert werden sollen
+  # KORREKTUR: Der Name des Volumes, das bereits existiert.
+  source = "app_data"
+  destination = "/data"
 
 [http_service]
   internal_port = 8080
