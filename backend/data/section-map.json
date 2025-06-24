@@ -1,0 +1,14 @@
+{
+  "nutzen-anwendungsfaelle": { "title": "Nutzen & Anwendungsfälle", "icon": "✨" },
+  "einleitung-motivation": { "title": "Von Rohdaten zu wertvoller Information", "icon": "⚡️" },
+  "dateneingabe": { "title": "Datenaufnahme & Streaming", "icon": "Database" },
+  "validierung": { "title": "Mehrstufige Datenvalidierung", "icon": "🛡️" },
+  "aggregation": { "title": "Tageskonsolidierung", "icon": "📊" },
+  "quality-flags": { "title": "Qualitätskennzeichnung", "icon": "✅" },
+  "api-export": { "title": "Datenbereitstellung & API", "icon": "☁️" },
+  "bpmn-prozess": { "title": "Detaillierter Prozessablauf (BPMN)", "icon": "🌐" },
+  "code-katalog": { "title": "Code-Katalog", "icon": "💻" },
+  "kosten-nutzen-analyse": { "title": "Kosten-Nutzen-Analyse", "icon": "⚖️" },
+  "anwendungs-showcase": { "title": "Anwendungs-Showcase", "icon": "🖼️" },
+  "referenzen": { "title": "Referenzen & Quellen", "icon": "📚" }
+}

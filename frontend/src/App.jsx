@@ -7,6 +7,8 @@ import AppShowcaseComponent from './components/AppShowcaseComponent';
 import HeroSection from './components/HeroSection';
 import LoginModal from './components/LoginModal';
 
+//const API_URL = 'http://localhost:3001';
+
 // Komponente für das interaktive Einführungs-Carousel
 // Komponente für das interaktive Einführungs-Carousel
 const MotivationCarousel = () => {
@@ -732,10 +734,11 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  
 
   const fetchComments = useCallback(async () => {
     try {
-      const response = await fetch('https://wasserqualitaet-vg-bitter-frost-7826.fly.dev/api/comments');
+      const response = await fetch('/api/comments');
       if (!response.ok) {
         throw new Error('Netzwerk-Antwort war nicht ok.');
       }
@@ -782,7 +785,7 @@ function App() {
     setShowLoginModal(false);
 
     try {
-      await fetch('http://localhost:3001/api/user-login', {
+      await fetch('/api/user-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userToSave) // Sende das Objekt mit der Frequenz
@@ -814,7 +817,7 @@ function App() {
 
     // 3. Sende die Änderung an das Backend, um die "Datenbank" zu aktualisieren
     try {
-      await fetch('http://localhost:3001/api/user-login', {
+      await fetch('/api/user-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedUser)
@@ -856,7 +859,7 @@ function App() {
     if (!newComment[commentKey]?.trim() || !currentUser) return;
 
     try {
-      const response = await fetch('https://wasserqualitaet-vg-bitter-frost-7826.fly.dev/api/comments', {
+      const response = await fetch('/api/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -881,7 +884,7 @@ function App() {
     if (!currentUser || !window.confirm("Möchten Sie diesen Kommentar wirklich endgültig löschen?")) return;
 
     try {
-      const response = await fetch('https://wasserqualitaet-vg-bitter-frost-7826.fly.dev/api/comments/delete', {
+      const response = await fetch('/api/comments/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ commentId, user: currentUser }),
@@ -3033,7 +3036,7 @@ async def get_observations(
                                   <p className="text-sm">{comment.text}</p>
 
                                   {/* NEU: LÖSCHEN-BUTTON NUR FÜR ADMIN */}
-                                    {currentUser && currentUser.email === process.env.REACT_APP_ADMIN_EMAIL && (
+                                    {currentUser && currentUser.email === import.meta.env.VITE_ADMIN_EMAIL && (
                                       <button 
                                         onClick={() => handleDeleteComment(comment.id)} 
                                         className="absolute top-2 right-2 p-1 rounded-full bg-gray-200 dark:bg-gray-600 text-gray-500 hover:bg-red-500 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"

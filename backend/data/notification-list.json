@@ -1,0 +1,14 @@
+[
+  {
+    "firstName": "Sven",
+    "lastName": "Hüttemann",
+    "email": "Sven.Huettemann@kreis-vg.de",
+    "notificationFrequency": "daily"
+  },
+  {
+    "firstName": "RPA",
+    "lastName": "EMMA",
+    "email": "RPA.EMMA@kreis-vg.de",
+    "notificationFrequency": "daily"
+  }
+]

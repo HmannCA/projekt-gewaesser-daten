@@ -1,161 +1,198 @@
-// Importiert alle notwendigen Pakete
-require('dotenv').config();
+// ========================================================================
+// FINAL, KORRIGIERTE VERSION der server.js
+// ========================================================================
+
 const express = require('express');
-const nodemailer = require('nodemailer');
-const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const { randomBytes } = require('crypto');
+const cors = require('cors');
+const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 const app = express();
+
+// --- Middleware ---
+// CORS erlauben, damit der Vite-Server mit dem Backend sprechen kann
+app.use(cors());
+// Erlaubt das Lesen von JSON-Daten aus dem Body von Anfragen
 app.use(express.json());
 
-// CORS-Konfiguration, damit Ihre Frontend-App mit diesem Server sprechen darf
-app.use(cors({
-  origin: 'https://wasserqualitaet-vg.fly.dev'
-}));
 
-// Pfade zu unseren "Datenbank"-Dateien im permanenten Speicher
-const DATA_DIR = '/data';
-const USER_DB_PATH = path.join(DATA_DIR, 'notification-list.json');
-const COMMENTS_DB_PATH = path.join(DATA_DIR, 'comments.json');
+// --- Pfade zu den "Datenbank"-Dateien ---
+const DATA_DIR = path.join(__dirname, 'data');
+const COMMENTS_PATH = path.join(DATA_DIR, 'comments.json');
+const NOTIFICATION_LIST_PATH = path.join(DATA_DIR, 'notification-list.json');
 
-// --- HILFSFUNKTIONEN ---
-// Liest eine JSON-Datei sicher aus
-const readDb = (filePath) => {
-  if (!fs.existsSync(filePath)) return [];
-  try {
-    const data = fs.readFileSync(filePath, 'utf8');
-    return data.trim() === '' ? [] : JSON.parse(data);
-  } catch (error) {
-    console.error(`Fehler beim Lesen der Datei ${filePath}:`, error);
-    return [];
+
+// --- Hilfsfunktionen ---
+
+// Stellt sicher, dass das /data Verzeichnis existiert
+const ensureDataDirExists = () => {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
   }
 };
-// Schreibt Daten sicher in eine JSON-Datei
-const writeDb = (filePath, data) => {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+
+// Liest Kommentare aus der Datei (robust gegen leere oder nicht-existente Dateien)
+const readComments = () => {
+  ensureDataDirExists();
+  if (!fs.existsSync(COMMENTS_PATH)) {
+    return [];
+  }
+  const fileContent = fs.readFileSync(COMMENTS_PATH, 'utf-8');
+  if (fileContent.trim() === '') {
+    return [];
+  }
+  try {
+    return JSON.parse(fileContent);
+  } catch (e) {
+    console.error("Fehler beim Parsen von comments.json:", e);
+    return []; // Bei Fehler ein leeres Array zurückgeben
+  }
 };
 
-// --- SMTP TRANSPORTER ---
-// Konfiguriert den E-Mail-Versand mit Ihren geheimen Zugangsdaten
-let transporter = nodemailer.createTransport({
+// Schreibt Kommentare in die Datei
+const writeComments = (comments) => {
+  ensureDataDirExists();
+  fs.writeFileSync(COMMENTS_PATH, JSON.stringify(comments, null, 2), 'utf-8');
+};
+
+// --- E-Mail Konfiguration (Nodemailer) ---
+// WICHTIG: Stellt sicher, dass die .env-Datei im backend-Verzeichnis existiert!
+const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
-  secure: process.env.SMTP_PORT == 587,
+  secure: process.env.SMTP_SECURE === 'true',
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
 });
 
-// =================================================================
-// API-ENDPUNKTE
-// =================================================================
 
-// --- ENDPUNKTE FÜR KOMMENTARE ---
+// --- API Endpunkte ---
 
-// 1. GET /api/comments: Lädt alle gespeicherten Kommentare
+// GET: Alle Kommentare abrufen
 app.get('/api/comments', (req, res) => {
-  console.log("Anfrage zum Laden aller Kommentare erhalten.");
-  const comments = readDb(COMMENTS_DB_PATH);
-  res.status(200).json(comments);
-});
-
-// 2. POST /api/comments: Speichert einen neuen Kommentar
-app.post('/api/comments', async (req, res) => {
-  const { author, text, stepId, sectionId, level } = req.body;
-  if (!author || !text || !stepId || !sectionId || !level) {
-    return res.status(400).send('Fehlende Daten für neuen Kommentar.');
-  }
-
-  const newComment = {
-    id: randomBytes(8).toString('hex'),
-    author,
-    text,
-    stepId,
-    sectionId,
-    level,
-    timestamp: new Date().toISOString()
-  };
-
-  const comments = readDb(COMMENTS_DB_PATH);
-  comments.push(newComment);
-  writeDb(COMMENTS_DB_PATH, comments);
-  
-  console.log(`Neuer Kommentar von ${author.email} mit ID ${newComment.id} gespeichert.`);
-  
-  // E-Mail-Benachrichtigungen direkt hier anstoßen
   try {
-    const allUsers = readDb(USER_DB_PATH);
-    const recipients = allUsers
-      .filter(u => u.notificationFrequency === 'immediate' && u.email !== author.email)
-      .map(u => u.email);
-
-    if (recipients.length > 0) {
-      await transporter.sendMail({
-        from: `"Gewässer-Projekt" <${process.env.SMTP_USER}>`,
-        to: recipients.join(', '),
-        subject: `Neuer Kommentar im Abschnitt: ${sectionId}`,
-        html: `<p>Hallo,</p><p><b>${author.firstName} ${author.lastName}</b> hat einen neuen Kommentar hinzugefügt:</p><blockquote>${text}</blockquote>`
-      });
-      console.log(`Sofort-Benachrichtigung gesendet an: ${recipients.join(', ')}`);
-    }
+    const comments = readComments();
+    res.status(200).json(comments);
   } catch (error) {
-    console.error("Fehler beim Senden der Sofort-Benachrichtigung:", error);
-  }
-
-  res.status(201).json(newComment);
-});
-
-// 3. POST /api/comments/delete: Löscht einen Kommentar
-app.post('/api/comments/delete', (req, res) => {
-  const { commentId, user } = req.body;
-
-  if (!user || user.email !== process.env.ADMIN_EMAIL) {
-    return res.status(403).send('Keine Berechtigung zum Löschen.');
-  }
-
-  let comments = readDb(COMMENTS_DB_PATH);
-  const initialLength = comments.length;
-  comments = comments.filter(c => c.id !== commentId);
-
-  if (comments.length < initialLength) {
-    writeDb(COMMENTS_DB_PATH, comments);
-    console.log(`Kommentar ${commentId} von Admin ${user.email} gelöscht.`);
-    res.status(200).send('Kommentar erfolgreich gelöscht.');
-  } else {
-    res.status(404).send('Kommentar nicht gefunden.');
+    console.error('Fehler beim Lesen der Kommentare:', error);
+    res.status(500).send('Serverfehler beim Lesen der Kommentare.');
   }
 });
 
+// POST: Einen neuen Kommentar hinzufügen UND Benachrichtigungen senden
+app.post('/api/comments', (req, res) => {
+  try {
+    // 1. Kommentar speichern (Ihre bisherige Logik)
+    const comments = readComments();
+    const newComment = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      author: req.body.author.firstName,
+      text: req.body.text,
+      stepId: req.body.stepId,
+      sectionId: req.body.sectionId,
+      level: req.body.level,
+    };
+    comments.push(newComment);
+    writeComments(comments);
 
-// --- ENDPUNKT FÜR NUTZER-LOGIN / EINSTELLUNGEN ---
+    // ==========================================================
+    // 2. E-Mail-Benachrichtigungen versenden (Die fehlende Logik)
+    // ==========================================================
+    
+    // Lese die Liste aller potenziellen Empfänger
+    let allUsers = [];
+    if (fs.existsSync(NOTIFICATION_LIST_PATH)) {
+      const usersFileContent = fs.readFileSync(NOTIFICATION_LIST_PATH, 'utf-8');
+      if (usersFileContent.trim() !== '') {
+        allUsers = JSON.parse(usersFileContent);
+      }
+    }
+
+    // Finde die Empfänger, die eine sofortige Benachrichtigung wünschen
+    // und die NICHT der Autor des Kommentars sind.
+    const recipients = allUsers.filter(user => 
+      user.notificationFrequency === 'immediate' && 
+      user.email !== req.body.author.email
+    );
+
+    // Wenn es Empfänger gibt, sende E-Mails
+    if (recipients.length > 0) {
+      console.log(`Sende ${recipients.length} sofortige Benachrichtigungen...`);
+      recipients.forEach(recipient => {
+        transporter.sendMail({
+          from: `"Digitale Gewässergüte" <${process.env.SMTP_USER}>`,
+          to: recipient.email,
+          subject: `Neuer Kommentar im Abschnitt "${newComment.sectionId}"`,
+          html: `
+            <p>Hallo ${recipient.firstName},</p>
+            <p>Es gibt einen neuen Kommentar von <b>${newComment.author}</b> im Prozessschritt <b>"${newComment.stepId}"</b> (Level: ${newComment.level}).</p>
+            <p><b>Kommentar:</b></p>
+            <p><i>"${newComment.text}"</i></p>
+            <p>Sie können die Anwendung hier aufrufen: <a href="https://wasserqualitaet-vg.fly.dev" target="_blank">Projekt WAMO-Messdaten Vorpomemrn-Greifswald</a></p>
+          `
+        }).catch(err => {
+          // Fehler nur in der Konsole loggen, damit die App nicht abstürzt
+          console.error(`Fehler beim Senden der E-Mail an ${recipient.email}:`, err);
+        });
+      });
+    }
+
+    // 3. Erfolgreiche Antwort an das Frontend senden
+    res.status(201).json(newComment);
+
+  } catch (error) {
+    console.error('Fehler beim Verarbeiten des neuen Kommentars:', error);
+    res.status(500).send('Serverfehler beim Verarbeiten des Kommentars.');
+  }
+});
+
+// POST: Einen Benutzer speichern oder aktualisieren
 app.post('/api/user-login', (req, res) => {
-    const { email, firstName, lastName, notificationFrequency } = req.body;
-    if (!email) {
-        return res.status(400).send('E-Mail fehlt.');
-    }
+    try {
+        ensureDataDirExists();
+        let users = [];
+        if (fs.existsSync(NOTIFICATION_LIST_PATH)) {
+            const fileContent = fs.readFileSync(NOTIFICATION_LIST_PATH, 'utf-8');
+            if(fileContent.trim() !== '') {
+                users = JSON.parse(fileContent);
+            }
+        }
 
-    const users = readDb(USER_DB_PATH);
-    const userIndex = users.findIndex(u => u.email === email);
-    const userData = { email, firstName, lastName, notificationFrequency };
+        const existingUserIndex = users.findIndex(u => u.email === req.body.email);
+        const userData = {
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            email: req.body.email,
+            notificationFrequency: req.body.notificationFrequency,
+        };
 
-    if (userIndex > -1) {
-        users[userIndex] = { ...users[userIndex], ...userData };
-    } else {
-        users.push(userData);
+        if (existingUserIndex > -1) {
+            users[existingUserIndex] = { ...users[existingUserIndex], ...userData };
+        } else {
+            users.push(userData);
+        }
+
+        fs.writeFileSync(NOTIFICATION_LIST_PATH, JSON.stringify(users, null, 2), 'utf-8');
+        res.status(200).json({ message: 'Benutzer gespeichert.' });
+    } catch (error) {
+        console.error('Fehler beim Speichern des Benutzers:', error);
+        res.status(500).send('Serverfehler beim Speichern des Benutzers.');
     }
-    writeDb(USER_DB_PATH, users);
-    console.log(`Nutzerdaten für ${email} aktualisiert auf Frequenz: ${notificationFrequency}`);
-    res.status(200).send('Nutzerdaten erfolgreich gespeichert.');
 });
 
 
-// --- SERVER START ---
-const PORT = 3001; // Wir setzen den Port fest auf den Wert aus der fly.toml
-const HOST = '0.0.0.0'; // Wir lauschen auf allen verfügbaren Netzwerk-Interfaces
+// --- Server Start ---
+const PORT = process.env.PORT || 3001;
+const HOST = '0.0.0.0';
 
 app.listen(PORT, HOST, () => {
-  console.log(`Mailer-Service läuft auf http://${HOST}:${PORT}`);
+  console.log(`================================================`);
+  console.log(`✅ Backend-Server erfolgreich gestartet.`);
+  console.log(`✅ Lauscht auf http://${HOST}:${PORT}`);
+  console.log(`================================================`);
 });

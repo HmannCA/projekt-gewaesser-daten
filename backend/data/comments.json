@@ -1,0 +1,182 @@
+[
+  {
+    "id": "1750744187124",
+    "timestamp": "24.6.2025, 07:49:47",
+    "author": "Sven",
+    "text": "Test",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750744221680",
+    "timestamp": "24.6.2025, 07:50:21",
+    "author": "Sven",
+    "text": "2. Test",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750744334140",
+    "timestamp": "24.6.2025, 07:52:14",
+    "author": "Sven",
+    "text": "3. Test",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750745175940",
+    "timestamp": "24.6.2025, 08:06:15",
+    "author": "RPA",
+    "text": "Dies ist eine Nachricht von EMMA!",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750745248284",
+    "timestamp": "24.6.2025, 08:07:28",
+    "author": "Sven",
+    "text": "Dies ist ein Test von SH",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750745465348",
+    "timestamp": "24.6.2025, 08:11:05",
+    "author": "Sven",
+    "text": "Noch eine Nachricht.",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750746506363",
+    "timestamp": "24.6.2025, 08:28:26",
+    "author": "Sven",
+    "text": "Nächster Test.",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750746906772",
+    "timestamp": "24.6.2025, 08:35:06",
+    "author": "Sven",
+    "text": "Mal sehen ob es jetz funktioniert.",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750747096936",
+    "timestamp": "24.6.2025, 08:38:16",
+    "author": "RPA",
+    "text": "Nun eine Nachricht von EMMA",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750747460544",
+    "timestamp": "24.6.2025, 08:44:20",
+    "author": "RPA",
+    "text": "Ich bin der Meinung, das ist Spitze ;-)",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750747660462",
+    "timestamp": "24.6.2025, 08:47:40",
+    "author": "RPA",
+    "text": "Ich habe den Link ind er Mail angepasst.",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750747735012",
+    "timestamp": "24.6.2025, 08:48:55",
+    "author": "RPA",
+    "text": "Und nun sollte der Link sich in einem neuen Fenster öffnen",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750755632325",
+    "timestamp": "24.6.2025, 11:00:32",
+    "author": "RPA",
+    "text": "Diese Nachricht soll zusammen mit den nächste nur einmal am Tag kommen.",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750755656988",
+    "timestamp": "24.6.2025, 11:00:56",
+    "author": "RPA",
+    "text": "Auch diese Nachricht iste ine Tagesnachricht, keine Sofortnachricht.",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750755794307",
+    "timestamp": "24.6.2025, 11:03:14",
+    "author": "Sven",
+    "text": "Ich muss hier auch mal meinen Senf dazugeben.",
+    "stepId": "referenzen",
+    "sectionId": "source-list",
+    "level": "details"
+  },
+  {
+    "id": "1750755820888",
+    "timestamp": "24.6.2025, 11:03:40",
+    "author": "Sven",
+    "text": "Wir haben jetzt von Frau Wolf erste Realdatensätze erhalten.",
+    "stepId": "validierung",
+    "sectionId": "validation-levels",
+    "level": "details"
+  },
+  {
+    "id": "1750756069173",
+    "timestamp": "24.6.2025, 11:07:49",
+    "author": "Sven",
+    "text": "Ich werde mal versuchen diese zu prüfen und zu validieren",
+    "stepId": "validierung",
+    "sectionId": "validation-levels",
+    "level": "details"
+  },
+  {
+    "id": "1750756096189",
+    "timestamp": "24.6.2025, 11:08:16",
+    "author": "Sven",
+    "text": "Die Showcases seheh echt gut aus :-)",
+    "stepId": "anwendungs-showcase",
+    "sectionId": "app-prototypes",
+    "level": "details"
+  },
+  {
+    "id": "1750756137760",
+    "timestamp": "24.6.2025, 11:08:57",
+    "author": "RPA",
+    "text": "Finde ich auch, besonders Nr. 2 ist schick!",
+    "stepId": "anwendungs-showcase",
+    "sectionId": "app-prototypes",
+    "level": "details"
+  },
+  {
+    "id": "1750756154119",
+    "timestamp": "24.6.2025, 11:09:14",
+    "author": "RPA",
+    "text": "Aber die Nutzungsfälle sind auch sehr interessant",
+    "stepId": "nutzen-anwendungsfaelle",
+    "sectionId": "use-cases",
+    "level": "details"
+  }
+]
