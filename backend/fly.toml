@@ -1,11 +1,11 @@
-# Finale, explizite Konfiguration für die Backend-Anwendung
+# Finale, korrigierte Konfiguration für die Backend-Anwendung
 
 app = 'wasserqualitaet-vg-bitter-frost-7826'
 primary_region = 'fra'
 
-# NEU & ENTSCHEIDEND: Explizite Anweisung an Fly.io, den Node.js Buildpack zu verwenden
 [build]
-  builder = "flyio/buildpack-node"
+  # KORREKTUR: Wir verwenden einen weit verbreiteten und aktuellen Standard-Builder
+  builder = "heroku/builder:22"
 
 [env]
   PORT = "8080"
@@ -19,10 +19,8 @@ primary_region = 'fra'
   processes = ["app"]
 
 [processes]
-  # Verwendet das "start"-Skript aus der package.json
   app = "npm start"
 
 [[cron]]
-  # Führt den Task jeden Tag um 05:00 Uhr UTC (07:00 Uhr deutsche Sommerzeit) aus
   schedule = "0 5 * * *"
   command = "node send-digest.js"
