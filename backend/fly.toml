@@ -1,32 +1,28 @@
-# Konfiguration für die Backend-Anwendung auf Fly.io
+# Finale, explizite Konfiguration für die Backend-Anwendung
 
-app = 'wasserqualitaet-vg-bitter-frost-7826' # Ihr App-Name
+app = 'wasserqualitaet-vg-bitter-frost-7826'
 primary_region = 'fra'
 
-# Definiert den Build-Befehl, der vor dem Start ausgeführt wird
+# NEU & ENTSCHEIDEND: Explizite Anweisung an Fly.io, den Node.js Buildpack zu verwenden
 [build]
-  command = "npm install"
+  builder = "flyio/buildpack-node"
 
-# Definiert den Hauptprozess, der auf HTTP-Anfragen lauscht
+[env]
+  PORT = "8080"
+
 [http_service]
   internal_port = 8080
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true
   min_machines_running = 0
-  processes = ["app"] # Wichtig: Nur der "app"-Prozess ist ein Web-Service
+  processes = ["app"]
 
-# Ordnet den Prozess-Namen die Startbefehle zu
 [processes]
-  app = "node server.js"
-  # 'send-digest' wird hier entfernt, da es kein dauerhafter Prozess ist
+  # Verwendet das "start"-Skript aus der package.json
+  app = "npm start"
 
-# NEU: Definiert geplante Tasks (Cronjobs)
 [[cron]]
   # Führt den Task jeden Tag um 05:00 Uhr UTC (07:00 Uhr deutsche Sommerzeit) aus
-  schedule = "0 5 * * *" 
+  schedule = "0 5 * * *"
   command = "node send-digest.js"
-  
-# Umgebungsvariablen für den Web-Server
-[env]
-  PORT = "8080"
