@@ -7,6 +7,8 @@ import AppShowcaseComponent from './components/AppShowcaseComponent';
 import HeroSection from './components/HeroSection';
 import LoginModal from './components/LoginModal';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 //const API_URL = 'http://localhost:3001';
 
 // Komponente für das interaktive Einführungs-Carousel
@@ -738,7 +740,7 @@ function App() {
 
   const fetchComments = useCallback(async () => {
     try {
-      const response = await fetch('/api/comments');
+      const response = await fetch(`${API_BASE_URL}/api/comments`);
       if (!response.ok) {
         throw new Error('Netzwerk-Antwort war nicht ok.');
       }
@@ -785,7 +787,7 @@ function App() {
     setShowLoginModal(false);
 
     try {
-      await fetch('/api/user-login', {
+      await fetch(`${API_BASE_URL}/api/user-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userToSave) // Sende das Objekt mit der Frequenz
@@ -817,7 +819,7 @@ function App() {
 
     // 3. Sende die Änderung an das Backend, um die "Datenbank" zu aktualisieren
     try {
-      await fetch('/api/user-login', {
+      await fetch(`${API_BASE_URL}/api/user-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedUser)
@@ -859,7 +861,7 @@ function App() {
     if (!newComment[commentKey]?.trim() || !currentUser) return;
 
     try {
-      const response = await fetch('/api/comments', {
+      const response = await fetch(`${API_BASE_URL}/api/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -884,7 +886,7 @@ function App() {
     if (!currentUser || !window.confirm("Möchten Sie diesen Kommentar wirklich endgültig löschen?")) return;
 
     try {
-      const response = await fetch('/api/comments/delete', {
+      const response = await fetch(`${API_BASE_URL}/api/comments/delete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ commentId, user: currentUser }),

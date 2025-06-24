@@ -9,7 +9,7 @@ const { generateDigestHtml } = require('./email-template.js');
 require('dotenv').config();
 
 // --- Pfade ---
-const DATA_DIR = path.join(__dirname, 'data');
+const DATA_DIR = '/data';
 const COMMENTS_PATH = path.join(DATA_DIR, 'comments.json');
 const NOTIFICATION_LIST_PATH = path.join(DATA_DIR, 'notification-list.json');
 const SECTION_MAP_PATH = path.join(DATA_DIR, 'section-map.json');
