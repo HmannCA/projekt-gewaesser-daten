@@ -9,6 +9,14 @@ const cors = require('cors');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
+const requiredEnvVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'ADMIN_EMAIL'];
+for (const varName of requiredEnvVars) {
+  if (!process.env[varName]) {
+    console.error(`FATALER FEHLER: Die Umgebungsvariable ${varName} ist nicht gesetzt. Die Anwendung kann nicht starten.`);
+    process.exit(1); // Beendet das Programm mit einem Fehlercode
+  }
+}
+
 const app = express();
 
 // --- Middleware ---
