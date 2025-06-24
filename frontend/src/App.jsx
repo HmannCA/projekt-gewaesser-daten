@@ -3055,7 +3055,7 @@ async def get_observations(
                                       </div>
                                       <p className="text-sm">{comment.text}</p>
                                       
-                                      {currentUser && currentUser.email === import.meta.env.VITE_ADMIN_EMAIL && (
+                                      {currentUser && currentUser.email === 'Sven.Huettemann@kreis-vg.de' && (
                                         <button 
                                           onClick={() => handleDeleteComment(comment.id)} 
                                           className="absolute top-2 right-2 p-1 rounded-full bg-gray-200 dark:bg-gray-600 text-gray-500 hover:bg-red-500 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
