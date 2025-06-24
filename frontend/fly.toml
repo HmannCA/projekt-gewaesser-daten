@@ -1,8 +1,15 @@
-# Konfiguration für die Frontend-Anwendung auf Fly.io
+# Finale Konfiguration für die Frontend-Anwendung auf Fly.io
 
 app = 'wasserqualitaet-vg' # Ihr Frontend-App-Name
 primary_region = 'fra'
 
+# NEU: Dieser Block wird hinzugefügt, um die Backend-URL beim Deployment zu übergeben
+[build]
+  [build.args]
+    VITE_API_BASE_URL = "https://wasserqualitaet-vg-bitter-frost-7826.fly.dev"
+    VITE_ADMIN_EMAIL = "Sven.Huettemann@kreis-vg.de"
+
+# Ihre bestehende Konfiguration
 [http_service]
   internal_port = 8080
   force_https = true

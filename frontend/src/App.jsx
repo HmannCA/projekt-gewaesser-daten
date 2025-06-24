@@ -3029,34 +3029,40 @@ async def get_observations(
                           
                           {showComments[commentKey] && (
                             <div className="mt-4 space-y-3">
-                              {sectionComments.map((comment, idx) => (
-                                <div key={idx} className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <div className="flex items-center space-x-2">
-                                      <User className="w-4 h-4 text-gray-400" />
-                                      <span className="text-sm font-medium">{comment.author}</span>
-                                      <span className={`text-xs px-2 py-0.5 rounded-full ${getLevelColor(comment.level)}`}>
-                                        {comment.level === 'technik' ? 'Technik' : 
-                                         comment.level === 'details' ? 'Details' : 'Überblick'}
+                              {sectionComments
+                                // Mein Fix: Filtert "kaputte" Daten heraus, um den Absturz zu verhindern
+                                .filter(comment => comment && typeof comment === 'object' && comment.id)
+                                .map((comment) => (
+                                  // Ihr Code: `group relative` für den Hover-Effekt + die komplette Logik
+                                  <div key={comment.id} className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg group relative">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <div className="flex items-center space-x-2">
+                                        <User className="w-4 h-4 text-gray-400" />
+                                        <span className="text-sm font-medium">{comment.author}</span>
+                                        <span className={`text-xs px-2 py-0.5 rounded-full ${getLevelColor(comment.level)}`}>
+                                          {comment.level}
+                                        </span>
+                                      </div>
+                                      <span className="text-xs text-gray-500">
+                                        {comment.timestamp ? new Date(comment.timestamp).toLocaleString('de-DE') : ''}
                                       </span>
                                     </div>
-                                    <span className="text-xs text-gray-500">{comment.timestamp}</span>
-                                  </div>
-                                  <p className="text-sm">{comment.text}</p>
+                                    <p className="text-sm">{comment.text}</p>
 
-                                  {/* NEU: LÖSCHEN-BUTTON NUR FÜR ADMIN */}
+                                    {/* Ihr Code: Der Admin-Löschen-Button, jetzt wieder korrekt enthalten */}
                                     {currentUser && currentUser.email === import.meta.env.VITE_ADMIN_EMAIL && (
-                                      <button 
-                                        onClick={() => handleDeleteComment(comment.id)} 
-                                        className="absolute top-2 right-2 p-1 rounded-full bg-gray-200 dark:bg-gray-600 text-gray-500 hover:bg-red-500 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                                        title="Kommentar löschen"
-                                      >
-                                        <X className="w-4 h-4" />
-                                      </button>
-                                    )}
-                                </div>
+                                        <button
+                                          onClick={() => handleDeleteComment(comment.id)}
+                                          className="absolute top-2 right-2 p-1 rounded-full bg-gray-200 dark:bg-gray-600 text-gray-500 hover:bg-red-500 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                          title="Kommentar löschen"
+                                        >
+                                          <X className="w-4 h-4" />
+                                        </button>
+                                      )}
+                                  </div>
                               ))}
-                              
+
+                              {/* Der unveränderte Input-Bereich */}
                               <div className="flex space-x-2">
                                 <input
                                   type="text"
