@@ -186,6 +186,37 @@ app.post('/api/user-login', (req, res) => {
 });
 
 
+// NEU: Endpunkt zum Löschen von Kommentaren (nur für Admins)
+app.post('/api/comments/delete', (req, res) => {
+  try {
+    const { commentId, user } = req.body;
+
+    // Sicherheitsprüfung: Ist der anfragende Benutzer der Admin?
+    if (!user || user.email !== process.env.ADMIN_EMAIL) {
+      return res.status(403).send('Zugriff verweigert. Nur für Admins.');
+    }
+
+    const comments = readComments();
+
+    // Filtere den zu löschenden Kommentar aus der Liste heraus
+    const updatedComments = comments.filter(comment => comment.id !== commentId);
+
+    // Prüfe, ob ein Kommentar tatsächlich gelöscht wurde
+    if (comments.length === updatedComments.length) {
+      return res.status(404).send('Kommentar nicht gefunden.');
+    }
+
+    // Schreibe die aktualisierte Kommentarliste zurück in die Datei
+    writeComments(updatedComments);
+
+    res.status(200).send('Kommentar erfolgreich gelöscht.');
+
+  } catch (error) {
+    console.error('Fehler beim Löschen des Kommentars:', error);
+    res.status(500).send('Serverfehler beim Löschen des Kommentars.');
+  }
+});
+
 // --- Server Start ---
 const PORT = process.env.PORT || 3001;
 const HOST = '0.0.0.0';
