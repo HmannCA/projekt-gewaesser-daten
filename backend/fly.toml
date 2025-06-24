@@ -1,14 +1,18 @@
-# Finale, korrigierte Konfiguration für die Backend-Anwendung
+# Finale, vollständige Konfiguration für die Backend-Anwendung
 
 app = 'wasserqualitaet-vg-bitter-frost-7826'
 primary_region = 'fra'
 
 [build]
-  # KORREKTUR: Wir verwenden einen weit verbreiteten und aktuellen Standard-Builder
   builder = "heroku/builder:22"
 
 [env]
   PORT = "8080"
+
+# NEU & ENTSCHEIDEND: Definiert, wie persistente Volumes eingebunden werden
+[mounts]
+  source = "app_data" # Der Name des Volumes auf Fly.io
+  destination = "/data" # Der Pfad innerhalb des Containers, wo die Daten gespeichert werden sollen
 
 [http_service]
   internal_port = 8080
