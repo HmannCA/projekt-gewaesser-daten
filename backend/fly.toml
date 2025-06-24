@@ -1,4 +1,4 @@
-# Finale, vollständige Konfiguration für die Backend-Anwendung
+# Finale, korrekte Konfiguration basierend auf Ihrer Volume-Liste
 
 app = 'wasserqualitaet-vg-bitter-frost-7826'
 primary_region = 'fra'
@@ -10,8 +10,8 @@ primary_region = 'fra'
   PORT = "8080"
 
 [mounts]
-  # KORREKTUR: Der Name des Volumes, das bereits existiert.
-  source = "app_data"
+  # Der exakte Name aus Ihrer "fly volumes list"-Ausgabe
+  source = "mailer_data"
   destination = "/data"
 
 [http_service]
