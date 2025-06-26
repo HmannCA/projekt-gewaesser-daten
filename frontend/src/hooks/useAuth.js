@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '../utils/api.js';
+import { login } from '../utils/api';
 
 export const useAuth = () => {
   const [currentUser, setCurrentUser] = useState(null);

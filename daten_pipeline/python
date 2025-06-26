@@ -1,0 +1,2 @@
+Fehler: Der Schlüssel 'dataStreams' wurde in den Metadaten nicht gefunden.
+Bitte prüfen Sie die JSON-Datei auf die korrekte Struktur und Schreibweise (evtl. 'datastreams'?).

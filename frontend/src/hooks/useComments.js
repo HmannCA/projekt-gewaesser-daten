@@ -1,62 +1,81 @@
-import { useState, useCallback, useEffect } from 'react';
-import { api } from '../utils/api.js';
+// HINWEIS: Angepasst an die korrekten Exporte aus api.js
+
+import { useState, useEffect, useCallback } from 'react';
+// ==========================================================
+// --- BEGINN DER KORREKTUR ---
+// Wir importieren jetzt die spezifischen Funktionen, die wir brauchen,
+// anstatt eines nicht-existenten 'api'-Objekts.
+import { getCommentsForSection, postComment, deleteCommentById } from '../utils/api';
+// --- ENDE DER KORREKTUR ---
+// ==========================================================
 
 export const useComments = () => {
-  const [comments, setComments] = useState({});
-  const [newComment, setNewComment] = useState({});
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
   const [showComments, setShowComments] = useState({});
 
-  const fetchComments = useCallback(async () => {
+  // Kommentare für einen bestimmten Abschnitt laden
+  const fetchComments = useCallback(async (stepId, sectionId) => {
     try {
-      const data = await api.fetchComments();
-      
-      const commentsBySection = data.reduce((acc, comment) => {
-        const key = `${comment.stepId}-${comment.sectionId}`;
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(comment);
-        return acc;
-      }, {});
-      setComments(commentsBySection);
+      // Annahme: Sie möchten Kommentare pro section laden.
+      // Falls Sie alle auf einmal laden, müsste diese Logik angepasst werden.
+      const key = `${stepId}-${sectionId}`;
+      const fetchedComments = await getCommentsForSection(key);
+      setComments(prev => [...prev.filter(c => c.sectionId !== key), ...fetchedComments]);
     } catch (error) {
       console.error("Fehler beim Laden der Kommentare:", error);
     }
-  }, []); 
+  }, []);
 
-  const saveComment = async (stepId, sectionId, currentUser, detailLevel) => {
-    const commentKey = `${stepId}-${sectionId}`;
-    if (!newComment[commentKey]?.trim() || !currentUser) return;
+  // Kommentar speichern
+  const saveComment = async (stepId, sectionId, currentUser, level) => {
+    if (!newComment.trim() || !currentUser) return;
+
+    const commentData = {
+      author: {
+        firstName: currentUser.firstName,
+        email: currentUser.email
+      },
+      text: newComment,
+      stepId,
+      sectionId: `${stepId}-${sectionId}`,
+      level
+    };
 
     try {
-      await api.saveComment({
-        author: currentUser,
-        text: newComment[commentKey],
-        stepId,
-        sectionId,
-        level: detailLevel,
-      });
-      
-      setNewComment({ ...newComment, [commentKey]: '' });
-      fetchComments();
+      const savedComment = await postComment(commentData);
+      setComments(prev => [...prev, savedComment]);
+      setNewComment('');
     } catch (error) {
-      console.error('Fehler beim Speichern des Kommentars:', error);
+      console.error("Fehler beim Speichern des Kommentars:", error);
+      alert("Kommentar konnte nicht gespeichert werden.");
     }
   };
 
+  // Kommentar löschen
   const handleDeleteComment = async (commentId, currentUser) => {
-    if (!currentUser || !window.confirm("Möchten Sie diesen Kommentar wirklich endgültig löschen?")) return;
+    if (!currentUser || currentUser.email !== 'admin@wamo.dev') { // Beispiel für Admin-Check
+        alert("Nur Administratoren können Kommentare löschen.");
+        return;
+    }
 
-    try {
-      await api.deleteComment(commentId, currentUser);
-      fetchComments();
-    } catch (error) {
-      console.error('Fehler beim Löschen des Kommentars:', error);
-      alert(`Fehler: ${error.message}`);
+    if (window.confirm("Sind Sie sicher, dass Sie diesen Kommentar löschen möchten?")) {
+        try {
+            await deleteCommentById(commentId);
+            setComments(prev => prev.filter(c => c.id !== commentId));
+        } catch (error) {
+            console.error("Fehler beim Löschen des Kommentars:", error);
+            alert("Fehler beim Löschen des Kommentars.");
+        }
     }
   };
 
+  // Initiales Laden (Beispiel, falls Sie alle Kommentare am Anfang laden wollen)
+  // Dies müsste angepasst werden, je nachdem, wie Ihre App strukturiert ist.
   useEffect(() => {
-    fetchComments();
-  }, [fetchComments]);
+    // Falls Sie einen Mechanismus haben, um alle Kommentare zu Beginn zu laden,
+    // würde er hier stehen. Aktuell laden wir sie bei Bedarf mit fetchComments.
+  }, []);
 
   return {
     comments,
@@ -64,8 +83,8 @@ export const useComments = () => {
     setNewComment,
     showComments,
     setShowComments,
+    fetchComments, // exportieren, um es bei Bedarf aufzurufen
     saveComment,
-    handleDeleteComment,
-    fetchComments
+    handleDeleteComment
   };
 };

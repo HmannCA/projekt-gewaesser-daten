@@ -24,3 +24,17 @@ dist-ssr/
 
 # Fly.io Backups
 fly.toml.backup
+
+# ==========================================================
+# WICHTIG: Ergänzungen für die daten_pipeline
+# ==========================================================
+
+# Python-Cache ignorieren
+__pycache__/
+
+# Python virtuelle Umgebung ignorieren (das sind die ~17.000 Dateien!)
+/daten_pipeline/venv/
+
+# Temporäre Upload- und Entpack-Ordner vom Backend ignorieren
+/backend/temp/
+/backend/temp_uploads/
