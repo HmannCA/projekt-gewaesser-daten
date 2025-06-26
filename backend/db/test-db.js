@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { testConnection } = require('./db/postgres');
 
+
 async function test() {
   console.log('Teste Datenbankverbindung...');
   console.log('DATABASE_URL vorhanden:', !!process.env.DATABASE_URL);

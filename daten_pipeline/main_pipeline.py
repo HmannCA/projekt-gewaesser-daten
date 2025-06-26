@@ -3,6 +3,7 @@ import os
 import sys
 from datetime import datetime
 import re
+import argparse
 
 # Importiere die bekannten und die NEUEN Validierungs-Skripte
 from metadata_mapper import load_metadata, create_column_mapping, map_columns_to_names
@@ -12,16 +13,32 @@ from spike_validator import check_spikes
 from multivariate_validator import check_multivariate_anomalies
 from interpolating_consolidator import interpolate_and_aggregate
 
+# ==========================================================
+# --- BEGINN DER ERGÄNZUNG: STATUS-FUNKTION ---
+def send_status(message):
+    # Dieses spezielle Format kann der Node.js-Server später erkennen
+    # flush=True sorgt dafür, dass die Nachricht sofort gesendet wird
+    print(f"STATUS_UPDATE:{message}", flush=True)
+# --- ENDE DER ERGÄNZUNG ---
+# ==========================================================
+
 def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str):
     """
     Führt die vollständige Validierungspipeline aus. Diese Version nutzt die
     korrekten Parameternamen für eine vollständige Verarbeitung.
     """
-    print("Starte finale Pipeline mit korrekter Parameter-Konfiguration...")
+    # --- ERGÄNZUNG ---
+    send_status("Pipeline gestartet: Lade Metadaten...")
+    # --- ENDE ---
 
     # 1. Daten laden und aufbereiten
     metadata = load_metadata(metadata_path)
     if not metadata: sys.exit("Abbruch: Metadaten-Datei konnte nicht geladen werden.")
+    
+    # --- ERGÄNZUNG ---
+    send_status("Metadaten geladen: Erstelle Spalten-Mapping...")
+    # --- ENDE ---
+
     column_mapping, _ = create_column_mapping(metadata)
     if not column_mapping: sys.exit("Abbruch: Spalten-Mapping konnte nicht erstellt werden.")
     
@@ -42,6 +59,10 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
     for station_id, station_files in files_by_station.items():
         print("-" * 60)
         print(f"Verarbeite Daten für Station: {station_id}")
+        
+        # --- ERGÄNZUNG ---
+        send_status(f"Verarbeite Station {station_id}: Lese Rohdaten...")
+        # --- ENDE ---
         
         try:
             df_list = [pd.read_csv(f, sep=',', header=None, index_col=0, on_bad_lines='skip', encoding='utf-8-sig') for f in station_files]
@@ -94,6 +115,10 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
         flags_per_test = pd.DataFrame(index=processed_data.index)
         reasons_per_test = pd.DataFrame(index=processed_data.index)
 
+        # --- ERGÄNZUNG ---
+        send_status(f"Station {station_id}: Führe Bereichs-, Spike- und Stuck-Value-Analyse durch...")
+        # --- ENDE ---
+
         for param_name in processed_data.columns:
             if param_name in validation_rules:
                 rules = validation_rules[param_name]
@@ -118,6 +143,9 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
         cols_to_check_exist = [col for col in cross_validation_cols if col in processed_data.columns]
         
         if len(cols_to_check_exist) > 1:
+            # --- ERGÄNZUNG ---
+            send_status(f"Station {station_id}: Führe multivariate Kreuz-Validierung durch...")
+            # --- ENDE ---
             print(f"Führe Kreuz-Validierung für {len(cols_to_check_exist)} Parameter durch...")
             multi_flags, multi_reasons = check_multivariate_anomalies(processed_data, cols_to_check_exist)
             for col_name in cols_to_check_exist:
@@ -125,6 +153,9 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
                 reasons_per_test[f'reason_{col_name}_multivariate'] = multi_reasons
         
         # 5. Finale Flags und Gründe pro Parameter erstellen
+        # --- ERGÄNZUNG ---
+        send_status(f"Station {station_id}: Kombiniere Validierungs-Ergebnisse...")
+        # --- ENDE ---
         for param_name in processed_data.columns:
             relevant_flag_cols = [col for col in flags_per_test.columns if f"_{param_name}_" in col]
             relevant_reason_cols = [col for col in reasons_per_test.columns if f"_{param_name}_" in col]
@@ -138,6 +169,9 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
                 processed_data[f'reason_{param_name}'] = final_reasons
 
         # 6. Tageskonsolidierung
+        # --- ERGÄNZUNG ---
+        send_status(f"Station {station_id}: Führe Tageskonsolidierung und Interpolation durch...")
+        # --- ENDE ---
         precision_rules = {
             'Phycocyanin Abs.': 1, 'Phycocyanin Abs. (comp)': 1, 'TOC': 1, 'Trübung': 1, 'Chl-a': 1, 'DOC': 1, 'Nitrat': 1,
             'Gelöster Sauerstoff': 2, 'Leitfähigkeit': 0, 'pH': 2, 'Redoxpotential': 0, 
@@ -165,21 +199,25 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
         daily_results.index.name = "Datum"
 
         # 7. Ergebnisse speichern
+        # --- ERGÄNZUNG ---
+        send_status(f"Station {station_id}: Speichere Ergebnis-Datei...")
+        # --- ENDE ---
         timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_filename = f"tageskonsolidierung_final_{station_id}_{timestamp_str}.json"
-        # Diese Zeile ist entscheidend: Sie verwendet den vom Server übergebenen output_dir
         output_filepath = os.path.join(output_dir, output_filename)
         
         daily_results.to_json(output_filepath, orient='index', indent=4, date_format='iso', force_ascii=False)
         print(f"Pipeline für Station {station_id} erfolgreich. Ergebnisse gespeichert in: {output_filepath}")
 
+    # --- ERGÄNZUNG ---
+    send_status("Alle Stationen verarbeitet.")
+    # --- ENDE ---
     print("-" * 60)
     print("Alle Stationen verarbeitet.")
 
 
 if __name__ == '__main__':
-    # Dieser Block wird ausgeführt, wenn das Skript vom Server aufgerufen wird
-    import argparse
+    # Dieser Block bleibt unverändert
     parser = argparse.ArgumentParser(description='Führt die WAMO Datenvalidierungs-Pipeline aus.')
     parser.add_argument('--input-dir', required=True, help='Verzeichnis mit den rohen CSV- und Metadaten-Dateien.')
     parser.add_argument('--output-dir', required=True, help='Verzeichnis, in das die Ergebnis-JSON-Datei gespeichert wird.')
