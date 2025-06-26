@@ -22,6 +22,22 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+
+// --- TEMPORÄRER ENDPUNKT ZUM ERSTELLEN DER DATENBANK-TABELLEN ---
+// WICHTIG: Nach einmaliger erfolgreicher Ausführung wieder entfernen!
+const { createDatabaseTables } = require('./db/postgres');
+
+app.get('/api/setup-database-bitte-loeschen', async (req, res) => {
+    console.log('Datenbank-Setup wird aufgerufen...');
+    const result = await createDatabaseTables();
+    if (result.success) {
+        res.status(200).send(`<h1>Erfolg!</h1><p>${result.message}</p>`);
+    } else {
+        res.status(500).send(`<h1>Fehler!</h1><p>${result.message}</p>`);
+    }
+});
+
+
 // Bestehender Code-Block aus Ihrer Datei (unverändert)
 // ============== NEUER ABSCHNITT: DATEN-PIPELINE INTEGRATION ==============
 const uploadDir = path.join(__dirname, '..', 'daten_pipeline', 'input');
