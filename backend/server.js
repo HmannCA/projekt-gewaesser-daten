@@ -1,13 +1,129 @@
-// ========================================================================
-// FINAL, KORRIGIERTE VERSION der server.js
-// ========================================================================
+console.log('=== SERVER.JS VERSION 2.0 - MIT DB TEST ===');
 
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
 const cors = require('cors');
+const path = require('path'); // Nur EINMAL deklarieren
+const fs = require('fs');     // Nur EINMAL deklarieren
+const multer = require('multer'); // NEU
+const { spawn } = require('child_process'); // NEU
+const { testConnection } = require('./db/postgres');
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Middlewares
+app.use(cors());
+app.use(express.json());
+
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+
+// ============== NEUER ABSCHNITT: DATEN-PIPELINE INTEGRATION ==============
+
+// 1. Konfiguration für den Datei-Upload
+// -------------------------------------------------------------------
+
+// Definiere den Ziel-Ordner für hochgeladene Dateien.
+// Wichtig: Dieser Pfad muss relativ zum 'backend'-Ordner sein, wo das Skript läuft.
+const uploadDir = path.join(__dirname, '..', 'daten_pipeline', 'input');
+
+// Stelle sicher, dass der Zielordner existiert, sonst erstelle ihn.
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Konfiguriere 'multer', um die Dateien am richtigen Ort mit dem originalen Namen zu speichern.
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    // Behalte den originalen Dateinamen bei (z.B. "wamo00010_... .csv")
+    cb(null, Buffer.from(file.originalname, 'latin1').toString('utf8'));
+  }
+});
+
+const upload = multer({ storage: storage });
+
+
+// 2. API-Endpunkt, der die Dateien entgegennimmt
+// -------------------------------------------------------------------
+// Dieser Endpunkt wartet auf POST-Anfragen an /api/upload-data
+// 'upload.array('datafiles', 500)' erlaubt den Upload von bis zu 500 Dateien auf einmal.
+app.post('/api/upload-data', upload.array('datafiles', 500), (req, res) => {
+  // Wenn der Code hier ankommt, hat multer die Dateien bereits erfolgreich gespeichert.
+  console.log(`${req.files.length} Dateien erfolgreich in den 'input'-Ordner der Pipeline hochgeladen.`);
+  
+  // Sende eine Erfolgsmeldung zurück an das Frontend.
+  res.status(200).json({ 
+    message: `${req.files.length} Dateien erfolgreich hochgeladen. Verarbeitung kann gestartet werden.` 
+  });
+});
+
+// 3. API-Endpunkt, der die Python-Pipeline startet
+// -------------------------------------------------------------------
+app.post('/api/process-pipeline', (req, res) => {
+  console.log('Anfrage zum Starten der Python-Pipeline erhalten...');
+
+  // Definiere den Pfad zum Python-Hauptskript.
+  // Wichtig: Der Pfad ist relativ zum 'backend'-Ordner.
+  const scriptPath = path.join(__dirname, '..', 'daten_pipeline', 'main_pipeline.py');
+
+  // Prüfe, ob das Skript überhaupt existiert, bevor wir es ausführen.
+  if (!fs.existsSync(scriptPath)) {
+    console.error(`Fehler: Das Python-Skript wurde nicht unter ${scriptPath} gefunden.`);
+    return res.status(500).json({ message: 'Fehler: Python-Skript nicht gefunden. Konfiguration prüfen.' });
+  }
+
+  // Definiere den Pfad zur Python-Executable in der virtuellen Umgebung.
+  // Das stellt sicher, dass die korrekten Bibliotheken (pandas, pyod) verwendet werden.
+  const pythonExecutable = path.join(__dirname, '..', 'daten_pipeline', 'venv', 'Scripts', 'python.exe');
+  
+  if (!fs.existsSync(pythonExecutable)) {
+    console.error(`Fehler: Die Python-Executable der venv wurde nicht unter ${pythonExecutable} gefunden.`);
+    // Fallback auf den globalen Python-Interpreter
+    console.log("Versuche, 'python' global aufzurufen...");
+    pythonExecutable = 'python';
+  }
+
+  // Starte den Python-Prozess. spawn ist besser als exec für langlebige Prozesse.
+  const pythonProcess = spawn(pythonExecutable, [scriptPath]);
+
+  // Sammle die Standard-Ausgaben des Python-Skripts (für Debugging)
+  let scriptOutput = '';
+  pythonProcess.stdout.on('data', (data) => {
+    const output = data.toString();
+    console.log(`[Python-Skript] ${output}`);
+    scriptOutput += output;
+  });
+
+  // Sammle eventuelle Fehler-Ausgaben des Python-Skripts
+  let scriptError = '';
+  pythonProcess.stderr.on('data', (data) => {
+    const errorOutput = data.toString();
+    console.error(`[Python-Skript-FEHLER] ${errorOutput}`);
+    scriptError += errorOutput;
+  });
+
+  // Reagiere, wenn der Python-Prozess abgeschlossen ist.
+  pythonProcess.on('close', (code) => {
+    console.log(`Python-Prozess beendet mit Code ${code}.`);
+    if (code === 0) {
+      // Alles gut, Code 0 bedeutet Erfolg.
+      res.status(200).json({ 
+        message: 'Verarbeitung erfolgreich abgeschlossen!',
+        output: scriptOutput 
+      });
+    } else {
+      // Ein Fehler ist aufgetreten.
+      res.status(500).json({ 
+        message: 'Fehler bei der Datenverarbeitung.',
+        error: scriptError 
+      });
+    }
+  });
+});
+// ============== ENDE NEUER ABSCHNITT ==============
 
 const requiredEnvVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'ADMIN_EMAIL'];
 for (const varName of requiredEnvVars) {
@@ -17,7 +133,7 @@ for (const varName of requiredEnvVars) {
   }
 }
 
-const app = express();
+
 
 // --- Middleware ---
 // CORS erlauben, damit der Vite-Server mit dem Backend sprechen kann
@@ -226,12 +342,21 @@ app.post('/api/comments/delete', (req, res) => {
 });
 
 // --- Server Start ---
-const PORT = process.env.PORT || 3001;
+//const PORT = process.env.PORT || 3001;
 const HOST = '0.0.0.0';
+
+// Datenbankverbindung beim Start testen
+testConnection().then(connected => {
+  if (connected) {
+    console.log('✅ Datenbank erfolgreich verbunden');
+  } else {
+    console.log('⚠️  Keine Datenbankverbindung - App läuft trotzdem');
+  }
+});
 
 app.listen(PORT, HOST, () => {
   console.log(`================================================`);
-  console.log(`✅ Backend-Server erfolgreich gestartet.`);
+  console.log(`✅ Backend-Server wurde erfolgreich gestartet.`);
   console.log(`✅ Lauscht auf http://${HOST}:${PORT}`);
   console.log(`================================================`);
 });
