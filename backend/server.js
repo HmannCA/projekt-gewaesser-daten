@@ -39,7 +39,12 @@ app.get('/api/setup-database-bitte-loeschen', async (req, res) => {
 
 
 // Bestehender Code-Block aus Ihrer Datei (unverändert)
-// ============== NEUER ABSCHNITT: DATEN-PIPELINE INTEGRATION ==============
+// =========================================================================
+// --- ALTER DATEN-PIPELINE-BLOCK (DEAKTIVIERT) ---
+// Dieser Block hat auf dem Live-Server zu einem Absturz geführt (permission denied)
+// und wird für die neue ZIP-Upload-Logik nicht mehr benötigt. Er wird
+// daher sicherheitshalber auskommentiert.
+/*
 const uploadDir = path.join(__dirname, '..', 'daten_pipeline', 'input');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -59,6 +64,11 @@ app.post('/api/upload-data', upload_original.array('datafiles', 500), (req, res)
     message: `${req.files.length} Dateien erfolgreich hochgeladen. Verarbeitung kann gestartet werden.` 
   });
 });
+app.post('/api/process-pipeline', (req, res) => {
+  // ... (Rest des alten Blocks) ...
+});
+*/
+// =========================================================================
 app.post('/api/process-pipeline', (req, res) => {
   console.log('Anfrage zum Starten der Python-Pipeline erhalten...');
   const scriptPath = path.join(__dirname, '..', 'daten_pipeline', 'main_pipeline.py');
