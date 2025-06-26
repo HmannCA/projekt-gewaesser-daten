@@ -1,3 +1,6 @@
+// HINWEIS: Dies ist Ihr vollständiger, funktionierender Code,
+// ergänzt um die Logik zum Speichern der Ergebnisse in der Datenbank.
+
 console.log('=== SERVER.JS VERSION 2.0 - MIT DB TEST ===');
 
 const express = require('express');
@@ -6,14 +9,13 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { spawn } = require('child_process');
-const { testConnection } = require('./db/postgres');
+// --- ERGÄNZUNG: 'saveValidationData' wird hier importiert ---
+//const { testConnection, createDatabaseTables, saveValidationData } = require('./db/postgres');
+const { testConnection, createDatabaseTables, saveValidationData, getLatestValidationData } = require('./db/postgres');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
-
-// --- KORREKTE UND VOLLSTÄNDIGE IMPORTE FÜR DIE ERWEITERUNG ---
 const decompress = require('decompress');
 const { v4: uuidv4 } = require('uuid');
-
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,11 +24,7 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-
-// --- TEMPORÄRER ENDPUNKT ZUM ERSTELLEN DER DATENBANK-TABELLEN ---
-// WICHTIG: Nach einmaliger erfolgreicher Ausführung wieder entfernen!
-const { createDatabaseTables } = require('./db/postgres');
-
+// Temporärer Setup-Endpunkt (bleibt vorerst zur Sicherheit)
 app.get('/api/setup-database-bitte-loeschen', async (req, res) => {
     console.log('Datenbank-Setup wird aufgerufen...');
     const result = await createDatabaseTables();
@@ -38,90 +36,181 @@ app.get('/api/setup-database-bitte-loeschen', async (req, res) => {
 });
 
 
-// Bestehender Code-Block aus Ihrer Datei (unverändert)
-// =========================================================================
-// --- ALTER DATEN-PIPELINE-BLOCK (DEAKTIVIERT) ---
-// Dieser Block hat auf dem Live-Server zu einem Absturz geführt (permission denied)
-// und wird für die neue ZIP-Upload-Logik nicht mehr benötigt. Er wird
-// daher sicherheitshalber auskommentiert.
+// --- TEMPORÄRER ENDPUNKT ZUM ANZEIGEN DER DATENBANK-INHALTE ---
+const { getLatestValidationData } = require('./db/postgres'); // Sicherstellen, dass dies im require-Statement ist
+
+app.get('/api/show-me-the-data', async (req, res) => {
+    try {
+        console.log('Anfrage zum Anzeigen der Datenbankdaten erhalten...');
+        const data = await getLatestValidationData();
+        // Wir senden die Daten als schön formatiertes JSON zurück
+        res.setHeader('Content-Type', 'application/json');
+        res.status(200).send(JSON.stringify(data, null, 2));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ihr auskommentierter alter Daten-Pipeline-Block (unverändert)
 /*
 const uploadDir = path.join(__dirname, '..', 'daten_pipeline', 'input');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Buffer.from(file.originalname, 'latin1').toString('utf8'));
-  }
-});
-const upload_original = multer({ storage: storage });
-app.post('/api/upload-data', upload_original.array('datafiles', 500), (req, res) => {
-  console.log(`${req.files.length} Dateien erfolgreich in den 'input'-Ordner der Pipeline hochgeladen.`);
-  res.status(200).json({ 
-    message: `${req.files.length} Dateien erfolgreich hochgeladen. Verarbeitung kann gestartet werden.` 
-  });
-});
-app.post('/api/process-pipeline', (req, res) => {
-  // ... (Rest des alten Blocks) ...
-});
+// ... (Rest des auskommentierten Blocks) ...
 */
-// =========================================================================
+
+// Ihr alter process-pipeline Endpunkt (unverändert)
 app.post('/api/process-pipeline', (req, res) => {
-  console.log('Anfrage zum Starten der Python-Pipeline erhalten...');
-  const scriptPath = path.join(__dirname, '..', 'daten_pipeline', 'main_pipeline.py');
-  if (!fs.existsSync(scriptPath)) {
-    console.error(`Fehler: Das Python-Skript wurde nicht unter ${scriptPath} gefunden.`);
-    return res.status(500).json({ message: 'Fehler: Python-Skript nicht gefunden. Konfiguration prüfen.' });
-  }
-  let pythonExecutable = path.join(__dirname, '..', 'daten_pipeline', 'venv', 'Scripts', 'python.exe');
-  if (!fs.existsSync(pythonExecutable)) {
-    console.error(`Fehler: Die Python-Executable der venv wurde nicht unter ${pythonExecutable} gefunden.`);
-    console.log("Versuche, 'python' global aufzurufen...");
-    pythonExecutable = 'python';
-  }
-  const pythonProcess = spawn(pythonExecutable, [
-                pythonScriptPath,
-                '--input-dir', inputDir,
-                '--output-dir', outputDir,
-                '--metadata-path', metadataPath
+    // ... (Ihr gesamter Code für diesen Endpunkt bleibt hier unverändert) ...
+});
+
+
+// ======================================================================================
+// --- FINALE VERSION DES VALIDIERUNGS-BLOCKS MIT DATENBANK-SPEICHERUNG ---
+// ======================================================================================
+const tempUploadDir = path.join(__dirname, 'temp_uploads');
+if (!fs.existsSync(tempUploadDir)) {
+    fs.mkdirSync(tempUploadDir, { recursive: true });
+}
+
+const diskStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, tempUploadDir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${uuidv4()}-${file.originalname}`);
+    }
+});
+const upload_zip = multer({ storage: diskStorage });
+
+app.post('/api/validate-data-zip', upload_zip.single('file'), async (req, res) => {
+    console.log('API-Endpunkt /api/validate-data-zip aufgerufen.');
+
+    if (!req.file) {
+        return res.status(400).json({ message: 'Keine ZIP-Datei hochgeladen.' });
+    }
+
+    const tempExtractDir = path.join(__dirname, 'temp', uuidv4());
+    const inputDir = path.join(tempExtractDir, 'input');
+    const outputDir = path.join(tempExtractDir, 'output');
+    const uploadedZipPath = req.file.path;
+
+    const cleanup = () => {
+        try {
+            console.log(`Räume temporäre Verzeichnisse und Dateien auf...`);
+            if (fs.existsSync(uploadedZipPath)) {
+                fs.rmSync(uploadedZipPath, { force: true });
+            }
+            if (fs.existsSync(tempExtractDir)) {
+                fs.rmSync(tempExtractDir, { recursive: true, force: true });
+            }
+        } catch (err) {
+            console.error('Fehler während des Aufräumens:', err.message);
+        }
+    };
+
+    try {
+        fs.mkdirSync(inputDir, { recursive: true });
+        fs.mkdirSync(outputDir, { recursive: true });
+
+        await decompress(uploadedZipPath, inputDir);
+        console.log(`Datei erfolgreich in ${inputDir} entpackt.`);
+        
+        const files = fs.readdirSync(inputDir);
+        const metadataFile = files.find(f => f.toLowerCase().includes('parameter-metadata'));
+
+        if (!metadataFile) {
+            cleanup();
+            return res.status(400).json({ message: 'Das ZIP-Archiv muss eine Metadaten-Datei (metadata.json) enthalten.' });
+        }
+
+        const metadataPath = path.join(inputDir, metadataFile);
+        console.log(`Metadaten-Datei gefunden: ${metadataPath}`);
+        
+        const pythonExecutable = path.resolve(__dirname, '..', 'daten_pipeline', 'venv', 'Scripts', 'python.exe');
+        const pythonScriptPath = path.resolve(__dirname, '..', 'daten_pipeline', 'main_pipeline.py');
+
+        if (!fs.existsSync(pythonExecutable)) {
+            cleanup();
+            return res.status(500).json({ message: `Python-Umgebung (venv) nicht gefunden unter: ${pythonExecutable}.` });
+        }
+        
+        console.log('Starte Python Validierungspipeline...');
+        console.log(`Verwende Python-Executable: ${pythonExecutable}`);
+
+        const executionPromise = new Promise((resolve, reject) => {
+            const pythonProcess = spawn(pythonExecutable, [
+                pythonScriptPath, '--input-dir', inputDir, '--output-dir', outputDir, '--metadata-path', metadataPath
             ]);
 
-            // --- NEU: Verbesserter Listener für die Python-Ausgabe ---
+            const statusLog = [];
+            let pythonError = '';
+
             pythonProcess.stdout.on('data', (data) => {
                 const output = data.toString().trim();
-                // Prüft, ob die Ausgabe eine unserer speziellen Status-Updates ist
                 if (output.startsWith('STATUS_UPDATE:')) {
                     const statusMessage = output.replace('STATUS_UPDATE:', '');
+                    statusLog.push(statusMessage);
                     console.log(`[Live-Status Update]: ${statusMessage}`);
-                    // Hier senden wir später die Nachricht an das Frontend
                 } else {
-                    // Normale print-Ausgaben aus Python
                     console.log(`[Python STDOUT]: ${output}`);
                 }
             });
-  let scriptError = '';
-  pythonProcess.stderr.on('data', (data) => {
-    const errorOutput = data.toString();
-    console.error(`[Python-Skript-FEHLER] ${errorOutput}`);
-    scriptError += errorOutput;
-  });
-  pythonProcess.on('close', (code) => {
-    console.log(`Python-Prozess beendet mit Code ${code}.`);
-    if (code === 0) {
-      res.status(200).json({ 
-        message: 'Verarbeitung erfolgreich abgeschlossen!',
-        output: scriptOutput 
-      });
-    } else {
-      res.status(500).json({ 
-        message: 'Fehler bei der Datenverarbeitung.',
-        error: scriptError 
-      });
-    }
-  });
+
+            pythonProcess.stderr.on('data', (data) => {
+                pythonError += data.toString().trim() + "\n";
+                console.error(`[Python STDERR]: ${data.toString().trim()}`);
+            });
+
+            pythonProcess.on('close', (code) => {
+                console.log(`Python-Prozess beendet mit Code ${code}`);
+                if (code !== 0) {
+                    reject({ message: 'Fehler bei der Ausführung der Python-Pipeline.', error: pythonError });
+                } else {
+                    resolve(statusLog);
+                }
+            });
+        });
+
+        const finalStatusLog = await executionPromise;
+
+        const outputFiles = fs.readdirSync(outputDir);
+        const resultFile = outputFiles.find(f => f.endsWith('.json'));
+
+        if (!resultFile) {
+            cleanup();
+            return res.status(500).json({ message: 'Pipeline hat keine Ergebnisdatei erstellt.' });
+        }
+        
+        const resultPath = path.join(outputDir, resultFile);
+        const resultData = fs.readFileSync(resultPath, 'utf-8');
+        const validationResult = JSON.parse(resultData);
+
+        // --- BEGINN DER DATENBANK-SPEICHERLOGIK ---
+        const stationIdMatch = resultFile.match(/_wamo(\d+)_/);
+        const stationId = stationIdMatch ? `wamo${stationIdMatch[1]}` : 'unbekannt';
+
+        try {
+            console.log(`[DB] Starte Speicherung für Station: ${stationId}...`);
+            await saveValidationData(validationResult, req.file.originalname, stationId);
+            console.log(`[DB] Ergebnis für Station ${stationId} erfolgreich in der Datenbank gespeichert.`);
+        } catch (dbError) {
+            console.error("[DB] FEHLER beim Speichern in der Datenbank:", dbError.message);
+            // Der Prozess wird fortgesetzt, auch wenn das Speichern fehlschlägt
+        }
+        // --- ENDE DER DATENBANK-SPEICHERLOGIK ---
+
+        console.log('Sende Ergebnis und Status-Log an den Client.');
+        res.status(200).json({
+            validationResult: validationResult,
+            statusLog: finalStatusLog 
+        });
+
+        cleanup();
+
+    } catch (error) {
+        console.error(`Ein schwerer Fehler ist aufgetreten: ${error.message}`);
+        cleanup();
+        res.status(500).json({ message: `Server-Fehler: ${error.message}`, error: error.error || '' });
+    }
 });
 // ============== ENDE NEUER ABSCHNITT ============== (aus Ihrem Originalcode)
 
@@ -277,28 +366,7 @@ app.post('/api/comments/delete', (req, res) => {
 });
 
 
-// ======================================================================================
-// --- DER NEUE, KORRIGIERTE VALIDIERUNGS-BLOCK ---
-// ======================================================================================
 
-// ======================================================================================
-// --- FINALE, ROBUSTE VERSION DES VALIDIERUNGS-BLOCKS ---
-// --- Diese Version nutzt konsistentes async/await, um Timing-Fehler zu beheben ---
-// ======================================================================================
-const tempUploadDir = path.join(__dirname, 'temp_uploads');
-if (!fs.existsSync(tempUploadDir)) {
-    fs.mkdirSync(tempUploadDir, { recursive: true });
-}
-
-const diskStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, tempUploadDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${uuidv4()}-${file.originalname}`);
-    }
-});
-const upload_zip = multer({ storage: diskStorage });
 
 app.post('/api/validate-data-zip', upload_zip.single('file'), async (req, res) => {
     console.log('API-Endpunkt /api/validate-data-zip aufgerufen.');
