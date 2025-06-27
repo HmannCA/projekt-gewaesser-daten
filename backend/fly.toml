@@ -1,13 +1,10 @@
-# HINWEIS: Dies ist die finale, korrigierte Version der fly.toml,
-# die die Build-Prozesse für Node.js und Python explizit und korrekt definiert.
+# HINWEIS: Dies ist die finale, Dockerfile-basierte Konfiguration.
 
 app = 'wasserqualitaet-vg-bitter-frost-7826'
 primary_region = 'fra'
 
-[build]
-  # Wir geben dem Builder eine explizite Liste der benötigten Sprach-Pakete.
-  # Dies ist die robusteste Methode.
-  buildpacks = ["heroku/nodejs", "heroku/python"]
+# Der [build]-Abschnitt wird komplett entfernt.
+# Fly.io erkennt das Dockerfile automatisch.
 
 [env]
   PORT = "8080"

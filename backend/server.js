@@ -150,11 +150,9 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
 
         
         
-        // Der Pfad zum Python-Skript, das jetzt zusammen mit dem Server deployed wird
+        // Im Docker-Container ist der Pfad standardisiert und einfach.
+        const pythonExecutable = 'python3';
         const pythonScriptPath = path.resolve(__dirname, 'daten_pipeline', 'main_pipeline.py');
-        
-        // Der Fly.io Buildpack-Prozess sorgt dafür, dass 'python' als Befehl global verfügbar ist.
-        const pythonExecutable = 'python';
 
         // Wir prüfen nur noch, ob das Hauptskript selbst vorhanden ist.
         if (!fs.existsSync(pythonScriptPath)) {
