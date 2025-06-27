@@ -136,10 +136,21 @@ app.post('/api/validate-data-zip', upload_zip.single('file'), (req, res) => {
                 
                 const pythonExecutable = path.resolve(__dirname, '..', 'daten_pipeline', 'venv', 'Scripts', 'python.exe');
                 const pythonScriptPath = path.resolve(__dirname, '..', 'daten_pipeline', 'main_pipeline.py');
+                let pythonExecutable;
+
+                // --- INTELLIGENTE PFAD-AUSWAHL FÜR WINDOWS & LINUX ---
+                if (process.platform === "win32") {
+                    // Wenn wir auf Windows sind (Ihr lokaler PC)
+                    pythonExecutable = path.resolve(__dirname, '..', 'daten_pipeline', 'venv', 'Scripts', 'python.exe');
+                } else {
+                    // Wenn wir auf einem anderen System sind (z.B. Linux auf Fly.io)
+                    pythonExecutable = path.resolve(__dirname, '..', 'daten_pipeline', 'venv', 'bin', 'python');
+                }
 
                 if (!fs.existsSync(pythonExecutable)) {
                     cleanup();
-                    return res.status(500).json({ message: `Python-Umgebung (venv) nicht gefunden unter: ${pythonExecutable}.` });
+                    // Die Fehlermeldung gibt jetzt den gesuchten Pfad aus, das hilft beim Debuggen
+                    return res.status(500).json({ message: `Python-Umgebung (venv) nicht gefunden. Gesuchter Pfad: ${pythonExecutable}` });
                 }
 
                 console.log('Starte Python Validierungspipeline...');
