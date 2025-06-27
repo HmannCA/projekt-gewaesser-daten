@@ -79,25 +79,36 @@ app.post('/api/comments/delete', (req, res) => { try { const { commentId, user }
 // ======================================================================================
 // --- DER EINZIGE, FUNKTIONIERENDE VALIDIERUNGS-BLOCK ---
 // ======================================================================================
+// ======================================================================================
+// --- FINALE, KORRIGIERTE VERSION DES VALIDIERUNGS-BLOCKS ---
+// ======================================================================================
 const tempUploadDir = path.join(__dirname, 'temp_uploads');
 if (!fs.existsSync(tempUploadDir)) {
     fs.mkdirSync(tempUploadDir, { recursive: true });
 }
-const diskStorage = multer.diskStorage({
-    destination: (req, file, cb) => { cb(null, tempUploadDir); },
-    filename: (req, file, cb) => { cb(null, `${uuidv4()}-${file.originalname}`); }
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, tempUploadDir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${uuidv4()}-${file.originalname}`);
+    }
 });
-const upload_zip = multer({ storage: diskStorage });
+const upload = multer({ storage: storage });
 
-app.post('/api/validate-data-zip', async (req, res) => {
+app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
     console.log('API-Endpunkt /api/validate-data-zip aufgerufen.');
+
     if (!req.file) {
+        console.error("Fehler: req.file ist nicht vorhanden. Multer hat die Datei nicht korrekt verarbeitet.");
         return res.status(400).json({ message: 'Keine ZIP-Datei hochgeladen.' });
     }
+
     const tempExtractDir = path.join(__dirname, 'temp', uuidv4());
     const inputDir = path.join(tempExtractDir, 'input');
     const outputDir = path.join(tempExtractDir, 'output');
     const uploadedZipPath = req.file.path;
+
     const cleanup = () => {
         try {
             console.log(`Räume temporäre Verzeichnisse und Dateien auf...`);
@@ -107,17 +118,21 @@ app.post('/api/validate-data-zip', async (req, res) => {
             console.error('Fehler während des Aufräumens:', err.message);
         }
     };
+
     try {
         fs.mkdirSync(inputDir, { recursive: true });
         fs.mkdirSync(outputDir, { recursive: true });
+
         await decompress(uploadedZipPath, inputDir);
         console.log(`Datei erfolgreich in ${inputDir} entpackt.`);
+        
         const files = fs.readdirSync(inputDir);
         const metadataFile = files.find(f => f.toLowerCase().includes('parameter-metadata'));
         if (!metadataFile) {
             cleanup();
             return res.status(400).json({ message: 'Das ZIP-Archiv muss eine Metadaten-Datei (metadata.json) enthalten.' });
         }
+
         const metadataPath = path.join(inputDir, metadataFile);
         
         let pythonExecutable;
@@ -132,9 +147,6 @@ app.post('/api/validate-data-zip', async (req, res) => {
             cleanup();
             return res.status(500).json({ message: `Python-Umgebung (venv) nicht gefunden. Gesuchter Pfad: ${pythonExecutable}` });
         }
-        
-        console.log('Starte Python Validierungspipeline...');
-        console.log(`Verwende Python-Executable: ${pythonExecutable}`);
 
         const executionPromise = new Promise((resolve, reject) => {
             const pythonProcess = spawn(pythonExecutable, [
@@ -142,24 +154,18 @@ app.post('/api/validate-data-zip', async (req, res) => {
             ]);
             const statusLog = [];
             let pythonError = '';
+
             pythonProcess.stdout.on('data', (data) => {
                 const output = data.toString().trim();
                 if (output.startsWith('STATUS_UPDATE:')) {
                     statusLog.push(output.replace('STATUS_UPDATE:', ''));
-                } else {
-                    console.log(`[Python STDOUT]: ${output}`);
                 }
             });
             pythonProcess.stderr.on('data', (data) => {
                 pythonError += data.toString().trim() + "\n";
-                console.error(`[Python STDERR]: ${data.toString().trim()}`);
             });
-            pythonProcess.on('error', (err) => {
-                console.error('Fehler beim Starten des Python-Prozesses:', err);
-                reject({ message: 'Das Python-Skript konnte nicht gestartet werden.', error: err.message });
-            });
+            pythonProcess.on('error', (err) => reject({ message: 'Python-Skript konnte nicht gestartet werden.', error: err.message }));
             pythonProcess.on('close', (code) => {
-                console.log(`Python-Prozess beendet mit Code ${code}`);
                 if (code !== 0) {
                     reject({ message: 'Fehler bei der Ausführung der Python-Pipeline.', error: pythonError });
                 } else {
@@ -179,19 +185,17 @@ app.post('/api/validate-data-zip', async (req, res) => {
         const resultPath = path.join(outputDir, resultFile);
         const resultData = fs.readFileSync(resultPath, 'utf-8');
         const validationResult = JSON.parse(resultData);
-        
+
         const stationIdMatch = resultFile.match(/_wamo(\d+)_/);
         const stationId = stationIdMatch ? `wamo${stationIdMatch[1]}` : 'unbekannt';
 
         try {
-            console.log(`[DB] Starte Speicherung für Station: ${stationId}...`);
             await saveValidationData(validationResult, req.file.originalname, stationId);
             console.log(`[DB] Ergebnis für Station ${stationId} erfolgreich in der Datenbank gespeichert.`);
         } catch (dbError) {
             console.error("[DB] FEHLER beim Speichern in der Datenbank:", dbError.message);
         }
 
-        console.log('Sende Ergebnis und Status-Log an den Client.');
         res.status(200).json({
             validationResult: validationResult,
             statusLog: finalStatusLog
