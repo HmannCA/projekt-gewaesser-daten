@@ -1,19 +1,18 @@
-# HINWEIS: Dies ist die finale, syntaktisch korrekte Version der fly.toml,
-# die die Build-Prozesse für Node.js und Python korrekt definiert.
+# HINWEIS: Dies ist die finale, korrigierte Version der fly.toml,
+# die die Build-Prozesse für Node.js und Python explizit und korrekt definiert.
 
 app = 'wasserqualitaet-vg-bitter-frost-7826'
 primary_region = 'fra'
 
 [build]
-  # --- KORREKTE SYNTAX ---
-  # Wir geben dem Builder eine einfache Liste der benötigten Sprach-Pakete.
+  # Wir geben dem Builder eine explizite Liste der benötigten Sprach-Pakete.
+  # Dies ist die robusteste Methode.
   buildpacks = ["heroku/nodejs", "heroku/python"]
 
 [env]
   PORT = "8080"
 
 [mounts]
-  # Ihre Volume-Konfiguration bleibt exakt erhalten
   source = "mailer_data"
   destination = "/data"
 
