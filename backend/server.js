@@ -54,61 +54,7 @@ app.get('/api/show-me-the-data', async (req, res) => {
     }
 });
 
-// Ihr auskommentierter alter Daten-Pipeline-Block (unverändert)
-/*
-const uploadDir = path.join(__dirname, '..', 'daten_pipeline', 'input');
-// ... (Rest des auskommentierten Blocks) ...
-*/
 
-// Ihr alter process-pipeline Endpunkt (vollständig wiederhergestellt)
-app.post('/api/process-pipeline', (req, res) => {
-    console.log('Anfrage zum Starten der Python-Pipeline erhalten...');
-    const scriptPath = path.join(__dirname, '..', 'daten_pipeline', 'main_pipeline.py');
-    if (!fs.existsSync(scriptPath)) {
-        console.error(`Fehler: Das Python-Skript wurde nicht unter ${scriptPath} gefunden.`);
-        return res.status(500).json({ message: 'Fehler: Python-Skript nicht gefunden. Konfiguration prüfen.' });
-    }
-    let pythonExecutable = path.join(__dirname, '..', 'daten_pipeline', 'venv', 'Scripts', 'python.exe');
-    if (!fs.existsSync(pythonExecutable)) {
-        console.error(`Fehler: Die Python-Executable der venv wurde nicht unter ${pythonExecutable} gefunden.`);
-        console.log("Versuche, 'python' global aufzurufen...");
-        pythonExecutable = 'python';
-    }
-    // HINWEIS: Die Variablen inputDir, outputDir, metadataPath sind hier nicht definiert.
-    // Dieser Endpunkt ist wahrscheinlich veraltet und sollte nicht mehr verwendet werden.
-    // Der neue Endpunkt /api/validate-data-zip ist der korrekte.
-    const pythonProcess = spawn(pythonExecutable, [
-        pythonScriptPath
-        // Es fehlen die Argumente --input-dir etc.
-    ]);
-
-    let scriptOutput = '';
-    pythonProcess.stdout.on('data', (data) => {
-        const output = data.toString();
-        console.log(`[Python-Skript] ${output}`);
-        scriptOutput += output;
-    });
-    let scriptError = '';
-    pythonProcess.stderr.on('data', (data) => {
-        const errorOutput = data.toString();
-        console.error(`[Python-Skript-FEHLER] ${errorOutput}`);
-        scriptError += errorOutput;
-    });
-    pythonProcess.on('close', (code) => {
-        console.log(`Python-Prozess beendet mit Code ${code}.`);
-        if (code === 0) {
-            res.status(200).json({
-                message: 'Verarbeitung erfolgreich abgeschlossen!',
-                output: scriptOutput
-            });
-        } else {
-            res.status(500).json({
-                message: 'Fehler bei der Datenverarbeitung.',
-                error: scriptError
-            });
-        }
-    });
-});
 
 const requiredEnvVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'ADMIN_EMAIL'];
 for (const varName of requiredEnvVars) {
@@ -132,121 +78,146 @@ app.post('/api/user-login', (req, res) => { try { ensureDataDirExists(); let use
 app.post('/api/comments/delete', (req, res) => { try { const { commentId, user } = req.body; if (!user || user.email !== process.env.ADMIN_EMAIL) { return res.status(403).send('Zugriff verweigert. Nur für Admins.'); } const comments = readComments(); const updatedComments = comments.filter(comment => comment.id !== commentId); if (comments.length === updatedComments.length) { return res.status(404).send('Kommentar nicht gefunden.'); } writeComments(updatedComments); res.status(200).send('Kommentar erfolgreich gelöscht.'); } catch (error) { console.error('Fehler beim Löschen des Kommentars:', error); res.status(500).send('Serverfehler beim Löschen des Kommentars.'); } });
 
 // ======================================================================================
-// --- FINALE VERSION DES VALIDIERUNGS-BLOCKS MIT DATENBANK-SPEICHERUNG ---
+// --- FINALE VERSION DES VALIDIERUNGS-BLOCKS ---
 // ======================================================================================
 const tempUploadDir = path.join(__dirname, 'temp_uploads');
 if (!fs.existsSync(tempUploadDir)) {
     fs.mkdirSync(tempUploadDir, { recursive: true });
 }
 const diskStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, tempUploadDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${uuidv4()}-${file.originalname}`);
-    }
+    destination: (req, file, cb) => { cb(null, tempUploadDir); },
+    filename: (req, file, cb) => { cb(null, `${uuidv4()}-${file.originalname}`); }
 });
 const upload_zip = multer({ storage: diskStorage });
 
-app.post('/api/validate-data-zip', async (req, res) => {
+app.post('/api/validate-data-zip', upload_zip.single('file'), (req, res) => {
     console.log('API-Endpunkt /api/validate-data-zip aufgerufen.');
+
     if (!req.file) {
         return res.status(400).json({ message: 'Keine ZIP-Datei hochgeladen.' });
     }
+
     const tempExtractDir = path.join(__dirname, 'temp', uuidv4());
     const inputDir = path.join(tempExtractDir, 'input');
     const outputDir = path.join(tempExtractDir, 'output');
     const uploadedZipPath = req.file.path;
+
     const cleanup = () => {
         try {
             console.log(`Räume temporäre Verzeichnisse und Dateien auf...`);
-            if (fs.existsSync(uploadedZipPath)) {
-                fs.rmSync(uploadedZipPath, { force: true });
-            }
-            if (fs.existsSync(tempExtractDir)) {
-                fs.rmSync(tempExtractDir, { recursive: true, force: true });
-            }
+            if (fs.existsSync(uploadedZipPath)) { fs.rmSync(uploadedZipPath, { force: true }); }
+            if (fs.existsSync(tempExtractDir)) { fs.rmSync(tempExtractDir, { recursive: true, force: true }); }
         } catch (err) {
             console.error('Fehler während des Aufräumens:', err.message);
         }
     };
+
     try {
         fs.mkdirSync(inputDir, { recursive: true });
         fs.mkdirSync(outputDir, { recursive: true });
-        await decompress(uploadedZipPath, inputDir);
-        console.log(`Datei erfolgreich in ${inputDir} entpackt.`);
-        const files = fs.readdirSync(inputDir);
-        const metadataFile = files.find(f => f.toLowerCase().includes('parameter-metadata'));
-        if (!metadataFile) {
-            cleanup();
-            return res.status(400).json({ message: 'Das ZIP-Archiv muss eine Metadaten-Datei (metadata.json) enthalten.' });
-        }
-        const metadataPath = path.join(inputDir, metadataFile);
-        console.log(`Metadaten-Datei gefunden: ${metadataPath}`);
-        const pythonExecutable = path.resolve(__dirname, '..', 'daten_pipeline', 'venv', 'Scripts', 'python.exe');
-        const pythonScriptPath = path.resolve(__dirname, '..', 'daten_pipeline', 'main_pipeline.py');
-        if (!fs.existsSync(pythonExecutable)) {
-            cleanup();
-            return res.status(500).json({ message: `Python-Umgebung (venv) nicht gefunden unter: ${pythonExecutable}.` });
-        }
-        console.log('Starte Python Validierungspipeline...');
-        console.log(`Verwende Python-Executable: ${pythonExecutable}`);
-        const executionPromise = new Promise((resolve, reject) => {
-            const pythonProcess = spawn(pythonExecutable, [
-                pythonScriptPath, '--input-dir', inputDir, '--output-dir', outputDir, '--metadata-path', metadataPath
-            ]);
-            const statusLog = [];
-            let pythonError = '';
-            pythonProcess.stdout.on('data', (data) => {
-                const output = data.toString().trim();
-                if (output.startsWith('STATUS_UPDATE:')) {
-                    statusLog.push(output.replace('STATUS_UPDATE:', ''));
-                } else {
-                    console.log(`[Python STDOUT]: ${output}`);
+
+        console.log(`Entpacke Datei von: ${uploadedZipPath}`);
+        
+        // --- KORREKTUR: Robuste Behandlung des asynchronen Entpack-Prozesses ---
+        decompress(uploadedZipPath, inputDir)
+            .then(files => {
+                console.log(`${files.length} Dateien erfolgreich in ${inputDir} entpackt.`);
+
+                // Der gesamte restliche Code wird jetzt NUR ausgeführt, wenn das Entpacken erfolgreich war.
+                const metadataFile = fs.readdirSync(inputDir).find(f => f.toLowerCase().includes('parameter-metadata'));
+
+                if (!metadataFile) {
+                    cleanup();
+                    return res.status(400).json({ message: 'Das ZIP-Archiv muss eine Metadaten-Datei (metadata.json) enthalten.' });
                 }
-            });
-            pythonProcess.stderr.on('data', (data) => {
-                pythonError += data.toString().trim() + "\n";
-                console.error(`[Python STDERR]: ${data.toString().trim()}`);
-            });
-            pythonProcess.on('close', (code) => {
-                console.log(`Python-Prozess beendet mit Code ${code}`);
-                if (code !== 0) {
-                    reject({ message: 'Fehler bei der Ausführung der Python-Pipeline.', error: pythonError });
-                } else {
-                    resolve(statusLog);
+
+                const metadataPath = path.join(inputDir, metadataFile);
+                console.log(`Metadaten-Datei gefunden: ${metadataPath}`);
+                
+                const pythonExecutable = path.resolve(__dirname, '..', 'daten_pipeline', 'venv', 'Scripts', 'python.exe');
+                const pythonScriptPath = path.resolve(__dirname, '..', 'daten_pipeline', 'main_pipeline.py');
+
+                if (!fs.existsSync(pythonExecutable)) {
+                    cleanup();
+                    return res.status(500).json({ message: `Python-Umgebung (venv) nicht gefunden unter: ${pythonExecutable}.` });
                 }
+
+                console.log('Starte Python Validierungspipeline...');
+                
+                const executionPromise = new Promise((resolve, reject) => {
+                    const pythonProcess = spawn(pythonExecutable, [
+                        pythonScriptPath, '--input-dir', inputDir, '--output-dir', outputDir, '--metadata-path', metadataPath
+                    ]);
+
+                    const statusLog = [];
+                    let pythonError = '';
+                    pythonProcess.stdout.on('data', (data) => {
+                        const output = data.toString().trim();
+                        if (output.startsWith('STATUS_UPDATE:')) {
+                            statusLog.push(output.replace('STATUS_UPDATE:', ''));
+                        }
+                    });
+                    pythonProcess.stderr.on('data', (data) => {
+                        pythonError += data.toString().trim() + "\n";
+                    });
+                    pythonProcess.on('error', (err) => {
+                        reject({ message: 'Das Python-Skript konnte nicht gestartet werden.', error: err.message });
+                    });
+                    pythonProcess.on('close', (code) => {
+                        if (code !== 0) {
+                            reject({ message: 'Fehler bei der Ausführung der Python-Pipeline.', error: pythonError });
+                        } else {
+                            resolve(statusLog);
+                        }
+                    });
+                });
+
+                return executionPromise;
+            })
+            .then(finalStatusLog => {
+                const outputFiles = fs.readdirSync(outputDir);
+                const resultFile = outputFiles.find(f => f.endsWith('.json'));
+
+                if (!resultFile) {
+                    cleanup();
+                    return res.status(500).json({ message: 'Pipeline hat keine Ergebnisdatei erstellt.' });
+                }
+                
+                const resultPath = path.join(outputDir, resultFile);
+                const resultData = fs.readFileSync(resultPath, 'utf-8');
+                const validationResult = JSON.parse(resultData);
+
+                const stationIdMatch = resultFile.match(/_wamo(\d+)_/);
+                const stationId = stationIdMatch ? `wamo${stationIdMatch[1]}` : 'unbekannt';
+
+                return saveValidationData(validationResult, req.file.originalname, stationId)
+                    .then(() => {
+                        console.log(`[DB] Ergebnis für Station ${stationId} erfolgreich in der Datenbank gespeichert.`);
+                        res.status(200).json({
+                            validationResult: validationResult,
+                            statusLog: finalStatusLog
+                        });
+                    })
+                    .catch(dbError => {
+                        console.error("[DB] FEHLER beim Speichern in der Datenbank:", dbError.message);
+                        res.status(200).json({ // Trotz DB-Fehler das Ergebnis an den Client senden
+                            validationResult: validationResult,
+                            statusLog: finalStatusLog
+                        });
+                    });
+            })
+            .catch(error => {
+                console.error(`Ein schwerer Fehler ist aufgetreten: ${error.message}`);
+                res.status(500).json({ message: `Server-Fehler: ${error.message}`, error: error.error || '' });
+            })
+            .finally(() => {
+                cleanup();
             });
-        });
-        const finalStatusLog = await executionPromise;
-        const outputFiles = fs.readdirSync(outputDir);
-        const resultFile = outputFiles.find(f => f.endsWith('.json'));
-        if (!resultFile) {
-            cleanup();
-            return res.status(500).json({ message: 'Pipeline hat keine Ergebnisdatei erstellt.' });
-        }
-        const resultPath = path.join(outputDir, resultFile);
-        const resultData = fs.readFileSync(resultPath, 'utf-8');
-        const validationResult = JSON.parse(resultData);
-        const stationIdMatch = resultFile.match(/_wamo(\d+)_/);
-        const stationId = stationIdMatch ? `wamo${stationIdMatch[1]}` : 'unbekannt';
-        try {
-            console.log(`[DB] Starte Speicherung für Station: ${stationId}...`);
-            await saveValidationData(validationResult, req.file.originalname, stationId);
-            console.log(`[DB] Ergebnis für Station ${stationId} erfolgreich in der Datenbank gespeichert.`);
-        } catch (dbError) {
-            console.error("[DB] FEHLER beim Speichern in der Datenbank:", dbError.message);
-        }
-        console.log('Sende Ergebnis und Status-Log an den Client.');
-        res.status(200).json({
-            validationResult: validationResult,
-            statusLog: finalStatusLog
-        });
-        cleanup();
+
     } catch (error) {
-        console.error(`Ein schwerer Fehler ist aufgetreten: ${error.message}`);
+        console.error(`Ein initialer, synchroner Fehler ist aufgetreten: ${error.message}`);
         cleanup();
-        res.status(500).json({ message: `Server-Fehler: ${error.message}`, error: error.error || '' });
+        res.status(500).json({ message: `Server-Fehler: ${error.message}` });
     }
 });
 
