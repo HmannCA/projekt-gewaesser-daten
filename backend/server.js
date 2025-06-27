@@ -135,12 +135,9 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
 
         const metadataPath = path.join(inputDir, metadataFile);
         
-        let pythonExecutable;
-        if (process.platform === "win32") {
-            pythonExecutable = path.resolve(__dirname, '..', 'daten_pipeline', 'venv', 'Scripts', 'python.exe');
-        } else {
-            pythonExecutable = path.resolve(__dirname, '..', 'daten_pipeline', 'venv', 'bin', 'python');
-        }
+        // Fly.io's Buildpack legt Python im Standard-Pfad ab.
+        // Lokal können wir auch den globalen Python-Interpreter verwenden.
+        const pythonExecutable = 'python';
         const pythonScriptPath = path.resolve(__dirname, '..', 'daten_pipeline', 'main_pipeline.py');
 
         if (!fs.existsSync(pythonExecutable)) {
