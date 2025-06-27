@@ -1,0 +1,16 @@
+# .dockerignore für das Backend
+
+# Verhindert, dass der Node.js-Abhängigkeiten-Ordner hochgeladen wird
+node_modules
+
+# Verhindert, dass die Python virtuelle Umgebung (17.000+ Dateien)
+# überhaupt erst analysiert wird. Das ist die entscheidende Zeile!
+daten_pipeline/venv
+
+# Lokale temporäre Ordner ignorieren
+temp
+temp_uploads
+
+# Log-Dateien und andere temporäre Dateien
+*.log
+npm-debug.log*

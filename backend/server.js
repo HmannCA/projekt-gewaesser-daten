@@ -125,31 +125,41 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
         console.log(`Datei erfolgreich in ${inputDir} entpackt.`);
         
         const files = fs.readdirSync(inputDir);
-        const metadataFile = files.find(f => f.toLowerCase().includes('parameter-metadata'));
-        if (!metadataFile) {
-            cleanup();
-            return res.status(400).json({ message: 'Das ZIP-Archiv muss eine Metadaten-Datei (metadata.json) enthalten.' });
+        let metadataFile = files.find(f => f.toLowerCase().includes('parameter-metadata'));
+        let metadataPath;
+
+        if (metadataFile) {
+            // Fall 1: Metadaten-Datei wurde im ZIP-Archiv gefunden. Wir verwenden diese.
+            metadataPath = path.join(inputDir, metadataFile);
+            console.log(`Metadaten-Datei aus ZIP-Archiv gefunden: ${metadataPath}`);
+        } else {
+            // Fall 2: Keine Metadaten-Datei im ZIP. Wir suchen nach unserem Fallback.
+            console.log('Keine Metadaten-Datei im ZIP-Archiv gefunden. Suche nach Fallback-Datei...');
+            const fallbackMetadataPath = path.resolve(__dirname, 'default_metadata.json');
+
+            if (fs.existsSync(fallbackMetadataPath)) {
+                // Das Fallback wurde gefunden und wird verwendet.
+                metadataPath = fallbackMetadataPath;
+                console.log(`Fallback-Metadaten-Datei wird verwendet: ${fallbackMetadataPath}`);
+            } else {
+                // Fall 3: Kein Fallback vorhanden. Jetzt senden wir den Fehler.
+                cleanup();
+                return res.status(400).json({ message: 'Das ZIP-Archiv enthält keine Metadaten-Datei und es konnte keine Fallback-Datei auf dem Server gefunden werden.' });
+            }
         }
 
-        const metadataPath = path.join(inputDir, metadataFile);
         
-        // Fly.io's Buildpack legt Python im Standard-Pfad ab.
-        // Lokal können wir auch den globalen Python-Interpreter verwenden.
-        let pythonExecutable;
-        // Der Pfad ist jetzt relativ zu __dirname (also dem backend-Ordner)
-        if (process.platform === "win32") {
-            // Dieser Pfad für Ihren lokalen Windows-PC
-            pythonExecutable = path.resolve(__dirname, 'daten_pipeline', 'venv', 'Scripts', 'python.exe');
-        } else {
-            // Dieser Pfad für den Linux-Server auf Fly.io
-            pythonExecutable = path.resolve(__dirname, 'daten_pipeline', 'venv', 'bin', 'python');
-        }
+        
+        // Der Pfad zum Python-Skript, das jetzt zusammen mit dem Server deployed wird
         const pythonScriptPath = path.resolve(__dirname, 'daten_pipeline', 'main_pipeline.py');
         
+        // Der Fly.io Buildpack-Prozess sorgt dafür, dass 'python' als Befehl global verfügbar ist.
+        const pythonExecutable = 'python';
 
-        if (!fs.existsSync(pythonExecutable)) {
+        // Wir prüfen nur noch, ob das Hauptskript selbst vorhanden ist.
+        if (!fs.existsSync(pythonScriptPath)) {
             cleanup();
-            return res.status(500).json({ message: `Python-Umgebung (venv) nicht gefunden. Gesuchter Pfad: ${pythonExecutable}` });
+            return res.status(500).json({ message: `Haupt-Pipeline-Skript nicht gefunden. Gesuchter Pfad: ${pythonScriptPath}` });
         }
 
         const executionPromise = new Promise((resolve, reject) => {

@@ -1,16 +1,21 @@
-# Finale, korrekte Konfiguration basierend auf Ihrer Volume-Liste
+# HINWEIS: Dies ist die finale, korrekte Konfiguration für Ihr Backend,
+# die den polyglotten Builder für Node.js und Python verwendet.
 
 app = 'wasserqualitaet-vg-bitter-frost-7826'
 primary_region = 'fra'
 
+# --- BEGINN DER ÄNDERUNG ---
+# Dieser neue [build]-Abschnitt weist Fly.io an, einen Builder zu verwenden,
+# der sowohl Node.js als auch Python (via requirements.txt) versteht.
 [build]
-  builder = "heroku/builder:22"
+  builder = "paketobuildpacks/builder:base"
+# --- ENDE DER ÄNDERUNG ---
 
 [env]
   PORT = "8080"
 
 [mounts]
-  # Der exakte Name aus Ihrer "fly volumes list"-Ausgabe
+  # Ihre Volume-Konfiguration bleibt exakt erhalten
   source = "mailer_data"
   destination = "/data"
 
