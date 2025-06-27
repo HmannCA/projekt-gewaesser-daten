@@ -8,8 +8,8 @@
 const isDevelopment = window.location.hostname === 'localhost';
 
 const API_BASE_URL = isDevelopment 
-  ? 'http://localhost:3001' // Für lokale Entwicklung explizit gemacht
-  : 'https://wamo-plattform-vg-backend.fly.dev'; // Annahme des Backend-Namens
+  ? 'http://localhost:3001' 
+  : 'https://wasserqualitaet-vg-bitter-frost-7826.fly.dev';
 
 // ==========================================================
 // --- BEGINN DER EINZIGEN ERGÄNZUNG ---
