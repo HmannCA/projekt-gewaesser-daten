@@ -76,9 +76,7 @@ app.post('/api/user-login', (req, res) => { try { ensureDataDirExists(); let use
 app.post('/api/comments/delete', (req, res) => { try { const { commentId, user } = req.body; if (!user || user.email !== process.env.ADMIN_EMAIL) { return res.status(403).send('Zugriff verweigert. Nur für Admins.'); } const comments = readComments(); const updatedComments = comments.filter(comment => comment.id !== commentId); if (comments.length === updatedComments.length) { return res.status(404).send('Kommentar nicht gefunden.'); } writeComments(updatedComments); res.status(200).send('Kommentar erfolgreich gelöscht.'); } catch (error) { console.error('Fehler beim Löschen des Kommentars:', error); res.status(500).send('Serverfehler beim Löschen des Kommentars.'); } });
 
 
-// ======================================================================================
-// --- DER EINZIGE, FUNKTIONIERENDE VALIDIERUNGS-BLOCK ---
-// ======================================================================================
+
 // ======================================================================================
 // --- FINALE, KORRIGIERTE VERSION DES VALIDIERUNGS-BLOCKS ---
 // ======================================================================================
@@ -137,8 +135,17 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
         
         // Fly.io's Buildpack legt Python im Standard-Pfad ab.
         // Lokal können wir auch den globalen Python-Interpreter verwenden.
-        const pythonExecutable = 'python';
-        const pythonScriptPath = path.resolve(__dirname, '..', 'daten_pipeline', 'main_pipeline.py');
+        let pythonExecutable;
+        // Der Pfad ist jetzt relativ zu __dirname (also dem backend-Ordner)
+        if (process.platform === "win32") {
+            // Dieser Pfad für Ihren lokalen Windows-PC
+            pythonExecutable = path.resolve(__dirname, 'daten_pipeline', 'venv', 'Scripts', 'python.exe');
+        } else {
+            // Dieser Pfad für den Linux-Server auf Fly.io
+            pythonExecutable = path.resolve(__dirname, 'daten_pipeline', 'venv', 'bin', 'python');
+        }
+        const pythonScriptPath = path.resolve(__dirname, 'daten_pipeline', 'main_pipeline.py');
+        
 
         if (!fs.existsSync(pythonExecutable)) {
             cleanup();

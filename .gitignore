@@ -33,7 +33,7 @@ fly.toml.backup
 __pycache__/
 
 # Python virtuelle Umgebung ignorieren (das sind die ~17.000 Dateien!)
-/daten_pipeline/venv/
+/backend/daten_pipeline/venv/
 
 # Temporäre Upload- und Entpack-Ordner vom Backend ignorieren
 /backend/temp/
