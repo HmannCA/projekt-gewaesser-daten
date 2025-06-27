@@ -23,7 +23,7 @@ COPY . .
 
 # 7. Python-Abhängigkeiten aus der requirements.txt installieren
 # WICHTIG: Stellen Sie sicher, dass daten_pipeline jetzt im backend-Ordner ist!
-RUN pip3 install --no-cache-dir -r daten_pipeline/requirements.txt
+RUN pip3 install --no-cache-dir --break-system-packages -r daten_pipeline/requirements.txt
 
 # 8. Den Port freigeben, auf dem der Server lauschen wird
 EXPOSE 8080
