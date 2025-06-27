@@ -9,9 +9,14 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { spawn } = require('child_process');
-// --- ERGÄNZUNG: 'saveValidationData' wird hier importiert ---
-//const { testConnection, createDatabaseTables, saveValidationData } = require('./db/postgres');
-const { testConnection, createDatabaseTables, saveValidationData, getLatestValidationData } = require('./db/postgres');
+
+const { 
+    testConnection, 
+    createDatabaseTables, 
+    saveValidationData, 
+    getLatestValidationData 
+} = require('./db/postgres');
+
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 const decompress = require('decompress');
@@ -50,6 +55,8 @@ app.get('/api/show-me-the-data', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+
 
 // Ihr auskommentierter alter Daten-Pipeline-Block (unverändert)
 /*
