@@ -1,21 +1,21 @@
 # HINWEIS: Dies ist die finale, korrekte Konfiguration für Ihr Backend,
-# die den polyglotten Builder für Node.js und Python verwendet.
+# die explizit die Build-Prozesse für Node.js und Python definiert.
 
 app = 'wasserqualitaet-vg-bitter-frost-7826'
 primary_region = 'fra'
 
-# --- BEGINN DER ÄNDERUNG ---
-# Dieser neue [build]-Abschnitt weist Fly.io an, einen Builder zu verwenden,
-# der sowohl Node.js als auch Python (via requirements.txt) versteht.
 [build]
-  builder = "paketobuildpacks/builder:base"
-# --- ENDE DER ÄNDERUNG ---
+  # Wir sagen dem Builder explizit, welche Sprach-Pakete er verwenden soll.
+  # Dies ist die robusteste Methode für Projekte mit mehreren Sprachen.
+  [[build.buildpacks]]
+    uri = "heroku/nodejs"
+  [[build.buildpacks]]
+    uri = "heroku/python"
 
 [env]
   PORT = "8080"
 
 [mounts]
-  # Ihre Volume-Konfiguration bleibt exakt erhalten
   source = "mailer_data"
   destination = "/data"
 
