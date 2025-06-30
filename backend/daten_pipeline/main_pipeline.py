@@ -634,40 +634,43 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
         
         print(f"Zusammenfassung gespeichert in: {zusammenfassung_filepath}")
 
-        # ================== HIER DEN NEUEN CODEBLOCK EINFÜGEN ==================
-        # 13. DATEN IN DIE DATENBANK SCHREIBEN
+
+        # 13. DATEN IN DIE DATENBANK SCHREIBEN (Korrigierte, robuste Version)
         if not daily_results.empty:
             print("\nStarte das Laden der Daten in die Datenbank...")
             db_loader = DatabaseLoader()
             if db_loader.conn:
-                
-                long_format_data = daily_results.reset_index().melt(
-                    id_vars=['Datum'], 
-                    var_name='Variable', 
-                    value_name='Wert'
-                )
-                
-                long_format_data[['parameter', 'typ']] = long_format_data['Variable'].str.rsplit('_', n=1, expand=True)
-                
-                pivoted_data = long_format_data.pivot_table(
-                    index=['Datum', 'parameter'], 
-                    columns='typ', 
-                    values='Wert', 
-                    aggfunc='first'
-                ).reset_index()
+                try:
+                    # Schritt 1: Spalten für Werte (_Mittelwert) und Flags (_QARTOD_Flag) trennen
+                    wert_cols = {col: col.replace('_Mittelwert', '') for col in daily_results.columns if col.endswith('_Mittelwert')}
+                    flag_cols = {col: col.replace('_Aggregat_QARTOD_Flag', '') for col in daily_results.columns if col.endswith('_Aggregat_QARTOD_Flag')}
 
-                pivoted_data.rename(columns={
-                    'Datum': 'zeitstempel',
-                    'Mittelwert': 'wert',
-                    'Aggregat': 'qualitaets_flag'
-                }, inplace=True)
-                
-                pivoted_data['see'] = station_id
-                
-                db_data = pivoted_data[['zeitstempel', 'see', 'parameter', 'wert', 'qualitaets_flag']]
-                db_data = db_data.dropna(subset=['wert']) # Nur Zeilen mit einem Wert einfügen
+                    # Schritt 2: Werte-DataFrame erstellen und umformen
+                    wert_df = daily_results[list(wert_cols.keys())].rename(columns=wert_cols)
+                    wert_df = wert_df.reset_index().melt(id_vars=['Datum'], var_name='parameter', value_name='wert')
 
-                db_loader.insert_validated_data(db_data)
+                    # Schritt 3: Flag-DataFrame erstellen und umformen
+                    flag_df = daily_results[list(flag_cols.keys())].rename(columns=flag_cols)
+                    flag_df = flag_df.reset_index().melt(id_vars=['Datum'], var_name='parameter', value_name='qualitaets_flag')
+
+                    # Schritt 4: Daten zusammenführen
+                    # Wir verwenden einen 'outer' merge, falls für einen Parameter mal ein Wert oder ein Flag fehlt
+                    merged_data = pd.merge(wert_df, flag_df, on=['Datum', 'parameter'], how='outer')
+
+                    # Schritt 5: Finale Vorbereitung für die Datenbank
+                    merged_data.rename(columns={'Datum': 'zeitstempel'}, inplace=True)
+                    merged_data['see'] = station_id
+                    
+                    # Nur Zeilen mit einem gültigen Wert in die Datenbank schreiben
+                    db_data = merged_data.dropna(subset=['wert'])
+                    
+                    # Nur die final benötigten Spalten auswählen
+                    db_data_final = db_data[['zeitstempel', 'see', 'parameter', 'wert', 'qualitaets_flag']]
+
+                    db_loader.insert_validated_data(db_data_final)
+
+                except Exception as e:
+                    print(f"\n[FEHLER] Bei der Aufbereitung der Daten für die Datenbank ist ein Fehler aufgetreten: {e}")
         else:
             print("\nKeine Tagesergebnisse zum Speichern in der Datenbank vorhanden.")
         # =====================================================================        
