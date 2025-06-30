@@ -3,12 +3,17 @@
 
 console.log('=== SERVER.JS VERSION 2.0 - MIT DB TEST ===');
 
+const AdmZip = require('adm-zip');
+const { execFile } = require('child_process');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { spawn } = require('child_process');
+
+
+
 
 // --- KORREKTE UND VOLLSTÄNDIGE IMPORT-ANWEISUNG FÜR POSTGRES ---
 // Alle benötigten Funktionen werden hier einmalig und sauber importiert.
@@ -215,6 +220,7 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
         cleanup();
     } catch (error) {
         console.error(`Ein schwerer Fehler ist aufgetreten: ${error.message}`);
+        console.error(`[PYTHON STDERR]:`, error.error);
         cleanup();
         res.status(500).json({ message: `Server-Fehler: ${error.message}`, error: error.error || '' });
     }
