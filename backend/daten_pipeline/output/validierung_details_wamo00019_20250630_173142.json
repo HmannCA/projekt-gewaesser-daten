@@ -1,0 +1,3878 @@
+{
+  "zusammenfassung": {
+    "zeitraum": "2025-06-05 00:00:00 bis 2025-06-11 23:00:00",
+    "anzahl_parameter": 16,
+    "anzahl_zeitpunkte": 168,
+    "gesamt_messungen": 2688,
+    "gesamt_gut": 2384,
+    "gesamt_gut_prozent": 88.7,
+    "anzahl_fehler": 304,
+    "betroffene_parameter": [
+      "pH",
+      "Chl-a",
+      "Wassertemp. (1m)",
+      "Redoxpotential",
+      "DOC",
+      "Lufttemperatur",
+      "TOC",
+      "Nitrat",
+      "Phycocyanin Abs.",
+      "Supply Voltage",
+      "Wassertemp. (0.5m)",
+      "Trübung",
+      "Leitfähigkeit",
+      "Phycocyanin Abs. (comp)",
+      "Supply Current",
+      "Gelöster Sauerstoff"
+    ]
+  },
+  "parameter_statistiken": {
+    "Phycocyanin Abs.": {
+      "gesamt": 168,
+      "gut": 150,
+      "gut_prozent": 89.3,
+      "nicht_gut": 18,
+      "flag_verteilung": {
+        "GUT": 150,
+        "VERDÄCHTIG": 18
+      }
+    },
+    "Phycocyanin Abs. (comp)": {
+      "gesamt": 168,
+      "gut": 150,
+      "gut_prozent": 89.3,
+      "nicht_gut": 18,
+      "flag_verteilung": {
+        "GUT": 150,
+        "VERDÄCHTIG": 18
+      }
+    },
+    "TOC": {
+      "gesamt": 168,
+      "gut": 150,
+      "gut_prozent": 89.3,
+      "nicht_gut": 18,
+      "flag_verteilung": {
+        "GUT": 150,
+        "VERDÄCHTIG": 18
+      }
+    },
+    "Trübung": {
+      "gesamt": 168,
+      "gut": 148,
+      "gut_prozent": 88.1,
+      "nicht_gut": 20,
+      "flag_verteilung": {
+        "GUT": 148,
+        "VERDÄCHTIG": 20
+      }
+    },
+    "Chl-a": {
+      "gesamt": 168,
+      "gut": 150,
+      "gut_prozent": 89.3,
+      "nicht_gut": 18,
+      "flag_verteilung": {
+        "GUT": 150,
+        "VERDÄCHTIG": 18
+      }
+    },
+    "DOC": {
+      "gesamt": 168,
+      "gut": 150,
+      "gut_prozent": 89.3,
+      "nicht_gut": 18,
+      "flag_verteilung": {
+        "GUT": 150,
+        "VERDÄCHTIG": 18
+      }
+    },
+    "Nitrat": {
+      "gesamt": 168,
+      "gut": 150,
+      "gut_prozent": 89.3,
+      "nicht_gut": 18,
+      "flag_verteilung": {
+        "GUT": 150,
+        "VERDÄCHTIG": 18
+      }
+    },
+    "Gelöster Sauerstoff": {
+      "gesamt": 168,
+      "gut": 147,
+      "gut_prozent": 87.5,
+      "nicht_gut": 21,
+      "flag_verteilung": {
+        "GUT": 147,
+        "VERDÄCHTIG": 21
+      }
+    },
+    "Leitfähigkeit": {
+      "gesamt": 168,
+      "gut": 145,
+      "gut_prozent": 86.3,
+      "nicht_gut": 23,
+      "flag_verteilung": {
+        "GUT": 145,
+        "VERDÄCHTIG": 23
+      }
+    },
+    "pH": {
+      "gesamt": 168,
+      "gut": 147,
+      "gut_prozent": 87.5,
+      "nicht_gut": 21,
+      "flag_verteilung": {
+        "GUT": 147,
+        "VERDÄCHTIG": 21
+      }
+    },
+    "Redoxpotential": {
+      "gesamt": 168,
+      "gut": 150,
+      "gut_prozent": 89.3,
+      "nicht_gut": 18,
+      "flag_verteilung": {
+        "GUT": 150,
+        "VERDÄCHTIG": 18
+      }
+    },
+    "Wassertemp. (1m)": {
+      "gesamt": 168,
+      "gut": 150,
+      "gut_prozent": 89.3,
+      "nicht_gut": 18,
+      "flag_verteilung": {
+        "GUT": 150,
+        "VERDÄCHTIG": 18
+      }
+    },
+    "Wassertemp. (0.5m)": {
+      "gesamt": 168,
+      "gut": 148,
+      "gut_prozent": 88.1,
+      "nicht_gut": 20,
+      "flag_verteilung": {
+        "GUT": 148,
+        "VERDÄCHTIG": 20
+      }
+    },
+    "Lufttemperatur": {
+      "gesamt": 168,
+      "gut": 150,
+      "gut_prozent": 89.3,
+      "nicht_gut": 18,
+      "flag_verteilung": {
+        "GUT": 150,
+        "VERDÄCHTIG": 18
+      }
+    },
+    "Supply Voltage": {
+      "gesamt": 168,
+      "gut": 149,
+      "gut_prozent": 88.7,
+      "nicht_gut": 19,
+      "flag_verteilung": {
+        "GUT": 149,
+        "VERDÄCHTIG": 19
+      }
+    },
+    "Supply Current": {
+      "gesamt": 168,
+      "gut": 150,
+      "gut_prozent": 89.3,
+      "nicht_gut": 18,
+      "flag_verteilung": {
+        "GUT": 150,
+        "VERDÄCHTIG": 18
+      }
+    }
+  },
+  "fehlerhafte_werte": [
+    {
+      "zeitpunkt": "2025-06-05 11:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 619.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Multivariate Anomalie: Leitfähigkeit ungewöhnlich niedrig"
+    },
+    {
+      "zeitpunkt": "2025-06-05 11:00:00",
+      "parameter": "Trübung",
+      "wert": 56.451,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Multivariate Anomalie: Trübung ungewöhnlich hoch"
+    },
+    {
+      "zeitpunkt": "2025-06-05 12:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 11.65,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Multivariate Anomalie: Gelöster Sauerstoff ungewöhnlich hoch"
+    },
+    {
+      "zeitpunkt": "2025-06-05 12:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 619.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Multivariate Anomalie: Leitfähigkeit ungewöhnlich niedrig"
+    },
+    {
+      "zeitpunkt": "2025-06-05 12:00:00",
+      "parameter": "pH",
+      "wert": 9.031,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Multivariate Anomalie: pH ungewöhnlich hoch"
+    },
+    {
+      "zeitpunkt": "2025-06-05 15:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 12.19,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Multivariate Anomalie: Gelöster Sauerstoff ungewöhnlich hoch"
+    },
+    {
+      "zeitpunkt": "2025-06-05 15:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 609.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Multivariate Anomalie: Leitfähigkeit ungewöhnlich niedrig"
+    },
+    {
+      "zeitpunkt": "2025-06-05 15:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 21.186,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Multivariate Anomalie: Wassertemp. (0.5m) ungewöhnlich hoch"
+    },
+    {
+      "zeitpunkt": "2025-06-05 15:00:00",
+      "parameter": "pH",
+      "wert": 9.081,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Multivariate Anomalie: pH ungewöhnlich hoch"
+    },
+    {
+      "zeitpunkt": "2025-06-05 18:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 12.8,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Multivariate Anomalie: Gelöster Sauerstoff ungewöhnlich hoch"
+    },
+    {
+      "zeitpunkt": "2025-06-05 18:00:00",
+      "parameter": "Trübung",
+      "wert": 52.861,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Multivariate Anomalie: Trübung ungewöhnlich hoch"
+    },
+    {
+      "zeitpunkt": "2025-06-05 18:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 21.493,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Multivariate Anomalie: Wassertemp. (0.5m) ungewöhnlich hoch"
+    },
+    {
+      "zeitpunkt": "2025-06-05 18:00:00",
+      "parameter": "pH",
+      "wert": 9.112,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Multivariate Anomalie: pH ungewöhnlich hoch"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "Chl-a",
+      "wert": 50.515,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "DOC",
+      "wert": 11.189,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 11.27,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 656.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 14.544,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "Nitrat",
+      "wert": 8.055,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 13.789,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.036,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 75.033,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "Supply Current",
+      "wert": 268.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.96,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "TOC",
+      "wert": 27.463,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "Trübung",
+      "wert": 51.813,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 20.967,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 21.18,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 21:00:00",
+      "parameter": "pH",
+      "wert": 9.02,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "Chl-a",
+      "wert": 50.012,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "DOC",
+      "wert": 11.506,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 10.4,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 672.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 13.963,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "Nitrat",
+      "wert": 7.843,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 13.388,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.058,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 59.952,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "Supply Current",
+      "wert": 270.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.754,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "TOC",
+      "wert": 27.309,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "Trübung",
+      "wert": 50.244,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 20.693,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 20.94,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-05 23:00:00",
+      "parameter": "pH",
+      "wert": 8.951,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "Chl-a",
+      "wert": 44.827,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "DOC",
+      "wert": 11.763,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 7.32,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 672.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 16.285,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "Nitrat",
+      "wert": 9.862,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 12.474,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.064,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 163.984,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "Supply Current",
+      "wert": 272.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.929,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "TOC",
+      "wert": 26.61,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "Trübung",
+      "wert": 46.877,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 19.171,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 19.37,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 10:00:00",
+      "parameter": "pH",
+      "wert": 8.497,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "Chl-a",
+      "wert": 45.955,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "DOC",
+      "wert": 11.635,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 9.05,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 667.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 18.607,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "Nitrat",
+      "wert": 7.761,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 13.207,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.036,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 182.111,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "Supply Current",
+      "wert": 275.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 10.887,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "TOC",
+      "wert": 26.997,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "Trübung",
+      "wert": 49.678,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 19.759,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 19.91,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 12:00:00",
+      "parameter": "pH",
+      "wert": 8.787,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-06 18:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 669.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Wert seit 3 Stunden unverändert"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "Chl-a",
+      "wert": 41.446,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "DOC",
+      "wert": 11.795,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 7.95,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 672.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 11.641,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "Nitrat",
+      "wert": 7.566,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 12.41,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.062,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 220.884,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "Supply Current",
+      "wert": 263.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.857,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "TOC",
+      "wert": 26.719,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "Trübung",
+      "wert": 46.617,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 19.76,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 19.96,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 00:00:00",
+      "parameter": "pH",
+      "wert": 8.632,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "Chl-a",
+      "wert": 41.087,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "DOC",
+      "wert": 11.996,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 6.36,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 673.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 13.092,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "Nitrat",
+      "wert": 8.347,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 11.729,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.071,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 210.41,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "Supply Current",
+      "wert": 268.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.795,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "TOC",
+      "wert": 26.249,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "Trübung",
+      "wert": 44.058,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 19.055,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 19.26,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 06:00:00",
+      "parameter": "pH",
+      "wert": 8.345,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "Chl-a",
+      "wert": 44.179,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "DOC",
+      "wert": 12.015,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 6.5,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 675.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 13.963,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "Nitrat",
+      "wert": 8.36,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 11.556,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.057,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 209.202,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "Supply Current",
+      "wert": 269.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.878,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "TOC",
+      "wert": 26.173,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "Trübung",
+      "wert": 43.455,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 18.946,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 19.11,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 08:00:00",
+      "parameter": "pH",
+      "wert": 8.37,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-07 14:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 670.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Wert seit 3 Stunden unverändert"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "Chl-a",
+      "wert": 44.454,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "DOC",
+      "wert": 11.865,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 7.13,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 671.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 12.222,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "Nitrat",
+      "wert": 8.829,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 11.919,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.064,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 272.547,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "Supply Current",
+      "wert": 266.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.837,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "TOC",
+      "wert": 26.351,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "Trübung",
+      "wert": 44.767,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 19.071,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 19.3,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 02:00:00",
+      "parameter": "pH",
+      "wert": 8.536,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "Chl-a",
+      "wert": 46.684,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "DOC",
+      "wert": 11.871,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 7.18,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 692.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 16.575,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "Nitrat",
+      "wert": 7.846,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 12.969,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.054,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 167.609,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "Supply Current",
+      "wert": 264.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.063,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "TOC",
+      "wert": 26.724,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "Trübung",
+      "wert": 48.794,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 18.32,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 18.5,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-08 11:00:00",
+      "parameter": "pH",
+      "wert": 8.465,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "Chl-a",
+      "wert": 43.772,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "DOC",
+      "wert": 12.066,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 6.64,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 783.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 10.19,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "Nitrat",
+      "wert": 7.931,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 11.245,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.056,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 254.017,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "Supply Current",
+      "wert": 266.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.806,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "TOC",
+      "wert": 25.748,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "Trübung",
+      "wert": 42.29,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 17.516,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 17.72,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 01:00:00",
+      "parameter": "pH",
+      "wert": 8.29,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 12:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.878,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Wert seit 3 Stunden unverändert"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "Chl-a",
+      "wert": 44.652,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "DOC",
+      "wert": 11.992,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 7.75,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 750.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 14.834,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "Nitrat",
+      "wert": 9.223,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 11.553,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.047,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 305.076,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "Supply Current",
+      "wert": 256.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 10.98,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "TOC",
+      "wert": 25.927,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "Trübung",
+      "wert": 43.447,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 16.927,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 17.11,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-09 13:00:00",
+      "parameter": "pH",
+      "wert": 8.401,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "Chl-a",
+      "wert": 38.198,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "DOC",
+      "wert": 12.169,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 5.17,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 676.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 11.061,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "Nitrat",
+      "wert": 8.171,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 11.243,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.042,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 216.654,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "Supply Current",
+      "wert": 269.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.878,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "TOC",
+      "wert": 25.683,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "Trübung",
+      "wert": 42.298,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 17.562,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 17.8,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 01:00:00",
+      "parameter": "pH",
+      "wert": 8.491,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "Chl-a",
+      "wert": 43.053,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "DOC",
+      "wert": 12.188,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 7.05,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 779.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 11.351,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "Nitrat",
+      "wert": 8.256,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 10.929,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.048,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 281.296,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "Supply Current",
+      "wert": 268.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.919,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "TOC",
+      "wert": 25.415,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "Trübung",
+      "wert": 41.106,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 17.226,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 17.46,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 04:00:00",
+      "parameter": "pH",
+      "wert": 8.39,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "Chl-a",
+      "wert": 44.16,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "DOC",
+      "wert": 12.178,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 6.8,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 738.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 11.641,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "Nitrat",
+      "wert": 7.991,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 10.828,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.04,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 296.402,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "Supply Current",
+      "wert": 259.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.63,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "TOC",
+      "wert": 25.326,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "Trübung",
+      "wert": 40.747,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 17.088,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 17.33,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 05:00:00",
+      "parameter": "pH",
+      "wert": 8.342,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "Chl-a",
+      "wert": 44.855,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "DOC",
+      "wert": 12.17,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 7.48,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 718.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 15.995,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "Nitrat",
+      "wert": 7.457,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 12.747,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.04,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 235.058,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "Supply Current",
+      "wert": 266.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.96,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "TOC",
+      "wert": 26.199,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "Trübung",
+      "wert": 48.007,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 16.785,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 16.97,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-10 12:00:00",
+      "parameter": "pH",
+      "wert": 8.385,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.7 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "Chl-a",
+      "wert": 37.923,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "DOC",
+      "wert": 12.208,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 7.32,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 719.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 12.802,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "Nitrat",
+      "wert": 9.554,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 11.129,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.035,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 246.438,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "Supply Current",
+      "wert": 266.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.857,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "TOC",
+      "wert": 25.386,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "Trübung",
+      "wert": 41.893,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 16.893,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 17.14,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 00:00:00",
+      "parameter": "pH",
+      "wert": 8.442,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "Chl-a",
+      "wert": 44.073,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "DOC",
+      "wert": 12.28,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 8.63,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 683.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 18.317,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "Nitrat",
+      "wert": 8.505,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 11.342,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.035,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 289.869,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "Supply Current",
+      "wert": 283.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.713,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "TOC",
+      "wert": 25.421,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "Trübung",
+      "wert": 42.683,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 18.12,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 18.26,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 17:00:00",
+      "parameter": "pH",
+      "wert": 8.49,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.8 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "Chl-a",
+      "wert": 42.618,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "DOC",
+      "wert": 12.329,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "Gelöster Sauerstoff",
+      "wert": 8.05,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "Leitfähigkeit",
+      "wert": 701.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "Lufttemperatur",
+      "wert": 11.931,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "Nitrat",
+      "wert": 7.863,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "Phycocyanin Abs.",
+      "wert": 11.162,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "Phycocyanin Abs. (comp)",
+      "wert": 0.017,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "Redoxpotential",
+      "wert": 292.487,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "Supply Current",
+      "wert": 261.0,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "Supply Voltage",
+      "wert": 11.878,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "TOC",
+      "wert": 25.229,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "Trübung",
+      "wert": 42.021,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "Wassertemp. (0.5m)",
+      "wert": 18.116,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "Wassertemp. (1m)",
+      "wert": 18.36,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    },
+    {
+      "zeitpunkt": "2025-06-11 22:00:00",
+      "parameter": "pH",
+      "wert": 8.561,
+      "flag": 3,
+      "flag_name": "VERDÄCHTIG",
+      "grund": "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)"
+    }
+  ],
+  "stundenweise_uebersicht": {
+    "00:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 2
+        }
+      ]
+    },
+    "01:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 2
+        }
+      ]
+    },
+    "02:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 1
+        }
+      ]
+    },
+    "03:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": []
+    },
+    "04:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 1
+        }
+      ]
+    },
+    "05:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 1
+        }
+      ]
+    },
+    "06:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 1
+        }
+      ]
+    },
+    "07:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": []
+    },
+    "08:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 1
+        }
+      ]
+    },
+    "09:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": []
+    },
+    "10:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 1
+        }
+      ]
+    },
+    "11:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 1
+        }
+      ]
+    },
+    "12:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 3
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 3
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 3
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 2
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 3
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 2
+        }
+      ]
+    },
+    "13:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 1
+        }
+      ]
+    },
+    "14:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 1
+        }
+      ]
+    },
+    "15:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 1
+        }
+      ]
+    },
+    "16:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": []
+    },
+    "17:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 1
+        }
+      ]
+    },
+    "18:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 1
+        }
+      ]
+    },
+    "19:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": []
+    },
+    "20:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": []
+    },
+    "21:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 1
+        }
+      ]
+    },
+    "22:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 1
+        }
+      ]
+    },
+    "23:00": {
+      "anzahl_messungen": 7,
+      "fehlerhafte_parameter": [
+        {
+          "parameter": "Phycocyanin Abs.",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Phycocyanin Abs. (comp)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "TOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Trübung",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Chl-a",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "DOC",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Nitrat",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Gelöster Sauerstoff",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Leitfähigkeit",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "pH",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Redoxpotential",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (1m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Wassertemp. (0.5m)",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Lufttemperatur",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Voltage",
+          "fehler_anzahl": 1
+        },
+        {
+          "parameter": "Supply Current",
+          "fehler_anzahl": 1
+        }
+      ]
+    }
+  },
+  "validierungs_muster": {
+    "haeufigste_fehlergruende": {
+      "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.0 mg/L)": 48,
+      "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.8 mg/L)": 32,
+      "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.5 mg/L)": 32,
+      "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.3 mg/L)": 32,
+      "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.2 mg/L)": 16,
+      "Verdacht auf Düngemitteleintrag - (Nitrat ↑4.1 mg/L)": 16,
+      "Verdacht auf Düngemitteleintrag - (Nitrat ↑1.9 mg/L)": 16,
+      "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.9 mg/L)": 16,
+      "Verdacht auf Düngemitteleintrag - (Nitrat ↑3.4 mg/L)": 16,
+      "Verdacht auf Düngemitteleintrag - (Nitrat ↑2.6 mg/L)": 16
+    },
+    "parameter_kombinationen": {
+      "Phycocyanin Abs. + Phycocyanin Abs. (comp)": 18,
+      "Phycocyanin Abs. + TOC": 18,
+      "Phycocyanin Abs. + Trübung": 18,
+      "Phycocyanin Abs. + Chl-a": 18,
+      "Phycocyanin Abs. + DOC": 18,
+      "Phycocyanin Abs. + Nitrat": 18,
+      "Phycocyanin Abs. + Gelöster Sauerstoff": 18,
+      "Phycocyanin Abs. + Leitfähigkeit": 18,
+      "Phycocyanin Abs. + pH": 18,
+      "Phycocyanin Abs. + Redoxpotential": 18,
+      "Phycocyanin Abs. + Wassertemp. (1m)": 18,
+      "Phycocyanin Abs. + Wassertemp. (0.5m)": 18,
+      "Phycocyanin Abs. + Lufttemperatur": 18,
+      "Phycocyanin Abs. + Supply Voltage": 18,
+      "Phycocyanin Abs. + Supply Current": 18,
+      "Phycocyanin Abs. (comp) + TOC": 18,
+      "Phycocyanin Abs. (comp) + Trübung": 18,
+      "Phycocyanin Abs. (comp) + Chl-a": 18,
+      "Phycocyanin Abs. (comp) + DOC": 18,
+      "Phycocyanin Abs. (comp) + Nitrat": 18,
+      "Phycocyanin Abs. (comp) + Gelöster Sauerstoff": 18,
+      "Phycocyanin Abs. (comp) + Leitfähigkeit": 18,
+      "Phycocyanin Abs. (comp) + pH": 18,
+      "Phycocyanin Abs. (comp) + Redoxpotential": 18,
+      "Phycocyanin Abs. (comp) + Wassertemp. (1m)": 18,
+      "Phycocyanin Abs. (comp) + Wassertemp. (0.5m)": 18,
+      "Phycocyanin Abs. (comp) + Lufttemperatur": 18,
+      "Phycocyanin Abs. (comp) + Supply Voltage": 18,
+      "Phycocyanin Abs. (comp) + Supply Current": 18,
+      "TOC + Trübung": 18,
+      "TOC + Chl-a": 18,
+      "TOC + DOC": 18,
+      "TOC + Nitrat": 18,
+      "TOC + Gelöster Sauerstoff": 18,
+      "TOC + Leitfähigkeit": 18,
+      "TOC + pH": 18,
+      "TOC + Redoxpotential": 18,
+      "TOC + Wassertemp. (1m)": 18,
+      "TOC + Wassertemp. (0.5m)": 18,
+      "TOC + Lufttemperatur": 18,
+      "TOC + Supply Voltage": 18,
+      "TOC + Supply Current": 18,
+      "Trübung + Chl-a": 18,
+      "Trübung + DOC": 18,
+      "Trübung + Nitrat": 18,
+      "Trübung + Gelöster Sauerstoff": 19,
+      "Trübung + Leitfähigkeit": 19,
+      "Trübung + pH": 19,
+      "Trübung + Redoxpotential": 18,
+      "Trübung + Wassertemp. (1m)": 18,
+      "Trübung + Wassertemp. (0.5m)": 19,
+      "Trübung + Lufttemperatur": 18,
+      "Trübung + Supply Voltage": 18,
+      "Trübung + Supply Current": 18,
+      "Chl-a + DOC": 18,
+      "Chl-a + Nitrat": 18,
+      "Chl-a + Gelöster Sauerstoff": 18,
+      "Chl-a + Leitfähigkeit": 18,
+      "Chl-a + pH": 18,
+      "Chl-a + Redoxpotential": 18,
+      "Chl-a + Wassertemp. (1m)": 18,
+      "Chl-a + Wassertemp. (0.5m)": 18,
+      "Chl-a + Lufttemperatur": 18,
+      "Chl-a + Supply Voltage": 18,
+      "Chl-a + Supply Current": 18,
+      "DOC + Nitrat": 18,
+      "DOC + Gelöster Sauerstoff": 18,
+      "DOC + Leitfähigkeit": 18,
+      "DOC + pH": 18,
+      "DOC + Redoxpotential": 18,
+      "DOC + Wassertemp. (1m)": 18,
+      "DOC + Wassertemp. (0.5m)": 18,
+      "DOC + Lufttemperatur": 18,
+      "DOC + Supply Voltage": 18,
+      "DOC + Supply Current": 18,
+      "Nitrat + Gelöster Sauerstoff": 18,
+      "Nitrat + Leitfähigkeit": 18,
+      "Nitrat + pH": 18,
+      "Nitrat + Redoxpotential": 18,
+      "Nitrat + Wassertemp. (1m)": 18,
+      "Nitrat + Wassertemp. (0.5m)": 18,
+      "Nitrat + Lufttemperatur": 18,
+      "Nitrat + Supply Voltage": 18,
+      "Nitrat + Supply Current": 18,
+      "Gelöster Sauerstoff + Leitfähigkeit": 20,
+      "Gelöster Sauerstoff + pH": 21,
+      "Gelöster Sauerstoff + Redoxpotential": 18,
+      "Gelöster Sauerstoff + Wassertemp. (1m)": 18,
+      "Gelöster Sauerstoff + Wassertemp. (0.5m)": 20,
+      "Gelöster Sauerstoff + Lufttemperatur": 18,
+      "Gelöster Sauerstoff + Supply Voltage": 18,
+      "Gelöster Sauerstoff + Supply Current": 18,
+      "Leitfähigkeit + pH": 20,
+      "Leitfähigkeit + Redoxpotential": 18,
+      "Leitfähigkeit + Wassertemp. (1m)": 18,
+      "Leitfähigkeit + Wassertemp. (0.5m)": 19,
+      "Leitfähigkeit + Lufttemperatur": 18,
+      "Leitfähigkeit + Supply Voltage": 18,
+      "Leitfähigkeit + Supply Current": 18,
+      "pH + Redoxpotential": 18,
+      "pH + Wassertemp. (1m)": 18,
+      "pH + Wassertemp. (0.5m)": 20,
+      "pH + Lufttemperatur": 18,
+      "pH + Supply Voltage": 18,
+      "pH + Supply Current": 18,
+      "Redoxpotential + Wassertemp. (1m)": 18,
+      "Redoxpotential + Wassertemp. (0.5m)": 18,
+      "Redoxpotential + Lufttemperatur": 18,
+      "Redoxpotential + Supply Voltage": 18,
+      "Redoxpotential + Supply Current": 18,
+      "Wassertemp. (1m) + Wassertemp. (0.5m)": 18,
+      "Wassertemp. (1m) + Lufttemperatur": 18,
+      "Wassertemp. (1m) + Supply Voltage": 18,
+      "Wassertemp. (1m) + Supply Current": 18,
+      "Wassertemp. (0.5m) + Lufttemperatur": 18,
+      "Wassertemp. (0.5m) + Supply Voltage": 18,
+      "Wassertemp. (0.5m) + Supply Current": 18,
+      "Lufttemperatur + Supply Voltage": 18,
+      "Lufttemperatur + Supply Current": 18,
+      "Supply Voltage + Supply Current": 18
+    },
+    "zeitliche_haeufung": {}
+  }
+}

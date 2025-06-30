@@ -1,43 +1,16 @@
-# data_pipeline.py - Finale Version mit korrigierten Regeln und Bugfixes
+# data_pipeline.py - Bereinigte Version
 
 import pandas as pd
 import json
 import os
 import glob
 import numpy as np
+from config_file import VALIDATION_RULES, PRECISION_RULES, CONSOLIDATION_RULES
 
 # --- Konfiguration ---
 INPUT_DIR = 'input'
 OUTPUT_DIR = 'output'
 METADATA_FILE_PATTERN = os.path.join(INPUT_DIR, 'wamo*metadata*.json')
-
-# 1. VALIDATION_RULES - Mit angepassten Regeln für Phycocyanin
-VALIDATION_RULES = {
-    'Wassertemperatur': {'min': -2.0, 'max': 40.0}, 'Lufttemperatur': {'min': -30.0, 'max': 50.0},
-    'pH': {'min': 4.0, 'max': 11.0}, 'Sauerstoff': {'min': 0.0, 'max': 25.0},
-    'Leitfähigkeit': {'min': 5.0, 'max': 1500.0}, 'Redoxpotential': {'min': -300.0, 'max': 700.0},
-    'Nitrat': {'min': 0.0, 'max': 150.0}, 'Trübung': {'min': 0.0, 'max': 3000.0},
-    'Chl-a': {'min': 0.0, 'max': 500.0},
-    'Phycocyanin': {'min': 0.0, 'max': 500.0}, # WIEDER ANGEPASST AUF 0-500
-    'TOC': {'min': 0.0, 'max': 100.0}, 'DOC': {'min': 0.0, 'max': 100.0}
-}
-
-# 2. PRECISION_RULES - Wissenschaftliche Genauigkeit
-PRECISION_RULES = {
-    'Phycocyanin Abs.': 3, 'Phycocyanin Abs. (comp)': 3, 'Chl-a': 2, 'Trübung': 2,
-    'TOC': 2, 'DOC': 2, 'Nitrat': 3, 'Gelöster Sauerstoff': 2, 'Leitfähigkeit': 1,
-    'pH': 2, 'Redoxpotential': 1, 'Wassertemperatur': 2, 'Lufttemperatur': 2,
-    'Supply Current': 3, 'Supply Voltage': 2, 'default': 2
-}
-
-# 3. CONSOLIDATION_RULES - Regeln für Tageskonsolidierung gemäß Gutachten
-CONSOLIDATION_RULES = {
-    'default': ['min', 'max', 'mean', 'std'],
-    'Wassertemperatur': ['min', 'max', 'mean'], 'TOC': ['min', 'max', 'mean'],
-    'DOC': ['min', 'max', 'mean'], 'Nitrat': ['min', 'max', 'mean'],
-    'Gelöster Sauerstoff': ['min', 'max', 'mean'],
-    'pH': ['min', 'max', 'mean', 'std', 'median']
-}
 
 def transform_raw_data(csv_path, metadata):
     raw_df = pd.read_csv(csv_path, sep=',', header=0)
@@ -164,20 +137,20 @@ def main_pipeline():
     cleaned_rounded_df = apply_precision_to_cleaned(combined_df.copy(), PRECISION_RULES)
     output_cleaned_path = os.path.join(OUTPUT_DIR, '1_cleaned_data.csv')
     cleaned_rounded_df.to_csv(output_cleaned_path, index=False, sep=';', decimal=',')
-    print(f"-> Schritt 1 abgeschlossen.")
+    print(f"-> Schritt 1 abgeschlossen. Daten gespeichert in: {output_cleaned_path}")
 
     print("\n--- Schritt 2: Validiere Daten & reichere sie an ---")
     validated_df = validate_and_enrich_data(combined_df) 
     validated_rounded_df = apply_precision_to_cleaned(validated_df.copy(), PRECISION_RULES)
     output_validated_path = os.path.join(OUTPUT_DIR, '2_validated_data.csv')
     validated_rounded_df.to_csv(output_validated_path, index=False, sep=';', decimal=',')
-    print(f"-> Schritt 2 abgeschlossen.")
+    print(f"-> Schritt 2 abgeschlossen. Daten gespeichert in: {output_validated_path}")
     
     print("\n--- Schritt 3: Erstelle tägliche Zusammenfassung ---")
     daily_summary_df = consolidate_daily_summary(validated_df, CONSOLIDATION_RULES, PRECISION_RULES)
     output_summary_path = os.path.join(OUTPUT_DIR, '3_daily_summary.csv')
     daily_summary_df.to_csv(output_summary_path, index=False, sep=';', decimal=',')
-    print(f"-> Schritt 3 abgeschlossen.")
+    print(f"-> Schritt 3 abgeschlossen. Zusammenfassung gespeichert in: {output_summary_path}")
 
     print("\nPipeline erfolgreich durchgelaufen!")
 

@@ -1,5 +1,7 @@
 import json
 import pandas as pd
+import glob
+import os
 
 def load_metadata(metadata_path: str):
     """Lädt die Metadaten-JSON-Datei."""
@@ -34,6 +36,51 @@ def create_column_mapping(metadata: dict):
                     'unit': stream_meta.get('unitOfMeasurementCustom') or stream_meta.get('unitOfMeasurement'),
                     'description': stream_meta.get('description')
                 }
+    
+    # NEU: Automatische Validierung und Korrektur
+    try:
+        # Prüfe ob metadata_validator existiert
+        if os.path.exists('metadata_validator.py'):
+            # Finde eine Beispiel-CSV für Validierung
+            csv_files = glob.glob("input/*.csv")
+            if csv_files:
+                from metadata_validator import auto_validate_metadata
+                
+                # Validiere mit erster CSV-Datei
+                print("\nPrüfe Metadaten-Korrektheit...")
+                corrections = auto_validate_metadata(csv_files[0], metadata)
+                
+                if corrections:
+                    print("Wende automatische Korrekturen an...")
+                    # Überschreibe fehlerhaftes Mapping mit korrigiertem
+                    old_map_size = len(column_map)
+                    column_map = corrections
+                    print(f"Korrigiert: {old_map_size} → {len(column_map)} Spalten")
+                else:
+                    print("Metadaten scheinen korrekt zu sein.")
+        else:
+            # Fallback: Verwende den alten WORKAROUND
+            print("metadata_validator.py nicht gefunden - verwende einfachen Workaround")
+            
+            # WORKAROUND für bekannte falsche Spalten-Zuordnung
+            if 28 in column_map and column_map[28] == 'Wassertemp. (2m)':
+                if 30 in column_map and column_map[30] == 'Lufttemperatur':
+                    # Vertausche die beiden
+                    column_map[28] = 'Lufttemperatur'
+                    column_map[30] = 'Wassertemp. (2m)'
+                    print("INFO: Spalten-Mapping korrigiert (Lufttemperatur <-> Wassertemp. 2m)")
+                    
+    except Exception as e:
+        print(f"Automatische Validierung fehlgeschlagen: {e}")
+        print("Verwende Original-Metadaten...")
+        
+        # Bei Fehler: Verwende wenigstens den bekannten Workaround
+        if 28 in column_map and column_map[28] == 'Wassertemp. (2m)':
+            if 30 in column_map and column_map[30] == 'Lufttemperatur':
+                column_map[28] = 'Lufttemperatur'
+                column_map[30] = 'Wassertemp. (2m)'
+                print("INFO: Basis-Korrektur angewendet")
+    
     return column_map, param_details
 
 def map_columns_to_names(df: pd.DataFrame, column_mapping: dict):

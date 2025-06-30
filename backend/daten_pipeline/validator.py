@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 class QartodFlags:
     """Definiert die standardisierten QARTOD-Flag-Werte."""
@@ -20,17 +21,41 @@ class WaterQualityValidator:
         """
         Kombiniert mehrere Spalten mit Flags und Gründen zu einem finalen Aggregat.
         Findet den höchsten Flag und sammelt alle einzigartigen Gründe.
+        Robust gegen fehlende oder String-Werte.
         """
+        # Stelle sicher, dass df_flags nur numerische Werte enthält
+        df_flags_numeric = pd.DataFrame(index=df_flags.index)
+        
+        for col in df_flags.columns:
+            # Konvertiere zu numerisch
+            df_flags_numeric[col] = pd.to_numeric(df_flags[col], errors='coerce')
+            # WICHTIG: NaN-Werte NICHT füllen - sie werden ignoriert
+        
         # Finde den maximalen (schlechtesten) Flag-Wert für jede Zeile
-        final_flags = df_flags.max(axis=1).fillna(QartodFlags.NOT_EVALUATED).astype(int)
+        # ABER: Ignoriere NaN-Werte
 
-        # Sammle alle Gründe für jede Zeile, entferne leere Einträge und Duplikate,
-        # und verbinde sie zu einem einzigen, lesbaren String.
+        if df_flags_numeric.empty:
+            final_flags = pd.Series(QartodFlags.GOOD, index=df_flags.index)  # Default: GOOD statt NOT_EVALUATED
+        else:
+            final_flags = df_flags_numeric.max(axis=1, skipna=True)
+            final_flags = final_flags.fillna(QartodFlags.GOOD).astype(int)
+
+        # Sammle alle Gründe für jede Zeile, entferne leere Einträge und Duplikate
         def aggregate_reasons(row):
-            reasons = set(r for r in row if pd.notna(r) and r != '')
-            return '; '.join(sorted(list(reasons)))
+            reasons = []
+            for r in row:
+                if pd.notna(r) and r != '' and r != 'nan':
+                    # Konvertiere zu String falls nötig
+                    r_str = str(r)
+                    if r_str not in reasons:  # Verhindere Duplikate
+                        reasons.append(r_str)
+            return '; '.join(sorted(reasons)) if reasons else ''
 
-        final_reasons = df_reasons.apply(aggregate_reasons, axis=1)
+        # Stelle sicher, dass df_reasons existiert und nicht leer ist
+        if df_reasons is not None and not df_reasons.empty:
+            final_reasons = df_reasons.apply(aggregate_reasons, axis=1)
+        else:
+            final_reasons = pd.Series('', index=df_flags.index)
         
         return final_flags, final_reasons
 
@@ -39,19 +64,24 @@ class WaterQualityValidator:
         QARTOD Test: Bereichsprüfung.
         Gibt jetzt ein Tupel zurück: (Flags, Gründe)
         """
-        flags = pd.Series(QartodFlags.GOOD, index=series.index)
-        reasons = pd.Series("", index=series.index)
+        flags = pd.Series(QartodFlags.GOOD, index=series.index, dtype=int)
+        reasons = pd.Series("", index=series.index, dtype=str)
         
         # Prüfung auf Überschreitung
-        flags[series > plausible_max] = QartodFlags.BAD
-        reasons[series > plausible_max] = f"Wert > Max ({plausible_max})"
+        if plausible_max is not None:
+            mask_high = series > plausible_max
+            flags[mask_high] = QartodFlags.BAD
+            reasons[mask_high] = f"Wert > Max ({plausible_max})"
         
         # Prüfung auf Unterschreitung
-        flags[series < plausible_min] = QartodFlags.BAD
-        reasons[series < plausible_min] = f"Wert < Min ({plausible_min})"
+        if plausible_min is not None:
+            mask_low = series < plausible_min
+            flags[mask_low] = QartodFlags.BAD
+            reasons[mask_low] = f"Wert < Min ({plausible_min})"
         
         # Prüfung auf fehlende Werte
-        flags[series.isna()] = QartodFlags.MISSING
-        reasons[series.isna()] = "Fehlender Wert"
+        mask_na = series.isna()
+        flags[mask_na] = QartodFlags.MISSING
+        reasons[mask_na] = "Fehlender Wert"
         
         return flags, reasons

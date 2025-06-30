@@ -19,12 +19,13 @@ def apply_precision(value, precision: int):
 
 def get_aggregation_flag(good_ratio: float):
     """Bestimmt das finale QARTOD-Flag für einen aggregierten Wert."""
-    if good_ratio >= 75:
-        return QartodFlags.GOOD
-    elif 50 <= good_ratio < 75:
-        return QartodFlags.SUSPECT
+    if good_ratio >= 50:  # Reduziert von 75%
+        agg_flag = QartodFlags.GOOD
+    elif 25 <= good_ratio < 50:  # Reduziert von 50%
+        agg_flag = QartodFlags.SUSPECT
     else:
-        return QartodFlags.BAD
+        agg_flag = QartodFlags.BAD
+    return agg_flag    
 
 def interpolate_and_aggregate(hourly_data: pd.DataFrame, parameter_rules: dict, precision_rules: dict, **kwargs):
     """
@@ -47,8 +48,9 @@ def interpolate_and_aggregate(hourly_data: pd.DataFrame, parameter_rules: dict, 
         all_reasons = set(r for r in reasons if r is not None and r != '')
         final_reason_string = '; '.join(sorted(list(all_reasons))) if all_reasons else "Alle Werte plausibel"
 
-        good_values_count = (flags == QartodFlags.GOOD).sum()
-        total_values_count = len(flags)
+        valid_mask = series.notna()  # Nur Zeiten mit echten Werten
+        good_values_count = (flags[valid_mask] == QartodFlags.GOOD).sum()
+        total_values_count = valid_mask.sum()
         good_ratio = (good_values_count / total_values_count) * 100 if total_values_count > 0 else 0
         agg_flag = get_aggregation_flag(good_ratio)
         

@@ -32,6 +32,8 @@ fly.toml.backup
 # Python-Cache ignorieren
 __pycache__/
 
+*.zip
+
 # Python virtuelle Umgebung ignorieren (das sind die ~17.000 Dateien!)
 /backend/daten_pipeline/venv/
 

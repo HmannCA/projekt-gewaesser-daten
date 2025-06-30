@@ -1,3 +1,5 @@
+# multivariate_validator.py - KORRIGIERTE VERSION
+
 import pandas as pd
 import numpy as np
 from pyod.models.iforest import IForest
@@ -8,23 +10,17 @@ class QartodFlags:
     SUSPECT = 3
 
 def check_multivariate_anomalies(df: pd.DataFrame, columns_to_check: list):
-    """
-    Identifiziert multivariate Anomalien und versucht, die auffälligsten Parameter
-    in der Begründung zu benennen.
-
-    Args:
-        df (pd.DataFrame): Der DataFrame, der die zu prüfenden Daten enthält.
-        columns_to_check (list): Eine Liste der Spaltennamen, die gemeinsam
-                                 analysiert werden sollen.
-
-    Returns:
-        tuple[pd.Series, pd.Series]: Ein Tupel, das (Flags, Gründe) enthält.
-    """
-    flags = pd.Series(QartodFlags.GOOD, index=df.index)
-    reasons = pd.Series("", index=df.index)
+    """Identifiziert multivariate Anomalien..."""
+    # Erstelle individuelle Flags für JEDEN Parameter
+    all_flags = {}
+    all_reasons = {}
+    
+    for col in columns_to_check:
+        all_flags[col] = pd.Series(QartodFlags.GOOD, index=df.index)
+        all_reasons[col] = pd.Series("", index=df.index)
     
     data_subset = df[columns_to_check].copy()
-
+    
     # Robuste Methode zum Füllen von NaN-Werten vor der Analyse
     medians = data_subset.median()
     data_subset.fillna(medians, inplace=True)
@@ -38,34 +34,43 @@ def check_multivariate_anomalies(df: pd.DataFrame, columns_to_check: list):
             anomaly_flags = pd.Series(predictions, index=data_subset.index).map({0: QartodFlags.GOOD, 1: QartodFlags.SUSPECT})
             
             is_anomaly = anomaly_flags == QartodFlags.SUSPECT
-            flags[is_anomaly] = QartodFlags.SUSPECT
             
-            # --- NEUE LOGIK: SPURENSUCHE BEI ANOMALIEN ---
+            # --- VERBESSERTE LOGIK: SPURENSUCHE BEI ANOMALIEN ---
             if is_anomaly.any():
                 # Berechne die Schwellenwerte für "extrem hohe" und "extrem niedrige" Werte
-                lower_quantile = data_subset.quantile(0.10)
-                upper_quantile = data_subset.quantile(0.90)
+                lower_quantile = data_subset.quantile(0.05)
+                upper_quantile = data_subset.quantile(0.95)
                 
                 # Finde die Zeilen, die als Anomalie geflaggt wurden
-                anomaly_indices = flags[flags == QartodFlags.SUSPECT].index
+                anomaly_indices = df.index[is_anomaly]
                 
                 for idx in anomaly_indices:
                     problem_params = []
                     for col in columns_to_check:
                         value = data_subset.loc[idx, col]
+                        
                         # Ist der Wert extrem niedrig?
                         if value < lower_quantile[col]:
+                            all_flags[col].loc[idx] = QartodFlags.SUSPECT
+                            all_reasons[col].loc[idx] = f"Multivariate Anomalie: {col} ungewöhnlich niedrig"
                             problem_params.append(f"{col} (niedrig)")
+                            
                         # Ist der Wert extrem hoch?
                         elif value > upper_quantile[col]:
+                            all_flags[col].loc[idx] = QartodFlags.SUSPECT
+                            all_reasons[col].loc[idx] = f"Multivariate Anomalie: {col} ungewöhnlich hoch"
                             problem_params.append(f"{col} (hoch)")
                     
-                    if problem_params:
-                        reasons.loc[idx] = "Unplausible Kombination. Auffällige Werte: " + ", ".join(problem_params)
-                    else:
-                        reasons.loc[idx] = "Unplausible Kombination von Werten" # Fallback
+                    # Falls keine spezifischen Parameter identifiziert wurden, 
+                    # aber trotzdem eine Anomalie vorliegt
+                    if not problem_params and is_anomaly[idx]:
+                        # Markiere alle Parameter dieser Anomalie
+                        for col in columns_to_check:
+                            all_flags[col].loc[idx] = QartodFlags.SUSPECT
+                            all_reasons[col].loc[idx] = "Unplausible Parameterkombination"
 
         except Exception as e:
             print(f"FEHLER bei der multivariaten Anomalie-Erkennung: {e}")
-            
-    return flags, reasons
+    
+    # WICHTIG: Gib die Dictionaries zurück, nicht die aggregierten flags/reasons!
+    return all_flags, all_reasons
