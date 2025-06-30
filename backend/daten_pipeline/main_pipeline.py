@@ -28,6 +28,7 @@ from stuck_value_validator import check_stuck_values
 from spike_validator import check_spikes
 from multivariate_validator import check_multivariate_anomalies
 from interpolating_consolidator import interpolate_and_aggregate
+from DatabaseLoader import DatabaseLoader
 
 # NEU - Importiere die erweiterten Validatoren
 try:
@@ -632,6 +633,44 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
             f.write("• StALU MS: 0395-380-0\n")
         
         print(f"Zusammenfassung gespeichert in: {zusammenfassung_filepath}")
+
+        # ================== HIER DEN NEUEN CODEBLOCK EINFÜGEN ==================
+        # 13. DATEN IN DIE DATENBANK SCHREIBEN
+        if not daily_results.empty:
+            print("\nStarte das Laden der Daten in die Datenbank...")
+            db_loader = DatabaseLoader()
+            if db_loader.conn:
+                
+                long_format_data = daily_results.reset_index().melt(
+                    id_vars=['Datum'], 
+                    var_name='Variable', 
+                    value_name='Wert'
+                )
+                
+                long_format_data[['parameter', 'typ']] = long_format_data['Variable'].str.rsplit('_', n=1, expand=True)
+                
+                pivoted_data = long_format_data.pivot_table(
+                    index=['Datum', 'parameter'], 
+                    columns='typ', 
+                    values='Wert', 
+                    aggfunc='first'
+                ).reset_index()
+
+                pivoted_data.rename(columns={
+                    'Datum': 'zeitstempel',
+                    'Mittelwert': 'wert',
+                    'Aggregat': 'qualitaets_flag'
+                }, inplace=True)
+                
+                pivoted_data['see'] = station_id
+                
+                db_data = pivoted_data[['zeitstempel', 'see', 'parameter', 'wert', 'qualitaets_flag']]
+                db_data = db_data.dropna(subset=['wert']) # Nur Zeilen mit einem Wert einfügen
+
+                db_loader.insert_validated_data(db_data)
+        else:
+            print("\nKeine Tagesergebnisse zum Speichern in der Datenbank vorhanden.")
+        # =====================================================================        
         
         # OPTIONAL: E-Mail-Versand bei kritischen Zuständen
         if gesamtbewertung['status'] in ['warnung', 'kritisch']:
