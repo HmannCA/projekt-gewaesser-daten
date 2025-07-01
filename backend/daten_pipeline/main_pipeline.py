@@ -8,6 +8,7 @@ import re
 import warnings
 from html_dashboard_generator import generate_html_dashboard
 from typing import Dict, List, Tuple
+import argparse
 from config_file import PRECISION_RULES, CONSOLIDATION_RULES
 
 def check_station_data_quality(station_id: str, station_config: Dict) -> None:
@@ -695,35 +696,28 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
 
 
 if __name__ == '__main__':
-    # Konfiguration der Pfade
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    INPUT_DIR = os.path.join(BASE_DIR, "input")
-    OUTPUT_DIR = os.path.join(BASE_DIR, "output")
+    # Argument-Parser einrichten, um die Pfade von Node.js zu empfangen
+    parser = argparse.ArgumentParser(description='Führt die Wasserqualitäts-Validierungspipeline aus.')
+    parser.add_argument('--input-dir', required=True, help='Verzeichnis mit den Eingabe-CSV-Dateien.')
+    parser.add_argument('--output-dir', required=True, help='Verzeichnis, in dem die Ergebnisdateien gespeichert werden.')
+    parser.add_argument('--metadata-path', required=True, help='Pfad zur Metadaten-JSON-Datei.')
     
-    # Erstelle Output-Verzeichnis falls nicht vorhanden
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    
-    # Suche Metadaten-Datei
-    import glob
-    metadata_files = glob.glob(os.path.join(INPUT_DIR, "wamo*metadata*.json"))
-    
-    if not metadata_files:
-        print("FEHLER: Keine Metadaten-Datei im Input-Verzeichnis gefunden!")
-        print(f"Gesucht in: {INPUT_DIR}")
-        sys.exit(1)
-    
-    METADATA_FILE = metadata_files[0]
-    print(f"Verwende Metadaten-Datei: {METADATA_FILE}")
-    
+    args = parser.parse_args()
+
+    # Erstelle Output-Verzeichnis falls nicht vorhanden (wird vom Node-Server gemacht, aber sicher ist sicher)
+    os.makedirs(args.output_dir, exist_ok=True)
+
     # Zeige aktive Module
     print("\nAktive Validierungsmodule:")
     for module, active in VALIDATION_MODULES.items():
         status = "✓" if active else "✗"
         print(f"  {status} {module}")
     
-    # Starte Pipeline
+    print(f"\nVerwende Metadaten-Datei: {args.metadata_path}")
+
+    # Starte die Pipeline mit den übergebenen Pfaden
     run_validation_pipeline(
-        input_dir=INPUT_DIR,
-        output_dir=OUTPUT_DIR,
-        metadata_path=METADATA_FILE
+        input_dir=args.input_dir,
+        output_dir=args.output_dir,
+        metadata_path=args.metadata_path
     )
