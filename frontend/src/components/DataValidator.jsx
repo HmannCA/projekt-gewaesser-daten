@@ -1,6 +1,8 @@
+// DataValidator.jsx - FINALE VERSION MIT DATENTRANSFORMATION
+
 import React, { useState } from 'react';
 import { uploadAndValidateZip } from '../utils/api'; 
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, Loader2, ExternalLink } from 'lucide-react'; // ExternalLink hinzugefügt
 import QualityChart from './charts/QualityChart';
 import TimeSeriesChart from './charts/TimeSeriesChart';
 
@@ -48,6 +50,7 @@ const FileUpload = ({ onFileSelect, onSubmit, isLoading, selectedFile, statusTex
 const DataValidator = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [validationResult, setValidationResult] = useState(null);
+  const [dashboardUrl, setDashboardUrl] = useState(null); // NEU: State für Dashboard-Link
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState("Analysiere Daten...");
@@ -56,6 +59,7 @@ const DataValidator = () => {
     setSelectedFile(file);
     setError('');
     setValidationResult(null);
+    setDashboardUrl(null);
     setCurrentStatus("Analysiere Daten...");
   };
 
@@ -67,50 +71,33 @@ const DataValidator = () => {
     setIsLoading(true);
     setError('');
     setValidationResult(null);
+    setDashboardUrl(null);
     setCurrentStatus("Initialisiere Pipeline...");
-
-    const mockStatusUpdates = [
-        "Lade Metadaten...",
-        "Erstelle Spalten-Mapping...",
-        "Verarbeite Stationen...",
-        "Führe Bereichs-Analyse durch...",
-        "Führe Spike-Analyse durch...",
-        "Führe Stuck-Value-Analyse durch...",
-        "Führe Kreuz-Validierung durch...",
-        "Kombiniere Ergebnisse...",
-        "Führe Tageskonsolidierung durch...",
-        "Speichere Ergebnis-Datei..."
-    ];
     
+    // Status-Update Simulation bleibt unverändert...
+    const mockStatusUpdates = ["Lade Metadaten...", "Erstelle Spalten-Mapping...", "Verarbeite Stationen...", "Führe Bereichs-Analyse durch...", "Führe Spike-Analyse durch...", "Führe Stuck-Value-Analyse durch...", "Führe Kreuz-Validierung durch...", "Kombiniere Ergebnisse...", "Führe Tageskonsolidierung durch...", "Speichere Ergebnis-Datei..."];
     let updateIndex = 0;
-    // Die Simulation startet und läuft, bis sie explizit gestoppt wird
     const intervalId = setInterval(() => {
-        // --- DAS IST DIE NEUE LOGIK ---
-        // Setze den Text auf den aktuellen Status in der Liste
         setCurrentStatus(mockStatusUpdates[updateIndex]);
-        // Gehe zum nächsten Status
-        updateIndex++;
-        // Wenn das Ende der Liste erreicht ist, fange einfach wieder von vorne an
-        if (updateIndex >= mockStatusUpdates.length) {
-            updateIndex = 0;
-        }
-    }, 1800); // 1.8 Sekunden pro Status
+        updateIndex = (updateIndex + 1) % mockStatusUpdates.length;
+    }, 1800);
 
     try {
       const response = await uploadAndValidateZip(selectedFile);
-      
-      // Sobald die API antwortet, stoppen wir die Simulation
       clearInterval(intervalId);
       
       if (response && response.validationResult) {
         setValidationResult(response.validationResult);
+        // NEU: Dashboard-URL aus der Server-Antwort speichern
+        if (response.dashboardUrl) {
+            setDashboardUrl(response.dashboardUrl);
+        }
         setCurrentStatus("Analyse erfolgreich abgeschlossen!");
       } else {
         throw new Error("Die Server-Antwort enthielt kein Ergebnis.");
       }
       
     } catch (err) {
-      // Auch bei einem Fehler stoppen wir die Simulation
       clearInterval(intervalId);
       let displayError = err.message || 'Ein unbekannter Fehler ist aufgetreten.';
       if (err.response && err.response.data && err.response.data.error) {
@@ -129,13 +116,11 @@ const DataValidator = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(validationResult, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "validierungs-ergebnis.json");
+    downloadAnchorNode.setAttribute("download", "opendata-ergebnis.json");
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
   };
-
-  // Der obere Teil der Datei (imports, functions) bleibt unverändert...
 
   return (
     <div className="flex flex-col items-center w-full p-4 pt-10 sm:p-8 bg-gray-100 dark:bg-gray-900">
@@ -159,16 +144,29 @@ const DataValidator = () => {
         <div className="w-full max-w-6xl p-8 mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
           <h3 className="text-2xl font-bold text-center text-gray-800 dark:text-white mb-6">Grafische Auswertung</h3>
           
-          {/* --- BEGINN DER ÄNDERUNG --- */}
-          {/* Wir verwenden jetzt ein Grid, um die Diagramme nebeneinander anzuordnen */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-end">
-            <QualityChart data={validationResult} />
-            <TimeSeriesChart data={validationResult} />
-          </div>
-          {/* --- ENDE DER ÄNDERUNG --- */}
+          {/* NEU: Link zum HTML-Dashboard, wird nur angezeigt, wenn vorhanden */}
+          {dashboardUrl && (
+            <div className="text-center mb-6">
+                <a 
+                    href={dashboardUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-6 py-3 text-white bg-teal-600 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all"
+                >
+                    Detailliertes HTML-Dashboard öffnen
+                    <ExternalLink className="ml-2 w-5 h-5" />
+                </a>
+            </div>
+          )}
 
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-end">
+            {/* HIER IST DIE MAGIE: Wir übergeben die korrekten Daten an die Charts */}
+            <QualityChart data={validationResult.tageswerte} />
+            <TimeSeriesChart data={validationResult.tageswerte} />
+          </div>
+          
           <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-700 rounded-md">
-             <h4 className="text-lg font-semibold text-gray-800 dark:text-white">Validierungsergebnis (JSON)</h4>
+             <h4 className="text-lg font-semibold text-gray-800 dark:text-white">Validierungsergebnis (opendata.json)</h4>
              <div className="flex justify-center my-4"><button onClick={downloadResult} className="px-6 py-2 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none">Ergebnis als JSON herunterladen</button></div>
              <pre className="mt-2 text-sm text-left dark:text-gray-200 rounded-md overflow-x-auto p-4 bg-black/20">{JSON.stringify(validationResult, null, 2)}</pre>
           </div>
