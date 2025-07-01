@@ -1,11 +1,12 @@
-// DataValidator.jsx - FINALE VERSION MIT DATENTRANSFORMATION
+// DataValidator.jsx - FINALE VERSION MIT EINGEBETTETEM DASHBOARD
 
 import React, { useState } from 'react';
 import { uploadAndValidateZip } from '../utils/api'; 
-import { CheckCircle, Loader2, ExternalLink } from 'lucide-react'; // ExternalLink hinzugefügt
+import { Loader2 } from 'lucide-react';
 import QualityChart from './charts/QualityChart';
 import TimeSeriesChart from './charts/TimeSeriesChart';
 
+// Die FileUpload-Komponente bleibt unverändert
 const FileUpload = ({ onFileSelect, onSubmit, isLoading, selectedFile, statusText }) => {
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -47,10 +48,11 @@ const FileUpload = ({ onFileSelect, onSubmit, isLoading, selectedFile, statusTex
   );
 };
 
+
 const DataValidator = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [validationResult, setValidationResult] = useState(null);
-  const [dashboardUrl, setDashboardUrl] = useState(null); // NEU: State für Dashboard-Link
+  const [dashboardUrl, setDashboardUrl] = useState(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState("Analysiere Daten...");
@@ -74,7 +76,6 @@ const DataValidator = () => {
     setDashboardUrl(null);
     setCurrentStatus("Initialisiere Pipeline...");
     
-    // Status-Update Simulation bleibt unverändert...
     const mockStatusUpdates = ["Lade Metadaten...", "Erstelle Spalten-Mapping...", "Verarbeite Stationen...", "Führe Bereichs-Analyse durch...", "Führe Spike-Analyse durch...", "Führe Stuck-Value-Analyse durch...", "Führe Kreuz-Validierung durch...", "Kombiniere Ergebnisse...", "Führe Tageskonsolidierung durch...", "Speichere Ergebnis-Datei..."];
     let updateIndex = 0;
     const intervalId = setInterval(() => {
@@ -88,7 +89,6 @@ const DataValidator = () => {
       
       if (response && response.validationResult) {
         setValidationResult(response.validationResult);
-        // NEU: Dashboard-URL aus der Server-Antwort speichern
         if (response.dashboardUrl) {
             setDashboardUrl(response.dashboardUrl);
         }
@@ -144,26 +144,27 @@ const DataValidator = () => {
         <div className="w-full max-w-6xl p-8 mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
           <h3 className="text-2xl font-bold text-center text-gray-800 dark:text-white mb-6">Grafische Auswertung</h3>
           
-          {/* NEU: Link zum HTML-Dashboard, wird nur angezeigt, wenn vorhanden */}
-          {dashboardUrl && (
-            <div className="text-center mb-6">
-                <a 
-                    href={dashboardUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center px-6 py-3 text-white bg-teal-600 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all"
-                >
-                    Detailliertes HTML-Dashboard öffnen
-                    <ExternalLink className="ml-2 w-5 h-5" />
-                </a>
-            </div>
-          )}
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-end">
-            {/* HIER IST DIE MAGIE: Wir übergeben die korrekten Daten an die Charts */}
             <QualityChart data={validationResult.tageswerte} />
             <TimeSeriesChart data={validationResult.tageswerte} />
           </div>
+
+          {/* --- BEGINN DER ÄNDERUNG --- */}
+          {/* Wir ersetzen den Link durch einen Iframe, der das Dashboard direkt einbettet */}
+          {dashboardUrl && (
+            <div className="mt-12">
+                <h4 className="text-xl font-bold text-center text-gray-800 dark:text-white mb-4">Detailliertes HTML-Dashboard</h4>
+                <div className="w-full bg-white border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+                    <iframe
+                        src={dashboardUrl}
+                        title="Detailliertes Validierungs-Dashboard"
+                        className="w-full h-[800px] border-0" // Höhe kann bei Bedarf angepasst werden
+                        sandbox="allow-scripts allow-same-origin" // Wichtig für die Sicherheit
+                    />
+                </div>
+            </div>
+          )}
+          {/* --- ENDE DER ÄNDERUNG --- */}
           
           <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-700 rounded-md">
              <h4 className="text-lg font-semibold text-gray-800 dark:text-white">Validierungsergebnis (opendata.json)</h4>
