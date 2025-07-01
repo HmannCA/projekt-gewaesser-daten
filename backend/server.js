@@ -213,7 +213,15 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
             }
             const sourcePath = path.join(outputDir, dashboardFile);
             const destinationPath = path.join(publicDir, dashboardFile);
+                        // Kopiere das HTML-Dashboard
             fs.copyFileSync(sourcePath, destinationPath);
+
+            // Kopiere die CSS-Datei, damit sie neben dem Dashboard liegt
+            const cssSourcePath = path.resolve(__dirname, 'daten_pipeline', 'public_results', 'dashboard_styles.css');
+            const cssDestPath = path.join(publicDir, 'dashboard_styles.css');
+            if (fs.existsSync(cssSourcePath)) {
+                fs.copyFileSync(cssSourcePath, cssDestPath);
+            }
             const backendHostname = process.env.BACKEND_HOSTNAME || `localhost:${PORT}`;
             console.log(`[DEBUG] Backend Hostname wird verwendet: ${backendHostname}`);
             publicDashboardUrl = `https://${backendHostname}/api/results/${dashboardFile}`;

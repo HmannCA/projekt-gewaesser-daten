@@ -1,0 +1,68 @@
+/* dashboard_styles.css - Neues Farbschema für das HTML-Dashboard */
+
+/* Grundlegende Schrift- und Hintergrundfarben */
+body {
+    background-color: #f3f4f6; /* Helles Grau, passend zum Frontend */
+    color: #1f2937; /* Dunkles Grau für Text */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Haupt-Container und Titel */
+.container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #1d4ed8; /* Dunkles Blau, passend zum Frontend-Button */
+    border-bottom: 2px solid #dbeafe; /* Helles Blau als Unterstreichung */
+}
+
+h2, h3 {
+    color: #1e3a8a; /* Etwas helleres Blau */
+    border-bottom: 1px solid #e5e7eb; /* Heller grauer Rand */
+}
+
+/* Tabellen-Styling */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid #d1d5db; /* Graue Ränder */
+    padding: 12px;
+    text-align: left;
+}
+
+thead th {
+    background-color: #eef2ff; /* Sehr helles Blau für Tabellenköpfe */
+    color: #1e3a8a;
+    font-weight: 600;
+}
+
+/* Zeilen-Hervorhebung beim Überfahren mit der Maus */
+tbody tr:hover {
+    background-color: #f0f9ff;
+}
+
+/* Status-Badges (z.B. für "Gut", "Warnung", "Kritisch") */
+.badge {
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.9em;
+    color: #ffffff;
+}
+
+.status-gut { background-color: #16a34a; } /* Grün */
+.status-warnung { background-color: #f59e0b; } /* Orange */
+.status-kritisch { background-color: #dc2626; } /* Rot */
+
+/* Zusammenfassungs-Karten */
+.summary-card {
+    background-color: #f9fafb; /* Fast weißer Hintergrund */
+    border: 1px solid #e5e7eb;
+    border-left: 5px solid #3b82f6; /* Blauer Akzentstreifen */
+}
