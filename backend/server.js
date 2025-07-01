@@ -214,7 +214,8 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
             const sourcePath = path.join(outputDir, dashboardFile);
             const destinationPath = path.join(publicDir, dashboardFile);
             fs.copyFileSync(sourcePath, destinationPath);
-            publicDashboardUrl = `/api/results/${dashboardFile}`; // Erstelle den Link
+            const backendHostname = process.env.BACKEND_HOSTNAME || `localhost:${PORT}`;
+            publicDashboardUrl = `https://${backendHostname}/api/results/${dashboardFile}`;
         }
 
         // Sende die korrekten Daten an das Frontend
