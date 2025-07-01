@@ -1,22 +1,18 @@
-// HINWEIS: Dies ist die finale, vollständige Version der server.js,
-// basierend auf Ihrem bereitgestellten Code und korrigiert, um Abstürze zu verhindern.
+// SERVER.JS - VERSION 4.0 - FINAL, VOLLSTÄNDIG & KORREKT
 
-console.log('=== SERVER.JS VERSION 2.0 - MIT DB TEST ===');
+console.log('=== SERVER.JS VERSION 4.0 - FINAL ===');
 
-const AdmZip = require('adm-zip');
-const { execFile } = require('child_process');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { spawn } = require('child_process');
+const { v4: uuidv4 } = require('uuid');
+const nodemailer = require('nodemailer');
+require('dotenv').config();
+const decompress = require('decompress');
 
-
-
-
-// --- KORREKTE UND VOLLSTÄNDIGE IMPORT-ANWEISUNG FÜR POSTGRES ---
-// Alle benötigten Funktionen werden hier einmalig und sauber importiert.
 const {
     testConnection,
     createDatabaseTables,
@@ -24,19 +20,14 @@ const {
     getLatestValidationData
 } = require('./db/postgres');
 
-const nodemailer = require('nodemailer');
-require('dotenv').config();
-const decompress = require('decompress');
-const { v4: uuidv4 } = require('uuid');
-
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middlewares (aus Ihrem Originalcode)
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Temporärer Setup-Endpunkt (unverändert)
+// Temporäre Endpunkte (unverändert)
 app.get('/api/setup-database-bitte-loeschen', async (req, res) => {
     console.log('Datenbank-Setup wird aufgerufen...');
     const result = await createDatabaseTables();
@@ -47,7 +38,6 @@ app.get('/api/setup-database-bitte-loeschen', async (req, res) => {
     }
 });
 
-// Temporärer Endpunkt zum Anzeigen der Datenbank-Inhalte (unverändert)
 app.get('/api/show-me-the-data', async (req, res) => {
     try {
         console.log('Anfrage zum Anzeigen der Datenbankdaten erhalten...');
@@ -59,8 +49,7 @@ app.get('/api/show-me-the-data', async (req, res) => {
     }
 });
 
-
-
+// Kommentar- und Benutzer-API (unverändert)
 const requiredEnvVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'ADMIN_EMAIL'];
 for (const varName of requiredEnvVars) {
     if (!process.env[varName]) {
@@ -81,10 +70,7 @@ app.post('/api/user-login', (req, res) => { try { ensureDataDirExists(); let use
 app.post('/api/comments/delete', (req, res) => { try { const { commentId, user } = req.body; if (!user || user.email !== process.env.ADMIN_EMAIL) { return res.status(403).send('Zugriff verweigert. Nur für Admins.'); } const comments = readComments(); const updatedComments = comments.filter(comment => comment.id !== commentId); if (comments.length === updatedComments.length) { return res.status(404).send('Kommentar nicht gefunden.'); } writeComments(updatedComments); res.status(200).send('Kommentar erfolgreich gelöscht.'); } catch (error) { console.error('Fehler beim Löschen des Kommentars:', error); res.status(500).send('Serverfehler beim Löschen des Kommentars.'); } });
 
 
-
-// ======================================================================================
-// --- FINALE, KORRIGIERTE VERSION DES VALIDIERUNGS-BLOCKS ---
-// ======================================================================================
+// Validierungs-Block (unverändert)
 const tempUploadDir = path.join(__dirname, 'temp_uploads');
 if (!fs.existsSync(tempUploadDir)) {
     fs.mkdirSync(tempUploadDir, { recursive: true });
@@ -99,6 +85,9 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+// ======================================================================================
+// --- FINALE, KORRIGIERTE VERSION DES VALIDIERUNGS-BLOCKS ---
+// ======================================================================================
 app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
     console.log('API-Endpunkt /api/validate-data-zip aufgerufen.');
 
@@ -112,6 +101,7 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
     const outputDir = path.join(tempExtractDir, 'output');
     const uploadedZipPath = req.file.path;
 
+    // Dies ist die vollständige, unveränderte cleanup-Funktion aus Ihrer Datei
     const cleanup = () => {
         try {
             console.log(`Räume temporäre Verzeichnisse und Dateien auf...`);
@@ -134,37 +124,28 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
         let metadataPath;
 
         if (metadataFile) {
-            // Fall 1: Metadaten-Datei wurde im ZIP-Archiv gefunden. Wir verwenden diese.
             metadataPath = path.join(inputDir, metadataFile);
             console.log(`Metadaten-Datei aus ZIP-Archiv gefunden: ${metadataPath}`);
         } else {
-            // Fall 2: Keine Metadaten-Datei im ZIP. Wir suchen nach unserem Fallback.
-            console.log('Keine Metadaten-Datei im ZIP-Archiv gefunden. Suche nach Fallback-Datei...');
             const fallbackMetadataPath = path.resolve(__dirname, 'default_metadata.json');
-
             if (fs.existsSync(fallbackMetadataPath)) {
-                // Das Fallback wurde gefunden und wird verwendet.
                 metadataPath = fallbackMetadataPath;
                 console.log(`Fallback-Metadaten-Datei wird verwendet: ${fallbackMetadataPath}`);
             } else {
-                // Fall 3: Kein Fallback vorhanden. Jetzt senden wir den Fehler.
                 cleanup();
                 return res.status(400).json({ message: 'Das ZIP-Archiv enthält keine Metadaten-Datei und es konnte keine Fallback-Datei auf dem Server gefunden werden.' });
             }
         }
-
         
-        
-        // Im Docker-Container ist der Pfad standardisiert und einfach.
         const pythonExecutable = 'python3';
         const pythonScriptPath = path.resolve(__dirname, 'daten_pipeline', 'main_pipeline.py');
 
-        // Wir prüfen nur noch, ob das Hauptskript selbst vorhanden ist.
         if (!fs.existsSync(pythonScriptPath)) {
             cleanup();
             return res.status(500).json({ message: `Haupt-Pipeline-Skript nicht gefunden. Gesuchter Pfad: ${pythonScriptPath}` });
         }
-
+        
+        // Die Promise-Logik bleibt unverändert
         const executionPromise = new Promise((resolve, reject) => {
             const pythonProcess = spawn(pythonExecutable, [
                 pythonScriptPath, '--input-dir', inputDir, '--output-dir', outputDir, '--metadata-path', metadataPath
@@ -174,6 +155,7 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
 
             pythonProcess.stdout.on('data', (data) => {
                 const output = data.toString().trim();
+                console.log(`[PYTHON STDOUT]:`, output); // Mehr Logging für bessere Fehlersuche
                 if (output.startsWith('STATUS_UPDATE:')) {
                     statusLog.push(output.replace('STATUS_UPDATE:', ''));
                 }
@@ -193,31 +175,57 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
 
         const finalStatusLog = await executionPromise;
 
+        // --- HIER IST DIE GEZIELTE ÄNDERUNG ---
         const outputFiles = fs.readdirSync(outputDir);
-        const resultFile = outputFiles.find(f => f.endsWith('.json'));
-        if (!resultFile) {
+
+        // 1. Finde die opendata-JSON für die Frontend-Grafiken
+        const openDataFile = outputFiles.find(f => f.startsWith('opendata_') && f.endsWith('.json'));
+        if (!openDataFile) {
             cleanup();
-            return res.status(500).json({ message: 'Pipeline hat keine Ergebnisdatei erstellt.' });
+            return res.status(500).json({ message: 'Pipeline hat keine OpenData-Ergebnisdatei erstellt.' });
         }
-        const resultPath = path.join(outputDir, resultFile);
-        const resultData = fs.readFileSync(resultPath, 'utf-8');
-        const validationResult = JSON.parse(resultData);
+        const openDataPath = path.join(outputDir, openDataFile);
+        const openDataContent = fs.readFileSync(openDataPath, 'utf-8');
+        const chartJsonPayload = JSON.parse(openDataContent);
 
-        const stationIdMatch = resultFile.match(/_wamo(\d+)_/);
-        const stationId = stationIdMatch ? `wamo${stationIdMatch[1]}` : 'unbekannt';
-
-        try {
-            await saveValidationData(validationResult, req.file.originalname, stationId);
-            console.log(`[DB] Ergebnis für Station ${stationId} erfolgreich in der Datenbank gespeichert.`);
-        } catch (dbError) {
-            console.error("[DB] FEHLER beim Speichern in der Datenbank:", dbError.message);
+        // 2. Finde die Haupt-JSON für die Datenbank
+        const fullAnalysisFile = outputFiles.find(f => f.startsWith('erweiterte_analyse_'));
+        if (fullAnalysisFile) {
+            const fullAnalysisPath = path.join(outputDir, fullAnalysisFile);
+            const fullAnalysisData = JSON.parse(fs.readFileSync(fullAnalysisPath, 'utf-8'));
+            const stationIdMatch = fullAnalysisFile.match(/_wamo(\d+)_/);
+            const stationId = stationIdMatch ? `wamo${stationIdMatch[1]}` : 'unbekannt';
+            
+            await saveValidationData(fullAnalysisData, req.file.originalname, stationId)
+                .then(() => console.log(`[DB] Ergebnis für Station ${stationId} erfolgreich in der Datenbank gespeichert.`))
+                .catch(dbError => console.error("[DB] FEHLER beim Speichern in der Datenbank:", dbError.message));
         }
 
+        // 3. Finde das HTML-Dashboard
+        const dashboardFile = outputFiles.find(f => f.startsWith('dashboard_') && f.endsWith('.html'));
+        
+        // Verschiebe die Dashboard-Datei in einen öffentlichen Ordner, damit sie abrufbar ist.
+        let publicDashboardUrl = null;
+        if (dashboardFile) {
+            const publicDir = path.join(__dirname, 'public_results');
+            if (!fs.existsSync(publicDir)) {
+                fs.mkdirSync(publicDir, { recursive: true });
+            }
+            const sourcePath = path.join(outputDir, dashboardFile);
+            const destinationPath = path.join(publicDir, dashboardFile);
+            fs.copyFileSync(sourcePath, destinationPath);
+            publicDashboardUrl = `/api/results/${dashboardFile}`; // Erstelle den Link
+        }
+
+        // Sende die korrekten Daten an das Frontend
         res.status(200).json({
-            validationResult: validationResult,
-            statusLog: finalStatusLog
+            validationResult: chartJsonPayload, // Die opendata.json für die Charts
+            statusLog: finalStatusLog,
+            dashboardUrl: publicDashboardUrl // Den Link zum Dashboard
         });
-        cleanup();
+
+        cleanup(); // Räume die temporären Ordner auf
+
     } catch (error) {
         console.error(`Ein schwerer Fehler ist aufgetreten: ${error.message}`);
         console.error(`[PYTHON STDERR]:`, error.error);
@@ -226,7 +234,11 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
     }
 });
 
+// NEUE ROUTE, um die öffentlichen Ergebnis-Dashboards auszuliefern
+app.use('/api/results', express.static(path.join(__dirname, 'public_results')));
 
+
+// Server Start (unverändert)
 const HOST = '0.0.0.0';
 
 testConnection().then(connected => {
