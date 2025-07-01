@@ -642,33 +642,31 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
             db_loader = DatabaseLoader()
             if db_loader.conn:
                 try:
-                    # Schritt 1: Spalten für Werte (_Mittelwert) und Flags (_QARTOD_Flag) trennen
+                    # Schritt 1: Daten aufbereiten (wie zuvor)
                     wert_cols = {col: col.replace('_Mittelwert', '') for col in daily_results.columns if col.endswith('_Mittelwert')}
                     flag_cols = {col: col.replace('_Aggregat_QARTOD_Flag', '') for col in daily_results.columns if col.endswith('_Aggregat_QARTOD_Flag')}
 
-                    # Schritt 2: Werte-DataFrame erstellen und umformen
                     wert_df = daily_results[list(wert_cols.keys())].rename(columns=wert_cols)
                     wert_df = wert_df.reset_index().melt(id_vars=['Datum'], var_name='parameter', value_name='wert')
 
-                    # Schritt 3: Flag-DataFrame erstellen und umformen
                     flag_df = daily_results[list(flag_cols.keys())].rename(columns=flag_cols)
                     flag_df = flag_df.reset_index().melt(id_vars=['Datum'], var_name='parameter', value_name='qualitaets_flag')
 
-                    # Schritt 4: Daten zusammenführen
-                    # Wir verwenden einen 'outer' merge, falls für einen Parameter mal ein Wert oder ein Flag fehlt
                     merged_data = pd.merge(wert_df, flag_df, on=['Datum', 'parameter'], how='outer')
-
-                    # Schritt 5: Finale Vorbereitung für die Datenbank
+                    
                     merged_data.rename(columns={'Datum': 'zeitstempel'}, inplace=True)
                     merged_data['see'] = station_id
                     
-                    # Nur Zeilen mit einem gültigen Wert in die Datenbank schreiben
                     db_data = merged_data.dropna(subset=['wert'])
                     
-                    # Nur die final benötigten Spalten auswählen
-                    db_data_final = db_data[['zeitstempel', 'see', 'parameter', 'wert', 'qualitaets_flag']]
+                    # Schritt 2: Sicherstellen, dass der Zeitstempel ein Python-DateTime-Objekt ist
+                    db_data['zeitstempel'] = pd.to_datetime(db_data['zeitstempel'])
 
-                    db_loader.insert_validated_data(db_data_final)
+                    # Schritt 3: Daten in eine Liste von Tupeln umwandeln - das ist der sicherste Weg
+                    records_to_insert = [tuple(x) for x in db_data[['zeitstempel', 'see', 'parameter', 'wert', 'qualitaets_flag']].to_numpy()]
+
+                    # Schritt 4: Die fertige Liste an den Loader übergeben
+                    db_loader.insert_validated_data(records_to_insert)
 
                 except Exception as e:
                     print(f"\n[FEHLER] Bei der Aufbereitung der Daten für die Datenbank ist ein Fehler aufgetreten: {e}")

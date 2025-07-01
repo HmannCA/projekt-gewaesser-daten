@@ -1,9 +1,11 @@
+# VOLLSTÄNDIGE & FINALE VERSION der DatabaseLoader.py
+
 import pandas as pd
 import psycopg2
 import os
 from dotenv import load_dotenv
 
-# Lade Umgebungsvariablen aus der .env-Datei (wichtig für die lokale Entwicklung)
+# Lade Umgebungsvariablen aus der .env-Datei
 load_dotenv()
 
 class DatabaseLoader:
@@ -23,7 +25,7 @@ class DatabaseLoader:
                 user=os.getenv("DB_USER"),
                 password=os.getenv("DB_PASSWORD"),
                 host=os.getenv("DB_HOST"),
-                port=os.getenv("DB_PORT", "5432") # Standard-Postgres-Port
+                port=os.getenv("DB_PORT", "5432")
             )
             self.cur = self.conn.cursor()
             print("Datenbankverbindung erfolgreich hergestellt.")
@@ -32,46 +34,37 @@ class DatabaseLoader:
             self.conn = None
             self.cur = None
 
-    def insert_validated_data(self, data: pd.DataFrame):
+    def insert_validated_data(self, data_tuples: list):
         """
-        Fügt die validierten Daten aus dem DataFrame in die Zieltabelle ein.
+        Fügt die validierten Daten aus einer Liste von Tupeln in die Zieltabelle ein.
+        Verwendet executemany für hohe Effizienz.
 
         Args:
-            data (pd.DataFrame): Der DataFrame, der die aufbereiteten Zeitreihendaten
-                                 und die Qualitäts-Flags enthält.
+            data_tuples (list): Eine Liste von Tupeln, wobei jedes Tupel eine Zeile
+                                in der Datenbank darstellt.
+                                Reihenfolge: (zeitstempel, see, parameter, wert, qualitaets_flag)
         """
         if not self.conn:
             print("Keine Datenbankverbindung vorhanden. Daten können nicht eingefügt werden.")
             return
+        if not data_tuples:
+            print("Keine Daten zum Einfügen vorhanden.")
+            return
 
-        # Annahme: Eine Tabelle namens 'messwerte' existiert mit passenden Spalten
-        # Beispiel: (timestamp, parameter, value, quality_flag, station_id)
-        # HINWEIS: Dies muss an Ihre exakte Tabellenstruktur angepasst werden!
-
+        sql_insert_query = """
+            INSERT INTO messwerte (zeitstempel, see, parameter, wert, qualitaets_flag)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (zeitstempel, see, parameter) DO UPDATE
+            SET wert = EXCLUDED.wert, qualitaets_flag = EXCLUDED.qualitaets_flag;
+        """
+        
         try:
-            for index, row in data.iterrows():
-                # Beispielhafter INSERT-Befehl. Die Spaltennamen ('zeitstempel', 'parameter', 'wert' etc.)
-                # und der Tabellenname ('messwerte') müssen exakt mit Ihrer Datenbank übereinstimmen.
-                self.cur.execute(
-                    """
-                    INSERT INTO messwerte (zeitstempel, see, parameter, wert, qualitaets_flag)
-                    VALUES (%s, %s, %s, %s, %s)
-                    ON CONFLICT (zeitstempel, see, parameter) DO UPDATE
-                    SET wert = EXCLUDED.wert, qualitaets_flag = EXCLUDED.qualitaets_flag;
-                    """,
-                    (
-                        row['zeitstempel'],
-                        row['see'],          # Annahme: Es gibt eine Spalte 'see'
-                        row['parameter'],    # Annahme: Es gibt eine Spalte 'parameter'
-                        row['wert'],         # Annahme: Es gibt eine Spalte 'wert'
-                        row['qualitaets_flag'] # Annahme: Es gibt eine Spalte 'qualitaets_flag'
-                    )
-                )
+            self.cur.executemany(sql_insert_query, data_tuples)
             self.conn.commit()
-            print(f"{len(data)} Datensätze erfolgreich in die Datenbank eingefügt/aktualisiert.")
+            print(f"{len(data_tuples)} Datensätze erfolgreich in die Datenbank eingefügt/aktualisiert.")
         except Exception as e:
-            print(f"Fehler beim Einfügen der Daten: {e}")
-            self.conn.rollback() # Änderungen im Fehlerfall zurückrollen
+            print(f"Fehler beim Einfügen der Daten mit executemany: {e}")
+            self.conn.rollback()
 
     def __del__(self):
         """
