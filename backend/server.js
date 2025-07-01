@@ -196,9 +196,9 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
             const stationIdMatch = fullAnalysisFile.match(/_wamo(\d+)_/);
             const stationId = stationIdMatch ? `wamo${stationIdMatch[1]}` : 'unbekannt';
             
-            await saveValidationData(fullAnalysisData, req.file.originalname, stationId)
-                .then(() => console.log(`[DB] Ergebnis für Station ${stationId} erfolgreich in der Datenbank gespeichert.`))
-                .catch(dbError => console.error("[DB] FEHLER beim Speichern in der Datenbank:", dbError.message));
+            // await saveValidationData(fullAnalysisData, req.file.originalname, stationId)
+            //    .then(() => console.log(`[DB] Ergebnis für Station ${stationId} erfolgreich in der Datenbank gespeichert.`))
+            //    .catch(dbError => console.error("[DB] FEHLER beim Speichern in der Datenbank:", dbError.message));
         }
 
         // 3. Finde das HTML-Dashboard
