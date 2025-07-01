@@ -60,7 +60,7 @@ class DatabaseLoader:
                     SET wert = EXCLUDED.wert, qualitaets_flag = EXCLUDED.qualitaets_flag;
                     """,
                     (
-                        index, # Der DataFrame-Index ist der Zeitstempel
+                        row['zeitstempel'],
                         row['see'],          # Annahme: Es gibt eine Spalte 'see'
                         row['parameter'],    # Annahme: Es gibt eine Spalte 'parameter'
                         row['wert'],         # Annahme: Es gibt eine Spalte 'wert'
