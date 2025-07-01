@@ -215,6 +215,7 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
             const destinationPath = path.join(publicDir, dashboardFile);
             fs.copyFileSync(sourcePath, destinationPath);
             const backendHostname = process.env.BACKEND_HOSTNAME || `localhost:${PORT}`;
+            console.log(`[DEBUG] Backend Hostname wird verwendet: ${backendHostname}`);
             publicDashboardUrl = `https://${backendHostname}/api/results/${dashboardFile}`;
         }
 

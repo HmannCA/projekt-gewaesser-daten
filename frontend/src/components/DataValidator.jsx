@@ -1,8 +1,9 @@
-// DataValidator.jsx - FINALE VERSION MIT EINGEBETTETEM DASHBOARD
+// DataValidator.jsx - FINALE VERSION MIT IFRAME UND "IN NEUEM TAB ÖFFNEN"-BUTTON
 
 import React, { useState } from 'react';
 import { uploadAndValidateZip } from '../utils/api'; 
-import { Loader2 } from 'lucide-react';
+// HINZUGEFÜGT: ExternalLink-Icon für den Button
+import { Loader2, ExternalLink } from 'lucide-react';
 import QualityChart from './charts/QualityChart';
 import TimeSeriesChart from './charts/TimeSeriesChart';
 
@@ -150,16 +151,27 @@ const DataValidator = () => {
           </div>
 
           {/* --- BEGINN DER ÄNDERUNG --- */}
-          {/* Wir ersetzen den Link durch einen Iframe, der das Dashboard direkt einbettet */}
           {dashboardUrl && (
             <div className="mt-12">
-                <h4 className="text-xl font-bold text-center text-gray-800 dark:text-white mb-4">Detailliertes HTML-Dashboard</h4>
+                <div className="flex justify-center items-center mb-4">
+                    <h4 className="text-xl font-bold text-gray-800 dark:text-white">Detailliertes HTML-Dashboard</h4>
+                    {/* Hinzugefügter Button/Link */}
+                    <a
+                        href={dashboardUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-4 inline-flex items-center p-2 text-sm text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        title="In neuem Tab öffnen"
+                    >
+                        <ExternalLink className="w-5 h-5" />
+                    </a>
+                </div>
                 <div className="w-full bg-white border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
                     <iframe
                         src={dashboardUrl}
                         title="Detailliertes Validierungs-Dashboard"
-                        className="w-full h-[800px] border-0" // Höhe kann bei Bedarf angepasst werden
-                        sandbox="allow-scripts allow-same-origin" // Wichtig für die Sicherheit
+                        className="w-full h-[800px] border-0"
+                        sandbox="allow-scripts allow-same-origin"
                     />
                 </div>
             </div>
