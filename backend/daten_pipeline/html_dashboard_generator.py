@@ -24,7 +24,779 @@ class HTMLDashboardGenerator:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WAMO Gewässermonitoring - {station_name}</title>
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{ 
+            font-family: Arial, sans-serif; 
+            background: #f5f5f5; 
+            color: #333;
+            line-height: 1.6;
+        }}
+        .container {{ 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }}
+        
+        /* Header */
+        .header {{
+            background: #0066CC;
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }}
+        .header h1 {{ 
+            font-size: 2.5em; 
+            margin-bottom: 10px;
+        }}
+        .header .subtitle {{
+            font-size: 1.2em;
+            opacity: 0.9;
+        }}
+        .header .timestamp {{
+            font-size: 0.9em;
+            opacity: 0.7;
+            margin-top: 10px;
+        }}
+        
+        /* Tab Navigation */
+        .tab-nav {{
+            display: flex;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }}
+        .tab-button {{
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: white;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            border-right: 1px solid #e0e0e0;
+        }}
+        .tab-button:last-child {{
+            border-right: none;
+        }}
+        .tab-button:hover {{
+            background: #f5f5f5;
+        }}
+        .tab-button.active {{
+            background: #0066CC;
+            color: white;
+            font-weight: bold;
+        }}
+        
+        /* Tab Content */
+        .tab-content {{
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }}
+        .tab-content.active {{
+            display: block;
+        }}
+        
+        /* Status Alert */
+        .status-alert {{
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }}
+        .status-gut {{ 
+            background: #d4edda; 
+            color: #155724; 
+            border: 2px solid #28a745;
+        }}
+        .status-warnung {{ 
+            background: #fff3cd; 
+            color: #856404; 
+            border: 2px solid #ffc107;
+        }}
+        .status-kritisch {{ 
+            background: #f8d7da; 
+            color: #721c24; 
+            border: 2px solid #dc3545;
+        }}
+        
+        /* Hauptprobleme */
+        .problems-section {{
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }}
+        .problems-section h2 {{
+            color: #dc3545;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }}
+        .problem-item {{
+            padding: 10px 15px;
+            margin: 10px 0;
+            background: #fff5f5;
+            border-left: 4px solid #dc3545;
+            border-radius: 5px;
+        }}
+        
+        /* Sofortmaßnahmen */
+        .actions-section {{
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }}
+        .actions-section h2 {{
+            color: #ff6b00;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }}
+        .action-item {{
+            padding: 15px;
+            margin: 10px 0;
+            background: #fff8f0;
+            border-left: 4px solid #ff6b00;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }}
+        .action-icon {{
+            font-size: 1.5em;
+            margin-right: 15px;
+        }}
+        
+        /* Risiko-Indikatoren */
+        .risk-indicators {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }}
+        .risk-card {{
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }}
+        .risk-value {{
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+        }}
+        .risk-low {{ color: #28a745; }}
+        .risk-medium {{ color: #ffc107; }}
+        .risk-high {{ color: #dc3545; }}
+        .risk-label {{
+            font-size: 1.1em;
+            color: #666;
+        }}
+        
+        /* Parameter-Tabelle */
+        .parameters-section {{
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }}
+        .parameters-section h2 {{
+            color: #0066CC;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }}
+        
+        /* Tabellen Styles */
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }}
+        th, td {{
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }}
+        th {{
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #495057;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }}
+        tr:hover {{
+            background: #f8f9fa;
+        }}
+        .value-good {{ color: #28a745; }}
+        .value-warning {{ color: #ffc107; }}
+        .value-bad {{ color: #dc3545; }}
+        
+        /* Error Table Specific */
+        .error-table {{
+            max-height: 600px;
+            overflow-y: auto;
+            position: relative;
+        }}
+        .error-table table {{
+            margin-top: 0;
+        }}
+        
+        /* Text Display */
+        .text-display {{
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+        }}
+        
+        /* Filter Controls */
+        .filter-controls {{
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }}
+        .filter-controls select, .filter-controls input {{
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }}
+        .filter-controls button {{
+            padding: 8px 20px;
+            background: #0066CC;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }}
+        .filter-controls button:hover {{
+            background: #0052a3;
+        }}
+        
+        /* Kontakt-Box */
+        .contact-section {{
+            background: #e3f2fd;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 2px solid #0066CC;
+        }}
+        .contact-section h2 {{
+            color: #0066CC;
+            margin-bottom: 15px;
+        }}
+        .contact-item {{
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+        }}
+        
+        /* Footer */
+        .footer {{
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }}
 
+                /* Info-Icon Styles */
+        .info-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background: #0066CC;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: all 0.3s;
+        }
+        
+        .info-icon:hover {
+            background: #0052a3;
+            transform: scale(1.1);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #0066CC;
+        }
+        
+        .modal-header h2 {
+            color: #0066CC;
+            margin: 0;
+        }
+        
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: #000;
+        }
+        
+        .modal-body {
+            line-height: 1.6;
+        }
+        
+        .modal-body h3 {
+            color: #333;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .modal-body ul {
+            margin-left: 20px;
+        }
+        
+        .modal-body .metric-explanation {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #0066CC;
+        }
+        
+        .modal-body .value-interpretation {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .interpretation-good {
+            background: #d4edda;
+            border: 1px solid #28a745;
+        }
+        
+        .interpretation-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+        }
+        
+        .interpretation-danger {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+        
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+        
+        @keyframes slideIn {
+            from {transform: translateY(-50px); opacity: 0;}
+            to {transform: translateY(0); opacity: 1;}
+        }
+
+                /* Karten-Styles */
+        .map-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .map-section h2 {
+            color: #0066CC;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .map-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #0066CC;
+        }
+        
+        @media (max-width: 768px) {
+            #map {
+                height: 300px;
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {{
+            .container {{ padding: 10px; }}
+            .header h1 {{ font-size: 1.8em; }}
+            .risk-indicators {{ grid-template-columns: 1fr; }}
+            .tab-nav {{ flex-direction: column; }}
+            .tab-button {{ border-right: none; border-bottom: 1px solid #e0e0e0; }}
+        }}
+        
+        /* Print Styles */
+        @media print {{
+            body {{ background: white; }}
+            .header {{ background: none; color: black; border: 2px solid black; }}
+            .tab-nav {{ display: none; }}
+            .tab-content {{ display: block !important; page-break-after: always; }}
+            .no-print {{ display: none; }}
+        }}
+
+        /* Erweiterte Analyse Tab - Bessere Listen-Formatierung */
+        #analysisContent h3 {
+            color: #0066CC;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        #analysisContent h4 {
+            color: #333;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        #analysisContent ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        #analysisContent li {
+            margin-bottom: 5px;
+            line-height: 1.6;
+        }
+
+        #analysisContent li strong {
+            color: #333;
+        }
+
+        /* Eingerückte Bereiche */
+        #analysisContent .indented-section {
+            margin-left: 20px;
+            padding-left: 15px;
+            border-left: 3px solid #e0e0e0;
+        }
+
+        /* Verbesserte Tabellen im Analysis Tab */
+        #analysisContent table {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        #analysisContent table th {
+            background: #0066CC;
+            color: white;
+            font-weight: normal;
+            padding: 10px;
+        }
+
+        #analysisContent table td {
+            padding: 8px 10px;
+        }
+
+        /* Info-Boxen für Parameter-Bewertungen */
+        .parameter-evaluation-box {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #0066CC;
+        }
+
+        .parameter-evaluation-box.good {
+            border-left-color: #28a745;
+            background: #f0fdf4;
+        }
+
+        .parameter-evaluation-box.warning {
+            border-left-color: #ffc107;
+            background: #fffbf0;
+        }
+
+        .parameter-evaluation-box.critical {
+            border-left-color: #dc3545;
+            background: #fef0f0;
+        }
+
+        /* Analyse-Sektionen */
+        .analysis-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Prominente Metriken (Gesamtqualität, Risiko-Index) */
+        .prominent-metric {
+            display: inline-block;
+            padding: 20px 30px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            min-width: 250px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .prominent-metric:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .prominent-metric .metric-label {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .prominent-metric .metric-value {
+            font-size: 3.5em;
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .prominent-metric .metric-unit {
+            font-size: 0.4em;
+            font-weight: normal;
+            color: #666;
+        }
+
+        .prominent-metric .metric-interpretation {
+            font-size: 1em;
+            margin-top: 10px;
+        }
+
+        /* Farbcodierung für prominente Metriken */
+        .prominent-metric.good {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 2px solid #28a745;
+        }
+
+        .prominent-metric.good .metric-value {
+            color: #155724;
+        }
+
+        .prominent-metric.warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 2px solid #ffc107;
+        }
+
+        .prominent-metric.warning .metric-value {
+            color: #856404;
+        }
+
+        .prominent-metric.critical {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border: 2px solid #dc3545;
+        }
+
+        .prominent-metric.critical .metric-value {
+            color: #721c24;
+        }
+
+        /* SOFORTMASSNAHMEN - Sehr prominent */
+        .urgent-recommendations {
+            background: #fff5f5;
+            border: 3px solid #dc3545;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 4px 20px rgba(220, 53, 69, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 4px 20px rgba(220, 53, 69, 0.2); }
+            50% { box-shadow: 0 4px 30px rgba(220, 53, 69, 0.4); }
+            100% { box-shadow: 0 4px 20px rgba(220, 53, 69, 0.2); }
+        }
+
+        .urgent-recommendations h4 {
+            color: #dc3545;
+            font-size: 1.5em;
+            margin: 0 0 15px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .urgent-icon {
+            font-size: 1.3em;
+            margin-right: 10px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .urgent-content {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 5px solid #dc3545;
+        }
+
+        .urgent-list {
+            margin: 10px 0 10px 20px;
+            counter-reset: urgent-counter;
+            list-style-type: none;
+        }
+
+        .urgent-list li {
+            counter-increment: urgent-counter;
+            margin-bottom: 12px;
+            padding-left: 10px;
+            position: relative;
+            font-weight: 500;
+            line-height: 1.6;
+        }
+
+        .urgent-list li::before {
+            content: counter(urgent-counter) ".";
+            position: absolute;
+            left: -25px;
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Severity-Klassen für Tabellen */
+        .severity-critical {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .severity-warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .severity-good {
+            color: #28a745;
+        }
+
+        /* Verbesserte Datumsanzeige */
+        #analysisContent p strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+                /* Einstellungen Tab */
+        .settings-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .settings-section h3 {
+            color: #0066CC;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .settings-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .settings-table td {
+            padding: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .settings-table td:first-child {
+            font-weight: bold;
+            width: 200px;
+            color: #555;
+        }
+
+        .settings-value {
+            color: #333;
+        }
+
+        .settings-unit {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .settings-note {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            border-left: 4px solid #0066CC;
+        }
+    </style>
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
