@@ -30,13 +30,7 @@ const Header = ({
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="flex items-center space-x-2">
-              <Droplets className="w-8 h-8 text-blue-500" />
-              <div>
-                <h1 className="text-xl font-bold">Digitale Gewässergüte-Messstationen</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Von Rohdaten zu wertvoller Information -{'>'} Automatische Validierung & Open Data</p>
-              </div>
-            </div>
+
           </div>
           
           <div className="flex items-center space-x-4">

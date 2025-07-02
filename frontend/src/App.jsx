@@ -103,76 +103,72 @@ function App() {
   }, [currentUser, setShowLoginModal]);
 
 
-  return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-50'}`}>
-      <HeroSection />
-      
-      {/* Die 'setActiveView' Funktion wird an den Header weitergegeben */}
-      <Header
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        detailLevel={detailLevel}
-        setDetailLevel={setDetailLevel}
-        currentUser={currentUser}
-        handleLogout={handleLogout}
-        handleNotificationChange={handleNotificationChange}
-        setShowLoginModal={setShowLoginModal}
-        setShowIntroModal={setShowIntroModal}
-        setActiveView={setActiveView} // ERGÄNZTE PROP
-      />
+  return (
+    <div className={`min-h-screen flex flex-col ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-50'}`}>
+      {/* Header-Wrapper, der HeroSection und Header zusammenfasst */}
+      <div className="w-full">
+        <HeroSection />
+        <Header
+            darkMode={darkMode}
+            setDarkMode={setDarkMode}
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+            detailLevel={detailLevel}
+            setDetailLevel={setDetailLevel}
+            currentUser={currentUser}
+            handleLogout={handleLogout}
+            handleNotificationChange={handleNotificationChange}
+            setShowLoginModal={setShowLoginModal}
+            setShowIntroModal={setShowIntroModal}
+            setActiveView={setActiveView}
+        />
+      </div>
 
-      {/* ==================================================================== */}
-      {/* --- BEGINN DER ERGÄNZUNG 3: KONDITIONALE ANZEIGE DER INHALTE --- */}
-      {/* Hier wird entschieden, ob die bestehende Ansicht oder der neue Validator gezeigt wird */}
+      {/* Haupt-Inhaltsbereich, der den Rest der Seite einnimmt */}
+      <div className="flex flex-1">
+        {activeView === 'showcase' ? (
+          <>
+            <Sidebar
+              sidebarOpen={sidebarOpen}
+              filteredSteps={filteredSteps}
+              activeStep={activeStep}
+              setActiveStep={setActiveStep}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+            />
+            <MainContent
+              filteredSteps={filteredSteps}
+              activeStep={activeStep}
+              setActiveStep={setActiveStep}
+              detailLevel={detailLevel}
+              expandedSections={expandedSections}
+              toggleSection={toggleSection}
+              comments={comments}
+              newComment={newComment}
+              setNewComment={setNewComment}
+              showComments={showComments}
+              setShowComments={setShowComments}
+              saveComment={handleSaveComment}
+              handleDeleteComment={handleCommentDelete}
+              currentUser={currentUser}
+              setModalImageUrl={setModalImageUrl}
+            />
+          </>
+        ) : (
+          <div className="w-full">
+            <DataValidator />
+          </div>
+        )}
+      </div>
 
-      {activeView === 'showcase' ? (
-        // IHR BESTEHENDER CODE FÜR DIE HAUPTANSICHT (UNVERÄNDERT)
-        <div className="flex">
-            <Sidebar
-              sidebarOpen={sidebarOpen}
-              filteredSteps={filteredSteps}
-              activeStep={activeStep}
-              setActiveStep={setActiveStep}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-            />
-    
-            <MainContent
-              filteredSteps={filteredSteps}
-              activeStep={activeStep}
-              setActiveStep={setActiveStep}
-              detailLevel={detailLevel}
-              expandedSections={expandedSections}
-              toggleSection={toggleSection}
-              comments={comments}
-              newComment={newComment}
-              setNewComment={setNewComment}
-              showComments={showComments}
-              setShowComments={setShowComments}
-              saveComment={handleSaveComment}
-              handleDeleteComment={handleCommentDelete}
-              currentUser={currentUser}
-              setModalImageUrl={setModalImageUrl}
-            />
-        </div>
-      ) : (
-        // DIE NEUE VALIDATOR-ANSICHT
-        <DataValidator />
-      )}
-      {/* --- ENDE DER ERGÄNZUNG 3 --- */}
-      {/* ==================================================================== */}
-
-
-      {/* Ihre bestehenden Modals (unverändert) */}
-      <IntroModal show={showIntroModal} onClose={handleIntroClose} />
-      <LoginModal show={showLoginModal} onLogin={handleLogin} />
-      <ImageModal imageUrl={modalImageUrl} onClose={() => setModalImageUrl(null)} />
-      <UseCaseModal useCase={selectedUseCase} onClose={() => setSelectedUseCase(null)} />
-      <ExplanationModal explanation={codeExplanation} onClose={() => setCodeExplanation(null)} />
-    </div>
-  );
+      {/* Ihre bestehenden Modals bleiben unverändert */}
+      <IntroModal show={showIntroModal} onClose={handleIntroClose} />
+      <LoginModal show={showLoginModal} onLogin={handleLogin} />
+      <ImageModal imageUrl={modalImageUrl} onClose={() => setModalImageUrl(null)} />
+      <UseCaseModal useCase={selectedUseCase} onClose={() => setSelectedUseCase(null)} />
+      <ExplanationModal explanation={codeExplanation} onClose={() => setCodeExplanation(null)} />
+    </div>
+  );
 }
 
 export default App;

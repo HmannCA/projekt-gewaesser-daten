@@ -1,6 +1,6 @@
 // src/components/HeroSection.jsx
 import React from 'react';
-import { ShieldCheck, TrendingUp, Cpu } from 'lucide-react';
+import { ShieldCheck, TrendingUp, Cpu, Zap } from 'lucide-react';
 
 const HeroSection = () => {
   return (
@@ -48,8 +48,16 @@ const HeroSection = () => {
               Interne Kompetenz aufbauen und nutzen, um unabhängig von teuren Fremdlösungen eine verlässliche und wissenschaftlich fundierte Datenvalidierung sicherzustellen.
             </p>
           </div>
-
         </div>
+        <div className="mt-12 p-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-500/30 rounded-xl text-center">
+          <div className="flex items-center justify-center space-x-3">
+            <Zap className="w-8 h-8 text-blue-500" />
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Digitale Gewässergüte-Messstationen</h2>
+              <p className="text-md text-gray-600 dark:text-gray-300">Von Rohdaten zu wertvoller Information → Automatische Validierung & Open Data</p>
+            </div>
+          </div>
+        </div>        
       </div>
     </div>
   );
