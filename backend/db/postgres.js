@@ -143,9 +143,25 @@ const saveValidationData = async (resultData, sourceFile) => {
     }
 };
 
-// --- ENDE DER ERGÄNZUNG ---
-// ========================================================
-
+const logUserLogin = async (userData) => {
+    const query = `
+        INSERT INTO benutzer_anmeldungen (vorname, nachname, email, benachrichtigungen)
+        VALUES ($1, $2, $3, $4)
+    `;
+    try {
+        await pool.query(query, [
+            userData.firstName,
+            userData.lastName,
+            userData.email,
+            userData.notificationFrequency
+        ]);
+        console.log(`[AUDIT] Benutzeranmeldung für ${userData.email} erfolgreich protokolliert.`);
+        return { success: true };
+    } catch (error) {
+        console.error(`[AUDIT] Fehler beim Protokollieren der Benutzeranmeldung:`, error.message);
+        return { success: false, message: error.message };
+    }
+};
 
 module.exports = {
   testConnection,

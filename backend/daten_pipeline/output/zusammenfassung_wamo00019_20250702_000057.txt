@@ -1,0 +1,24 @@
+WAMO GEWÄSSERMONITORING - ZUSAMMENFASSUNG
+==================================================
+
+Station: wamo00019
+Zeitraum: 2025-06-07T00:00:00 bis 2025-06-13T23:00:00
+Erstellt: 02.07.2025 00:00 Uhr
+
+GESAMTSTATUS: WARNUNG
+==================================================
+
+IDENTIFIZIERTE PROBLEME:
+• Hoher landwirtschaftlicher Einfluss
+
+ERFORDERLICHE SOFORTMASSNAHMEN:
+→ Kontakt mit Landwirtschaftsbehörde aufnehmen
+
+RISIKO-INDIKATOREN:
+• Landwirtschaftlicher Einfluss: 93.1/100
+• Sensorplausibilität: 99.0%
+
+KONTAKTE FÜR RÜCKFRAGEN:
+• Untere Wasserbehörde LK VG: 03834-8760-0
+• Gesundheitsamt LK VG: 03834-8760-2301
+• StALU MS: 0395-380-0

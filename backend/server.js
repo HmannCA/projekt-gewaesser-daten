@@ -1,4 +1,4 @@
-// SERVER.JS - VERSION 4.0 - FINAL, VOLLSTÄNDIG & KORREKT
+// SERVER.JS - VERSION 4.0 - FINAL, VOLLSTÄNDIG & KORREKT (mit korrigierter Reihenfolge)
 
 console.log('=== SERVER.JS VERSION 4.0 - FINAL ===');
 
@@ -17,7 +17,8 @@ const {
     testConnection,
     createDatabaseTables,
     saveValidationData,
-    getLatestValidationData
+    getLatestValidationData,
+    logUserLogin
 } = require('./db/postgres');
 
 const app = express();
@@ -66,9 +67,8 @@ const writeComments = (comments) => { ensureDataDirExists(); fs.writeFileSync(CO
 const transporter = nodemailer.createTransport({ host: process.env.SMTP_HOST, port: process.env.SMTP_PORT, secure: process.env.SMTP_SECURE === 'true', auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } });
 app.get('/api/comments', (req, res) => { try { const comments = readComments(); res.status(200).json(comments); } catch (error) { console.error('Fehler beim Lesen der Kommentare:', error); res.status(500).send('Serverfehler beim Lesen der Kommentare.'); } });
 app.post('/api/comments', (req, res) => { try { const comments = readComments(); const newComment = { id: Date.now().toString(), timestamp: new Date().toISOString(), author: req.body.author.firstName, text: req.body.text, stepId: req.body.stepId, sectionId: req.body.sectionId, level: req.body.level, }; comments.push(newComment); writeComments(comments); let allUsers = []; if (fs.existsSync(NOTIFICATION_LIST_PATH)) { const usersFileContent = fs.readFileSync(NOTIFICATION_LIST_PATH, 'utf-8'); if (usersFileContent.trim() !== '') { allUsers = JSON.parse(usersFileContent); } } const recipients = allUsers.filter(user => user.notificationFrequency === 'immediate' && user.email !== req.body.author.email); if (recipients.length > 0) { console.log(`Sende ${recipients.length} sofortige Benachrichtigungen...`); recipients.forEach(recipient => { transporter.sendMail({ from: `"Digitale Gewässergüte" <${process.env.SMTP_USER}>`, to: recipient.email, subject: `Neuer Kommentar im Abschnitt "${newComment.sectionId}"`, html: `<p>Hallo ${recipient.firstName},</p><p>Es gibt einen neuen Kommentar von <b>${newComment.author}</b> im Prozessschritt <b>"${newComment.stepId}"</b> (Level: ${newComment.level}).</p><p><b>Kommentar:</b></p><p><i>"${newComment.text}"</i></p><p>Sie können die Anwendung hier aufrufen: <a href="https://wasserqualitaet-vg.fly.dev" target="_blank">Projekt WAMO-Messdaten Vorpomemrn-Greifswald</a></p>` }).catch(err => { console.error(`Fehler beim Senden der E-Mail an ${recipient.email}:`, err); }); }); } res.status(201).json(newComment); } catch (error) { console.error('Fehler beim Verarbeiten des neuen Kommentars:', error); res.status(500).send('Serverfehler beim Verarbeiten des Kommentars.'); } });
-app.post('/api/user-login', (req, res) => { try { ensureDataDirExists(); let users = []; if (fs.existsSync(NOTIFICATION_LIST_PATH)) { const fileContent = fs.readFileSync(NOTIFICATION_LIST_PATH, 'utf-8'); if(fileContent.trim() !== '') { users = JSON.parse(fileContent); } } const existingUserIndex = users.findIndex(u => u.email === req.body.email); const userData = { firstName: req.body.firstName, lastName: req.body.lastName, email: req.body.email, notificationFrequency: req.body.notificationFrequency, }; if (existingUserIndex > -1) { users[existingUserIndex] = { ...users[existingUserIndex], ...userData }; } else { users.push(userData); } fs.writeFileSync(NOTIFICATION_LIST_PATH, JSON.stringify(users, null, 2), 'utf-8'); res.status(200).json({ message: 'Benutzer gespeichert.' }); } catch (error) { console.error('Fehler beim Speichern des Benutzers:', error); res.status(500).send('Serverfehler beim Speichern des Benutzers.'); } });
+app.post('/api/user-login', async (req, res) => { try { ensureDataDirExists(); let users = []; if (fs.existsSync(NOTIFICATION_LIST_PATH)) { const fileContent = fs.readFileSync(NOTIFICATION_LIST_PATH, 'utf-8'); if(fileContent.trim() !== '') { users = JSON.parse(fileContent); } } const existingUserIndex = users.findIndex(u => u.email === req.body.email); const userData = { firstName: req.body.firstName, lastName: req.body.lastName, email: req.body.email, notificationFrequency: req.body.notificationFrequency, }; if (existingUserIndex > -1) { users[existingUserIndex] = { ...users[existingUserIndex], ...userData }; } else { users.push(userData); } fs.writeFileSync(NOTIFICATION_LIST_PATH, JSON.stringify(users, null, 2), 'utf-8'); await logUserLogin(userData); res.status(200).json({ message: 'Benutzer gespeichert.' }); } catch (error) { console.error('Fehler beim Speichern des Benutzers:', error); res.status(500).send('Serverfehler beim Speichern des Benutzers.'); } });
 app.post('/api/comments/delete', (req, res) => { try { const { commentId, user } = req.body; if (!user || user.email !== process.env.ADMIN_EMAIL) { return res.status(403).send('Zugriff verweigert. Nur für Admins.'); } const comments = readComments(); const updatedComments = comments.filter(comment => comment.id !== commentId); if (comments.length === updatedComments.length) { return res.status(404).send('Kommentar nicht gefunden.'); } writeComments(updatedComments); res.status(200).send('Kommentar erfolgreich gelöscht.'); } catch (error) { console.error('Fehler beim Löschen des Kommentars:', error); res.status(500).send('Serverfehler beim Löschen des Kommentars.'); } });
-
 
 // Validierungs-Block (unverändert)
 const tempUploadDir = path.join(__dirname, 'temp_uploads');
@@ -85,9 +85,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// ======================================================================================
-// --- FINALE, KORRIGIERTE VERSION DES VALIDIERUNGS-BLOCKS ---
-// ======================================================================================
 app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
     console.log('API-Endpunkt /api/validate-data-zip aufgerufen.');
 
@@ -96,21 +93,32 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
         return res.status(400).json({ message: 'Keine ZIP-Datei hochgeladen.' });
     }
 
-    const tempExtractDir = path.join(__dirname, 'temp', uuidv4());
-    const inputDir = path.join(tempExtractDir, 'input');
-    const outputDir = path.join(tempExtractDir, 'output');
+    // NEUE ROUTE, um die öffentlichen Ergebnis-Dashboards auszuliefern
+    // --- Intelligente Pfad-Logik für LOKAL & ONLINE (Version 2.0) ---
+    const isProduction = process.env.NODE_ENV === 'production';
     const uploadedZipPath = req.file.path;
 
-    // Dies ist die vollständige, unveränderte cleanup-Funktion aus Ihrer Datei
+    // Der Input-Ordner ist IMMER temporär
+    const tempExtractDir = path.join(__dirname, 'temp', uuidv4());
+    const inputDir = path.join(tempExtractDir, 'input');
+
+    // Der Output-Ordner ist nur LOKAL persistent
+    const outputDir = isProduction
+        ? path.join(tempExtractDir, 'output') // Online: temporär
+        : path.resolve(__dirname, 'daten_pipeline', 'output'); // Lokal: persistent
+
+    // Die Cleanup-Funktion wird auch intelligent
     const cleanup = () => {
         try {
-            console.log(`Räume temporäre Verzeichnisse und Dateien auf...`);
+            console.log(`Räume temporären Input und Upload auf...`);
             if (fs.existsSync(uploadedZipPath)) { fs.rmSync(uploadedZipPath, { force: true }); }
+            // WICHTIG: löscht den gesamten temp-Ordner für den Lauf
             if (fs.existsSync(tempExtractDir)) { fs.rmSync(tempExtractDir, { recursive: true, force: true }); }
         } catch (err) {
             console.error('Fehler während des Aufräumens:', err.message);
         }
     };
+
 
     try {
         fs.mkdirSync(inputDir, { recursive: true });
@@ -137,25 +145,52 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
             }
         }
         
-        const pythonExecutable = 'python3';
+        // --- HIER IST DIE KORREKTE REIHENFOLGE ALLER VARIABLEN ---
+        
+        // 1. Python-Executable definieren
+        let pythonExecutable;
+
+        // 2. Pfad zum Python-Skript definieren
         const pythonScriptPath = path.resolve(__dirname, 'daten_pipeline', 'main_pipeline.py');
 
+        if (process.env.NODE_ENV === 'production') {
+            pythonExecutable = 'python3';
+            console.log("Produktionsumgebung erkannt (NODE_ENV=production). Verwende 'python3'.");
+        } else {
+            console.log("Lokale Entwicklungsumgebung erkannt. Suche Python im venv.");
+            const venvDir = path.resolve(__dirname, '..', '..', 'WAMO-Daten', 'daten_pipeline', 'venv');
+            pythonExecutable = process.platform === 'win32'
+                ? path.join(venvDir, 'Scripts', 'python.exe')
+                : path.join(venvDir, 'bin', 'python');
+        }
+
+
+        // 3. Beide Pfade prüfen, BEVOR die Promise gestartet wird
+        if (process.env.NODE_ENV !== 'production' && !fs.existsSync(pythonExecutable)) {
+            cleanup();
+            const errorMsg = `Python-Interpreter nicht im lokalen venv gefunden. Gesuchter Pfad: ${pythonExecutable}`;
+            console.error(errorMsg);
+            return res.status(500).json({ message: "Server-Konfigurationsfehler: Python-Interpreter im venv nicht gefunden." });
+        }
         if (!fs.existsSync(pythonScriptPath)) {
             cleanup();
-            return res.status(500).json({ message: `Haupt-Pipeline-Skript nicht gefunden. Gesuchter Pfad: ${pythonScriptPath}` });
+            return res.status(500).json({ message: `Haupt-Pipeline-Skript nicht gefunden: ${pythonScriptPath}` });
         }
         
-        // Die Promise-Logik bleibt unverändert
+        // 4. Jetzt die Promise starten
         const executionPromise = new Promise((resolve, reject) => {
             const pythonProcess = spawn(pythonExecutable, [
                 pythonScriptPath, '--input-dir', inputDir, '--output-dir', outputDir, '--metadata-path', metadataPath
-            ]);
+            ], {
+                // Diese Option zwingt Python, UTF-8 zu verwenden, was den Fehler behebt.
+                env: { ...process.env, PYTHONIOENCODING: 'UTF-8' }
+            });
             const statusLog = [];
             let pythonError = '';
 
             pythonProcess.stdout.on('data', (data) => {
                 const output = data.toString().trim();
-                console.log(`[PYTHON STDOUT]:`, output); // Mehr Logging für bessere Fehlersuche
+                console.log(`[PYTHON STDOUT]:`, output);
                 if (output.startsWith('STATUS_UPDATE:')) {
                     statusLog.push(output.replace('STATUS_UPDATE:', ''));
                 }
@@ -175,36 +210,58 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
 
         const finalStatusLog = await executionPromise;
 
-        // --- HIER IST DIE GEZIELTE ÄNDERUNG ---
-        const outputFiles = fs.readdirSync(outputDir);
+        // --- Finale, robuste Dateiauswahl über die NEUESTE Referenzdatei ---
 
-        // 1. Finde die opendata-JSON für die Frontend-Grafiken
-        const openDataFile = outputFiles.find(f => f.startsWith('opendata_') && f.endsWith('.json'));
-        if (!openDataFile) {
+        // Hilfsfunktion, um die neueste Datei zu finden, die einem Muster entspricht
+        const getNewestFile = (dir, prefix) => {
+            const files = fs.readdirSync(dir)
+                .filter(file => file.startsWith(prefix))
+                .map(file => ({ name: file, time: fs.statSync(path.join(dir, file)).mtime.getTime() }))
+                .sort((a, b) => b.time - a.time); // Neueste zuerst
+            return files.length > 0 ? files[0].name : null;
+        };
+
+        // 1. Finde die neueste Analyse-Datei als Referenz, um den Lauf zu identifizieren
+        const referenceFile = getNewestFile(outputDir, 'erweiterte_analyse_');
+
+        if (!referenceFile) {
             cleanup();
-            return res.status(500).json({ message: 'Pipeline hat keine OpenData-Ergebnisdatei erstellt.' });
+            return res.status(500).json({ message: 'Pipeline hat keine Haupt-Analyse-Datei erstellt.' });
         }
-        const openDataPath = path.join(outputDir, openDataFile);
-        const openDataContent = fs.readFileSync(openDataPath, 'utf-8');
-        const chartJsonPayload = JSON.parse(openDataContent);
 
-        // 2. Finde die Haupt-JSON für die Datenbank
-        const fullAnalysisFile = outputFiles.find(f => f.startsWith('erweiterte_analyse_'));
-        if (fullAnalysisFile) {
-            const fullAnalysisPath = path.join(outputDir, fullAnalysisFile);
+        // 2. Extrahiere den eindeutigen Identifikator aus dieser neuesten Datei
+        const match = referenceFile.match(/(_wamo\d+_\d{8}_\d{6})/);
+        const runIdentifier = match ? match[1] : null;
+
+        if (!runIdentifier) {
+            cleanup();
+            return res.status(500).json({ message: 'Konnte keinen gültigen Identifikator aus der neuesten Ergebnisdatei extrahieren.' });
+        }
+        console.log(`[INFO] Verwende Identifikator des letzten Laufs: ${runIdentifier}`);
+
+        // 3. Baue die exakten Dateinamen mit diesem Identifikator zusammen
+        const openDataFile = `opendata${runIdentifier}.json`;
+        const dashboardFile = `dashboard${runIdentifier}.html`; // Diese Variable wird jetzt korrekt deklariert
+        const fullAnalysisFile = `erweiterte_analyse${runIdentifier}.json`;
+
+        // 4. Lese die korrekte opendata.json für die Charts
+        const openDataPath = path.join(outputDir, openDataFile);
+        if (!fs.existsSync(openDataPath)) {
+            cleanup();
+            return res.status(500).json({ message: `Die spezifische OpenData-Datei '${openDataFile}' wurde nicht gefunden.` });
+        }
+        const chartJsonPayload = JSON.parse(fs.readFileSync(openDataPath, 'utf-8'));
+
+        // Finde und verarbeite die Haupt-Analyse-Datei (auskommentierter DB-Teil bleibt)
+        const fullAnalysisPath = path.join(outputDir, fullAnalysisFile);
+        if (fs.existsSync(fullAnalysisPath)) {
             const fullAnalysisData = JSON.parse(fs.readFileSync(fullAnalysisPath, 'utf-8'));
             const stationIdMatch = fullAnalysisFile.match(/_wamo(\d+)_/);
             const stationId = stationIdMatch ? `wamo${stationIdMatch[1]}` : 'unbekannt';
-            
-            // await saveValidationData(fullAnalysisData, req.file.originalname, stationId)
-            //    .then(() => console.log(`[DB] Ergebnis für Station ${stationId} erfolgreich in der Datenbank gespeichert.`))
-            //    .catch(dbError => console.error("[DB] FEHLER beim Speichern in der Datenbank:", dbError.message));
+            // await saveValidationData(...) bleibt auskommentiert
         }
+        // ====================================================================================
 
-        // 3. Finde das HTML-Dashboard
-        const dashboardFile = outputFiles.find(f => f.startsWith('dashboard_') && f.endsWith('.html'));
-        
-        // Verschiebe die Dashboard-Datei in einen öffentlichen Ordner, damit sie abrufbar ist.
         let publicDashboardUrl = null;
         if (dashboardFile) {
             const publicDir = path.join(__dirname, 'public_results');
@@ -213,10 +270,7 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
             }
             const sourcePath = path.join(outputDir, dashboardFile);
             const destinationPath = path.join(publicDir, dashboardFile);
-                        // Kopiere das HTML-Dashboard
             fs.copyFileSync(sourcePath, destinationPath);
-
-            // Kopiere die CSS-Datei, damit sie neben dem Dashboard liegt
             const cssSourcePath = path.resolve(__dirname, 'daten_pipeline', 'public_results', 'dashboard_styles.css');
             const cssDestPath = path.join(publicDir, 'dashboard_styles.css');
             if (fs.existsSync(cssSourcePath)) {
@@ -224,17 +278,15 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
             }
             const backendHostname = process.env.BACKEND_HOSTNAME || `localhost:${PORT}`;
             console.log(`[DEBUG] Backend Hostname wird verwendet: ${backendHostname}`);
-            publicDashboardUrl = `https://${backendHostname}/api/results/${dashboardFile}`;
+            publicDashboardUrl = `${isProduction ? 'https' : 'http'}://${backendHostname}/api/results/${dashboardFile}`;
         }
 
-        // Sende die korrekten Daten an das Frontend
         res.status(200).json({
-            validationResult: chartJsonPayload, // Die opendata.json für die Charts
+            validationResult: chartJsonPayload,
             statusLog: finalStatusLog,
-            dashboardUrl: publicDashboardUrl // Den Link zum Dashboard
+            dashboardUrl: publicDashboardUrl
         });
-
-        cleanup(); // Räume die temporären Ordner auf
+        cleanup();
 
     } catch (error) {
         console.error(`Ein schwerer Fehler ist aufgetreten: ${error.message}`);
@@ -244,9 +296,7 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
     }
 });
 
-// NEUE ROUTE, um die öffentlichen Ergebnis-Dashboards auszuliefern
 app.use('/api/results', express.static(path.join(__dirname, 'public_results')));
-
 
 // Server Start (unverändert)
 const HOST = '0.0.0.0';

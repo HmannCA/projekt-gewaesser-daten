@@ -1,0 +1,186 @@
+{
+    "station_id": "wamo00019",
+    "zeitraum": {
+        "von": "2025-06-07T00:00:00",
+        "bis": "2025-06-07T23:00:00"
+    },
+    "basis_validierung": {
+        "2025-06-07T00:00:00": {
+            "Phycocyanin Abs._Min": 11.5,
+            "Phycocyanin Abs._Max": 13.5,
+            "Phycocyanin Abs._Mittelwert": 12.5,
+            "Phycocyanin Abs._StdAbw": 0.6,
+            "Phycocyanin Abs._Anteil_Guter_Werte_Prozent": 100.0,
+            "Phycocyanin Abs._Aggregat_QARTOD_Flag": 1,
+            "Phycocyanin Abs._Aggregat_Gruende": "Alle Werte plausibel",
+            "Phycocyanin Abs. (comp)_Min": 0.0,
+            "Phycocyanin Abs. (comp)_Max": 0.1,
+            "Phycocyanin Abs. (comp)_Mittelwert": 0.1,
+            "Phycocyanin Abs. (comp)_StdAbw": 0.0,
+            "Phycocyanin Abs. (comp)_Anteil_Guter_Werte_Prozent": 100.0,
+            "Phycocyanin Abs. (comp)_Aggregat_QARTOD_Flag": 1,
+            "Phycocyanin Abs. (comp)_Aggregat_Gruende": "Alle Werte plausibel",
+            "TOC_Min": 26.2,
+            "TOC_Max": 27.3,
+            "TOC_Mittelwert": 26.7,
+            "TOC_Anteil_Guter_Werte_Prozent": 100.0,
+            "TOC_Aggregat_QARTOD_Flag": 1,
+            "TOC_Aggregat_Gruende": "Alle Werte plausibel",
+            "Trübung_Min": 43.5,
+            "Trübung_Max": 50.8,
+            "Trübung_Mittelwert": 46.9,
+            "Trübung_StdAbw": 2.2,
+            "Trübung_Anteil_Guter_Werte_Prozent": 95.8,
+            "Trübung_Aggregat_QARTOD_Flag": 1,
+            "Trübung_Aggregat_Gruende": "Multivariate Anomalie: Trübung ungewöhnlich niedrig",
+            "Chl-a_Min": 41.1,
+            "Chl-a_Max": 50.6,
+            "Chl-a_Mittelwert": 44.9,
+            "Chl-a_StdAbw": 2.5,
+            "Chl-a_Anteil_Guter_Werte_Prozent": 100.0,
+            "Chl-a_Aggregat_QARTOD_Flag": 1,
+            "Chl-a_Aggregat_Gruende": "Alle Werte plausibel",
+            "DOC_Min": 11.5,
+            "DOC_Max": 12.0,
+            "DOC_Mittelwert": 11.8,
+            "DOC_Anteil_Guter_Werte_Prozent": 100.0,
+            "DOC_Aggregat_QARTOD_Flag": 1,
+            "DOC_Aggregat_Gruende": "Alle Werte plausibel",
+            "Nitrat_Min": 3.3,
+            "Nitrat_Max": 8.4,
+            "Nitrat_Mittelwert": 6.1,
+            "Nitrat_Anteil_Guter_Werte_Prozent": 100.0,
+            "Nitrat_Aggregat_QARTOD_Flag": 1,
+            "Nitrat_Aggregat_Gruende": "Alle Werte plausibel",
+            "Gelöster Sauerstoff_Min": 6.36,
+            "Gelöster Sauerstoff_Max": 9.78,
+            "Gelöster Sauerstoff_Mittelwert": 8.1,
+            "Gelöster Sauerstoff_Median": 8.24,
+            "Gelöster Sauerstoff_StdAbw": 1.15,
+            "Gelöster Sauerstoff_Anteil_Guter_Werte_Prozent": 95.8,
+            "Gelöster Sauerstoff_Aggregat_QARTOD_Flag": 1,
+            "Gelöster Sauerstoff_Aggregat_Gruende": "Multivariate Anomalie: Gelöster Sauerstoff ungewöhnlich niedrig",
+            "Leitfähigkeit_Min": 665.0,
+            "Leitfähigkeit_Max": 676.0,
+            "Leitfähigkeit_Mittelwert": 670.0,
+            "Leitfähigkeit_Anteil_Guter_Werte_Prozent": 91.7,
+            "Leitfähigkeit_Aggregat_QARTOD_Flag": 1,
+            "Leitfähigkeit_Aggregat_Gruende": "Multivariate Anomalie: Leitfähigkeit ungewöhnlich hoch; Wert seit 3 Stunden unverändert",
+            "pH_Min": 8.35,
+            "pH_Max": 8.85,
+            "pH_Mittelwert": 8.64,
+            "pH_Median": 8.66,
+            "pH_StdAbw": 0.17,
+            "pH_Anteil_Guter_Werte_Prozent": 95.8,
+            "pH_Aggregat_QARTOD_Flag": 1,
+            "pH_Aggregat_Gruende": "Multivariate Anomalie: pH ungewöhnlich niedrig",
+            "Redoxpotential_Min": 120.0,
+            "Redoxpotential_Max": 254.0,
+            "Redoxpotential_Mittelwert": 216.0,
+            "Redoxpotential_StdAbw": 34.0,
+            "Redoxpotential_Anteil_Guter_Werte_Prozent": 100.0,
+            "Redoxpotential_Aggregat_QARTOD_Flag": 1,
+            "Redoxpotential_Aggregat_Gruende": "Alle Werte plausibel",
+            "Wassertemp. (0.5m)_Min": 19.11,
+            "Wassertemp. (0.5m)_Max": 20.15,
+            "Wassertemp. (0.5m)_Mittelwert": 19.72,
+            "Wassertemp. (0.5m)_Anteil_Guter_Werte_Prozent": 100.0,
+            "Wassertemp. (0.5m)_Aggregat_QARTOD_Flag": 1,
+            "Wassertemp. (0.5m)_Aggregat_Gruende": "Alle Werte plausibel",
+            "Wassertemp. (1m)_Min": 18.95,
+            "Wassertemp. (1m)_Max": 19.98,
+            "Wassertemp. (1m)_Mittelwert": 19.54,
+            "Wassertemp. (1m)_Anteil_Guter_Werte_Prozent": 100.0,
+            "Wassertemp. (1m)_Aggregat_QARTOD_Flag": 1,
+            "Wassertemp. (1m)_Aggregat_Gruende": "Alle Werte plausibel",
+            "Lufttemperatur_Min": 11.4,
+            "Lufttemperatur_Max": 20.9,
+            "Lufttemperatur_Mittelwert": 15.9,
+            "Lufttemperatur_Anteil_Guter_Werte_Prozent": 100.0,
+            "Lufttemperatur_Aggregat_QARTOD_Flag": 1,
+            "Lufttemperatur_Aggregat_Gruende": "Alle Werte plausibel",
+            "Wassertemp. (2m)_Min": 10.95,
+            "Wassertemp. (2m)_Max": 11.97,
+            "Wassertemp. (2m)_Mittelwert": 11.78,
+            "Wassertemp. (2m)_Anteil_Guter_Werte_Prozent": 100.0,
+            "Wassertemp. (2m)_Aggregat_QARTOD_Flag": 1,
+            "Wassertemp. (2m)_Aggregat_Gruende": "Alle Werte plausibel",
+            "Supply Current_Min": 259.0,
+            "Supply Current_Max": 277.0,
+            "Supply Current_Mittelwert": 266.75,
+            "Supply Current_Anteil_Guter_Werte_Prozent": 100.0,
+            "Supply Current_Aggregat_QARTOD_Flag": 1,
+            "Supply Current_Aggregat_Gruende": "Alle Werte plausibel"
+        }
+    },
+    "erweiterte_analysen": {
+        "korrelations_qualitaet": {
+            "metriken": {
+                "pH-Gelöster Sauerstoff_correlation_quality": 91.37198702986586,
+                "pH-Gelöster Sauerstoff_actual_correlation": 0.9862801297013414,
+                "Chl-a-pH_correlation_quality": 100,
+                "Chl-a-pH_actual_correlation": 0.4294480223152456,
+                "Trübung-Chl-a_correlation_quality": 100,
+                "Trübung-Chl-a_actual_correlation": 0.45599625830513163,
+                "overall_correlation_quality": 97.12399567662196
+            },
+            "gesamtqualitaet": 97.12399567662196,
+            "auffaellige_korrelationen": []
+        },
+        "landwirtschaftliche_eintraege": {
+            "risiko_index": 97.61,
+            "erkannte_ereignisse": [],
+            "risiko_indikatoren": {
+                "nutrient_load_index": 92.83,
+                "runoff_frequency_index": 100,
+                "water_stress_index": 100,
+                "overall_agricultural_risk": 97.61
+            },
+            "langzeit_trends": {}
+        },
+        "regionale_bewertung": {
+            "saison_faktoren": {
+                "dünger_risiko": 0.8,
+                "gülle_risiko": 0.2,
+                "erosions_risiko": 0.3,
+                "aktivität": "düngung"
+            },
+            "parameter_bewertungen": {
+                "Nitrat": {
+                    "wert": 3.48,
+                    "status": "gut",
+                    "interpretation": "Typischer Hintergrundwert für MV-Seen"
+                },
+                "DOC": {
+                    "wert": 11.769,
+                    "status": "aufmerksam",
+                    "interpretation": "Erhöhter DOC - mögliche organische Einträge"
+                },
+                "Leitfähigkeit": {
+                    "wert": 667.0,
+                    "status": "warnung",
+                    "interpretation": "Hohe Leitfähigkeit - Düngersalze wahrscheinlich"
+                }
+            },
+            "empfehlungen": [
+                "Erhöhte Aufmerksamkeit: Aktuell düngung-Phase. Verstärkte Probenahme nach Niederschlägen empfohlen.",
+                "Regionale Ansprechpartner: Untere Wasserbehörde LK VG (03834-8760-0), Untere Wasserbehörde LK MSE (0395-57087-0), StALU MS Neubrandenburg (0395-380-0)",
+                "SOFORTMASSNAHMEN ERFORDERLICH:",
+                "1. Gewässerschau mit Landwirtschaftsbehörde vereinbaren",
+                "2. Anlieger-Gespräch über Förderung von Gewässerrandstreifen (5m)",
+                "3. Prüfung AUKM-Förderung (Agrarumwelt- und Klimamaßnahmen MV)",
+                "4. Erosionsschutzberatung durch LMS Agrarberatung anbieten"
+            ]
+        }
+    },
+    "zusammenfassung": {
+        "status": "warnung",
+        "hauptprobleme": [
+            "Hoher landwirtschaftlicher Einfluss"
+        ],
+        "sofortmassnahmen": [
+            "Kontakt mit Landwirtschaftsbehörde aufnehmen"
+        ],
+        "meldepflichten": []
+    }
+}
