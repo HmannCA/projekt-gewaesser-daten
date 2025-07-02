@@ -40,3 +40,9 @@ __pycache__/
 # Temporäre Upload- und Entpack-Ordner vom Backend ignorieren
 /backend/temp/
 /backend/temp_uploads/
+
+# Ergebnisse der lokalen Python-Pipeline ignorieren
+/backend/daten_pipeline/output/
+
+# Test-Rohdaten der lokalen Python-Pipeline ignorieren
+/backend/daten_pipeline/input/
