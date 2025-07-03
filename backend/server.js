@@ -18,7 +18,8 @@ const {
     createDatabaseTables,
     saveValidationData,
     getLatestValidationData,
-    logUserLogin
+    logUserLogin,
+    getAllTableData
 } = require('./db/postgres');
 
 const app = express();
@@ -39,10 +40,10 @@ app.get('/api/setup-database-bitte-loeschen', async (req, res) => {
     }
 });
 
-app.get('/api/show-me-the-data', async (req, res) => {
+app.get('/api/show-db-content', async (req, res) => {
     try {
-        console.log('Anfrage zum Anzeigen der Datenbankdaten erhalten...');
-        const data = await getLatestValidationData();
+        console.log('Anfrage zum Anzeigen des gesamten DB-Inhalts erhalten...');
+        const data = await getAllTableData();
         res.setHeader('Content-Type', 'application/json');
         res.status(200).send(JSON.stringify(data, null, 2));
     } catch (error) {
@@ -241,7 +242,12 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
 
         // 3. Baue die exakten Dateinamen mit diesem Identifikator zusammen
         const openDataFile = `opendata${runIdentifier}.json`;
-        const dashboardFile = `dashboard${runIdentifier}.html`; // Diese Variable wird jetzt korrekt deklariert
+        const dashboardFiles = fs.readdirSync(outputDir)
+            .filter(file => file.startsWith('dashboard_') && file.endsWith('.html'))
+            .map(file => ({ name: file, time: fs.statSync(path.join(outputDir, file)).mtime.getTime() }))
+            .sort((a, b) => b.time - a.time); // Neueste zuerst
+
+        const dashboardFile = dashboardFiles.length > 0 ? dashboardFiles[0].name : null;
         const fullAnalysisFile = `erweiterte_analyse${runIdentifier}.json`;
 
         // 4. Lese die korrekte opendata.json für die Charts

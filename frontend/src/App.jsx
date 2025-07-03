@@ -16,11 +16,9 @@ import { useDarkMode } from './hooks/useDarkMode.js';
 import { createSteps } from './data/steps.jsx';
 import { DETAIL_LEVELS } from './constants/config.js';
 
-// ==========================================================
-// --- BEGINN DER ERGÄNZUNG 1: IMPORT DER NEUEN KOMPONENTE ---
 import DataValidator from './components/DataValidator.jsx';
-// --- ENDE DER ERGÄNZUNG 1 ---
-// ==========================================================
+import DbViewer from './components/DbViewer.jsx';
+
 
 function App() {
   // Ihr bestehender State (unverändert)
@@ -154,9 +152,13 @@ function App() {
               setModalImageUrl={setModalImageUrl}
             />
           </>
-        ) : (
+        ) : activeView === 'validator' ? (
           <div className="w-full">
             <DataValidator />
+          </div>
+        ) : (
+          <div className="w-full">
+            <DbViewer />
           </div>
         )}
       </div>

@@ -9,6 +9,8 @@ import warnings
 from html_dashboard_generator import generate_html_dashboard
 from typing import Dict, List, Tuple
 import argparse
+# from config_file import CONSOLIDATION_RULES, PRECISION_RULES
+from db_config_loader import DbConfigLoader # NEU
 from config_file import PRECISION_RULES, CONSOLIDATION_RULES
 
 def check_station_data_quality(station_id: str, station_config: Dict) -> None:
@@ -148,6 +150,15 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
     print("Starte erweiterte Pipeline mit allen Validierungsmodulen...")
     print("=" * 60)
 
+    # 1. Lade die gesamte Konfiguration aus der Datenbank
+    try:
+        config_loader = DbConfigLoader()
+    except ValueError as e:
+        sys.exit(f"ABBRUCH: Konnte Konfiguration nicht laden. Fehler: {e}")
+
+    # 1b. Daten laden und aufbereiten (bestehende Logik)
+    metadata = load_metadata(metadata_path)
+
     # 1. Daten laden und aufbereiten
     metadata = load_metadata(metadata_path)
     if not metadata: 
@@ -178,9 +189,16 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
         print(f"Verarbeite Daten für Station: {station_id}")
 
         # Station-Metadaten laden und prüfen
-        from config_file import STATIONS
-        station_metadata = STATIONS.get(station_id, {})
-        check_station_data_quality(station_id, station_metadata)
+        # STATIONS wird jetzt aus der Datenbank geladen - siehe unten
+        # Lade Station-Metadaten aus Datenbank
+        try:
+            from db_config_loader import load_config_from_db
+            config = load_config_from_db()
+            station_metadata = config.get('stations', {}).get(station_id, {})
+        except Exception as e:
+            print(f"Fehler beim Laden der Station-Metadaten: {e}")
+            station_metadata = {}
+            check_station_data_quality(station_id, station_metadata)
         
         try:
             # Lade Rohdaten
@@ -208,6 +226,25 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
         processed_data = raw_data.apply(pd.to_numeric, errors='coerce')
         processed_data = map_columns_to_names(processed_data, column_mapping)
         
+        # 2. Lade Konfiguration für DIESE Station aus dem ConfigLoader
+        print(f"Lade Konfiguration für Station {station_id} aus der Datenbank...")
+        station_config_db = config_loader.get_station(station_id)
+        rules_for_station = config_loader.get_rules_for_station(station_id)
+
+        # Baue die Regel-Dictionaries dynamisch aus den DB-Daten auf
+        validation_rules = {}
+        spike_rules = {}
+
+        for rule in rules_for_station:
+            if rule['rule_type'] == 'RANGE' or rule['rule_type'] == 'RANGE_REGIONAL':
+                validation_rules[rule['parameter_name']] = rule['config_json']
+            elif rule['rule_type'] == 'SPIKE':
+                spike_rules[rule['parameter_name']] = rule['config_json']['threshold']
+        
+        print(f"  - {len(validation_rules)} Range-Regeln und {len(spike_rules)} Spike-Regeln für diese Station geladen.")        
+
+        """
+        Diese Werte werden zukünftig in der Datenbank gepflegt.
         # 2. Definition der Validierungsregeln
         validation_rules = {
             'Phycocyanin Abs.': {'min': 0.0, 'max': 200.0},
@@ -267,6 +304,7 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
             }
                 
             print(f"Verwende angepasste Grenzwerte für Löcknitzer See (eutropher Flachsee)")
+            """
         
         # 3. Basis-Validierungen durchführen
         print("Führe Basis-Validierungen durch...")
@@ -361,7 +399,10 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
         current_season = None
         if VALIDATION_MODULES['regional']:
             print("Wende regionale Konfiguration an...")
-            regional_config = RegionalConfigMV()
+            # Filtere die relevanten Regeln aus dem DB-Loader
+            regional_db_rules = [r for r in rules_for_station if r['rule_type'] in ['SEASONAL_EVENT', 'RANGE_REGIONAL']]
+            # Initialisiere die Klasse mit den Datenbank-Regeln
+            regional_config = RegionalConfigMV(regional_db_rules)
             
             # Hole saisonale Faktoren
             current_season = regional_config.get_season_factor(processed_data.index[-1])

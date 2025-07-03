@@ -3,11 +3,13 @@
 
 const { Pool } = require('pg');
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  // SSL wird nur in der Produktionsumgebung (auf Fly.io) aktiviert.
+  // Lokal (für den Proxy) wird es deaktiviert.
+  ssl: isProduction ? { rejectUnauthorized: false } : false
 });
 
 const testConnection = async () => { /* ... bleibt unverändert ... */ };
@@ -163,6 +165,51 @@ const logUserLogin = async (userData) => {
     }
 };
 
+const getAllTableData = async () => {
+    const client = await pool.connect();
+    try {
+        // Wir fragen alle Tabellen ab, die in der DB existieren könnten.
+        const tables = [
+            'stations', 
+            'station_coordinates', 
+            'station_catchment_areas', 
+            'station_data_status',
+            'parameters', 
+            'config_rules', 
+            'benutzer_anmeldungen', 
+            'messwerte', 
+            'validation_runs', 
+            'daily_results', 
+            'raw_data_points'
+        ];
+        const allData = {};
+
+        for (const table of tables) {
+            try {
+                // Wir fragen die 100 neuesten Einträge ab, sortiert nach der ersten Spalte (oft die ID oder ein Timestamp)
+                const res = await client.query(`SELECT * FROM ${table} ORDER BY 1 DESC LIMIT 100`);
+                allData[table] = res.rows;
+            } catch (e) {
+                // Wenn eine Tabelle nicht existiert, ignorieren wir den Fehler und fahren fort.
+                if (e.code === '42P01') { // 'undefined_table' error code in PostgreSQL
+                    console.log(`[DB Info] Tabelle '${table}' nicht gefunden, wird übersprungen.`);
+                    allData[table] = { "status": "Tabelle nicht gefunden." };
+                } else {
+                    throw e; // Andere Fehler werfen wir weiter
+                }
+            }
+        }
+        
+        return allData;
+
+    } catch (err) {
+        console.error('[DB] Fehler beim Auslesen aller Tabellen:', err);
+        throw new Error(`DB-Fehler: ${err.message}`);
+    } finally {
+        client.release();
+    }
+};
+
 module.exports = {
   testConnection,
   createDatabaseTables, // Behalten wir vorerst
@@ -170,5 +217,8 @@ module.exports = {
   addComment,
   deleteComment,
   loginUser,
-  saveValidationData // Die neue Funktion exportieren
+  saveValidationData,
+  getLatestValidationData,
+  logUserLogin,
+  getAllTableData
 };

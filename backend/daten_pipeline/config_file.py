@@ -39,6 +39,7 @@ VALIDATION_MODULES = {
     'regional': True            # Regionale Anpassungen MV
 }
 
+"""
 # ========================================
 # STATIONEN
 # ========================================
@@ -151,7 +152,7 @@ SPIKE_THRESHOLDS = {
     'Leitfähigkeit': 100.0,     # µS/cm pro Stunde
     'Nitrat': 10.0              # mg/L pro Stunde
 }
-
+"""
 # Präzision für Rundung
 PRECISION_RULES = {
     'Phycocyanin Abs.': 1,
@@ -401,10 +402,11 @@ else:
 # ========================================
 # HILFSFUNKTIONEN
 # ========================================
-
+"""
 def get_station_config(station_id: str) -> dict:
-    """Gibt Konfiguration für eine spezifische Station zurück"""
+    # Gibt Konfiguration für eine spezifische Station zurück
     return STATIONS.get(station_id, {})
+"""
 
 def get_alert_threshold(parameter: str, level: str = 'warnung') -> float:
     """Gibt Alarmschwellwert für einen Parameter zurück"""

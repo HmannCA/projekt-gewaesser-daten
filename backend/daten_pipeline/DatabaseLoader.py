@@ -15,18 +15,11 @@ class DatabaseLoader:
     """
 
     def __init__(self):
-        """
-        Stellt die Verbindung zur Datenbank her, indem die Zugangsdaten aus den
-        Umgebungsvariablen gelesen werden.
-        """
+        """Stellt die Verbindung zur Datenbank her"""
         try:
-            self.conn = psycopg2.connect(
-                dbname=os.getenv("DB_NAME"),
-                user=os.getenv("DB_USER"),
-                password=os.getenv("DB_PASSWORD"),
-                host=os.getenv("DB_HOST"),
-                port=os.getenv("DB_PORT", "5432")
-            )
+            # Verwende dieselbe URL wie db_config_loader
+            self.db_url = "postgresql://postgres:vaqRCrh9ry1PHd9@localhost:5433/postgres"
+            self.conn = psycopg2.connect(self.db_url)
             self.cur = self.conn.cursor()
             print("Datenbankverbindung erfolgreich hergestellt.")
         except Exception as e:

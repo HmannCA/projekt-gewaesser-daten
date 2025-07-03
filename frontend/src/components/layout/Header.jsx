@@ -2,7 +2,7 @@
 // ABSOLUT NICHTS WURDE ENTFERNT ODER VERÄNDERT.
 
 import React from 'react';
-import { Menu, Droplets, Info, Sun, Moon, ClipboardList, Code, Home, UploadCloud } from 'lucide-react'; // Home & UploadCloud hinzugefügt
+import { Menu, Droplets, Info, Sun, Moon, ClipboardList, Code, Home, UploadCloud, Database } from 'lucide-react'; // Database hinzugefügt
 import { DETAIL_LEVELS } from '../../constants/config';
 
 const Header = ({ 
@@ -53,6 +53,14 @@ const Header = ({
             <UploadCloud className="w-4 h-4 inline mr-1" />
             Validierung
           </button>
+          <button
+            onClick={() => setActiveView('db_viewer')}
+            title="Datenbank-Inhalt anzeigen"
+            className="flex items-center px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:text-gray-900 dark:hover:text-white"
+          >
+            <Database className="w-4 h-4 inline mr-1" />
+            DB-Ansicht
+          </button>          
           <div className="border-l border-gray-200 dark:border-gray-600 h-8"></div>
           {/* --- ENDE DER EINZIGEN ERGÄNZUNG --- */}
           {/* ==================================================================== */}

@@ -15,7 +15,33 @@ from datetime import datetime
 class RegionalConfigMV:
     """Regionale Anpassungen für Mecklenburg-Vorpommern"""
     
-    def __init__(self):
+    def __init__(self, regional_rules: List[Dict] = None):
+        """
+        Initialisiert die Klasse. Wenn Regeln übergeben werden, nutzt sie diese.
+        Ansonsten greift sie auf die hartcodierten Fallback-Werte zurück.
+        """
+        # NEU: Initialisiere die Ziel-Dictionaries als leer
+        self.agricultural_calendar = {}
+        self.regional_thresholds = {}
+        self.lake_specific_thresholds = {}
+
+        # NEU: Verarbeite die übergebenen Regeln aus der Datenbank
+        if regional_rules:
+            for rule in regional_rules:
+                config = rule['config_json']
+                if rule['rule_type'] == 'SEASONAL_EVENT':
+                    event_name = config.get('event_name')
+                    if event_name:
+                        self.agricultural_calendar[event_name] = config
+                elif rule['rule_type'] == 'RANGE_REGIONAL':
+                    station_code = rule['station_code']
+                    param_name = rule['parameter_name']
+                    if station_code not in self.lake_specific_thresholds:
+                        self.lake_specific_thresholds[station_code] = {}
+                    self.lake_specific_thresholds[station_code][param_name] = config
+        
+        # Die alten, hartcodierten Werte werden auskommentiert, bleiben aber als Referenz erhalten.
+        """
         # Regionale landwirtschaftliche Kalender
         self.agricultural_calendar = {
             'gülle_sperrfrist': {
@@ -47,7 +73,7 @@ class RegionalConfigMV:
                 'description': 'Ernte - erhöhte Erosionsgefahr'
             }
         }
-        
+        """
         # Typische Anbaukulturen in MV
         self.typical_crops = {
             'winterweizen': {'anteil': 0.25, 'n_bedarf': 180},  # kg N/ha
