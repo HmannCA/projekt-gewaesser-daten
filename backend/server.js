@@ -183,6 +183,170 @@ app.get('/api/stations', async (req, res) => {
     }
 });
 
+// API für Station-Liste MIT verfügbaren Datumsbereichen
+app.get('/api/stations-with-data', async (req, res) => {
+    const { Pool } = require('pg');
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    
+    try {
+        const result = await pool.query(
+            `SELECT 
+                s.station_code, 
+                s.station_name,
+                TO_CHAR(MIN(da.date), 'YYYY-MM-DD') as min_date,
+                TO_CHAR(MAX(da.date), 'YYYY-MM-DD') as max_date,
+                COUNT(DISTINCT da.date) as data_days
+             FROM stations s
+             JOIN daily_aggregations da ON s.station_code = da.station_id
+             GROUP BY s.station_code, s.station_name
+             HAVING COUNT(DISTINCT da.date) > 0
+             ORDER BY s.station_code`
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    } finally {
+        await pool.end();
+    }
+});
+
+// Optionaler Endpunkt für eine Übersichtsseite aller Stationen
+app.get('/api/stations-overview', async (req, res) => {
+    const { Pool } = require('pg');
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    
+    try {
+        const result = await pool.query(
+            `SELECT 
+                s.station_code, 
+                s.station_name,
+                s.gemeinde,
+                TO_CHAR(MIN(da.date), 'YYYY-MM-DD') as first_data,
+                TO_CHAR(MAX(da.date), 'YYYY-MM-DD') as last_data,
+                COUNT(DISTINCT da.date) as total_days,
+                MAX(da.date)::date - MIN(da.date)::date + 1 as span_days,
+                ROUND(COUNT(DISTINCT da.date)::numeric / 
+                      NULLIF(MAX(da.date)::date - MIN(da.date)::date + 1, 0) * 100, 1) as coverage_percent
+             FROM stations s
+             LEFT JOIN daily_aggregations da ON s.station_code = da.station_id
+             GROUP BY s.station_code, s.station_name, s.gemeinde
+             ORDER BY s.station_code`
+        );
+        
+        // Generiere eine HTML-Übersicht
+        let html = `
+        <!DOCTYPE html>
+        <html lang="de">
+        <head>
+            <meta charset="UTF-8">
+            <title>WAMO Stationsübersicht</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+                .container { max-width: 1200px; margin: 0 auto; }
+                h1 { color: #0066CC; }
+                table { width: 100%; background: white; border-collapse: collapse; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+                th { background: #0066CC; color: white; }
+                tr:hover { background: #f5f5f5; }
+                .no-data { color: #999; }
+                .good { color: #28a745; }
+                .warning { color: #ffc107; }
+                .bad { color: #dc3545; }
+                .button { 
+                    display: inline-block; 
+                    padding: 6px 12px; 
+                    background: #0066CC; 
+                    color: white; 
+                    text-decoration: none; 
+                    border-radius: 5px; 
+                    font-size: 0.9em;
+                }
+                .button:hover { background: #0052a3; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>WAMO Gewässermonitoring - Stationsübersicht</h1>
+                <p>Stand: ${new Date().toLocaleDateString('de-DE')} ${new Date().toLocaleTimeString('de-DE')}</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Station</th>
+                            <th>Name</th>
+                            <th>Gemeinde</th>
+                            <th>Erste Daten</th>
+                            <th>Letzte Daten</th>
+                            <th>Tage mit Daten</th>
+                            <th>Abdeckung</th>
+                            <th>Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+        
+        result.rows.forEach(row => {
+            const hasData = row.first_data !== null;
+            const coverageClass = row.coverage_percent > 80 ? 'good' : 
+                                 row.coverage_percent > 50 ? 'warning' : 'bad';
+            
+            // Konvertiere YYYY-MM-DD zu deutschem Format
+            const formatDateDE = (dateStr) => {
+                if (!dateStr) return '-';
+                const [year, month, day] = dateStr.split('-');
+                return `${day}.${month}.${year}`;
+            };
+            
+            html += `
+                <tr>
+                    <td><strong>${row.station_code}</strong></td>
+                    <td>${row.station_name}</td>
+                    <td>${row.gemeinde || '-'}</td>
+                    <td class="${hasData ? '' : 'no-data'}">
+                        ${hasData ? formatDateDE(row.first_data) : 'Keine Daten'}
+                    </td>
+                    <td class="${hasData ? '' : 'no-data'}">
+                        ${hasData ? formatDateDE(row.last_data) : '-'}
+                    </td>
+                    <td>${row.total_days || 0}</td>
+                    <td class="${hasData ? coverageClass : 'no-data'}">
+                        ${hasData && row.coverage_percent !== null ? row.coverage_percent + '%' : '-'}
+                    </td>
+                    <td>
+                        ${hasData ? 
+                            `<a href="/api/dashboard-flex-html/${row.station_code}?startDate=${row.first_data}&endDate=${row.last_data}" class="button">Dashboard</a>` :
+                            '<span class="no-data">-</span>'
+                        }
+                    </td>
+                </tr>`;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 20px; padding: 20px; background: #e3f2fd; border-radius: 10px;">
+                    <h3>Legende:</h3>
+                    <p><strong>Abdeckung:</strong> Prozentsatz der Tage mit Daten im Zeitraum zwischen ersten und letzten Messungen</p>
+                    <p>
+                        <span class="good">●</span> Gut (>80%) &nbsp;&nbsp;
+                        <span class="warning">●</span> Mittel (50-80%) &nbsp;&nbsp;
+                        <span class="bad">●</span> Gering (<50%)
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>`;
+        
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
+        
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    } finally {
+        await pool.end();
+    }
+});
+
 // Kommentar- und Benutzer-API (unverändert)
 const requiredEnvVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'ADMIN_EMAIL'];
 for (const varName of requiredEnvVars) {
