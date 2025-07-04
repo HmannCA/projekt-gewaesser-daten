@@ -57,6 +57,132 @@ app.get('/api/show-db-content', async (req, res) => {
     }
 });
 
+// NEU: Dashboard-Daten aus DB abrufen
+app.get('/api/dashboard/:stationId', async (req, res) => {
+    try {
+        const { stationId } = req.params;
+        const { date } = req.query; // Optional: ?date=2024-01-15
+        
+        console.log(`Lade Dashboard-Daten für Station ${stationId}...`);
+        
+        const { getDashboardData } = require('./db/postgres');
+        const dashboardData = await getDashboardData(stationId, date);
+        
+        if (dashboardData.error) {
+            return res.status(404).json(dashboardData);
+        }
+        
+        res.json(dashboardData);
+    } catch (error) {
+        console.error('Fehler beim Abrufen der Dashboard-Daten:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// NEU: Dashboard-HTML direkt aus DB generieren
+app.get('/api/dashboard-html/:stationId', async (req, res) => {
+    try {
+        const { stationId } = req.params;
+        console.log(`Generiere Dashboard-HTML für Station ${stationId} aus DB...`);
+        
+        // Dashboard aus DB generieren
+        const { generateDashboardFromDB } = require('./daten_pipeline/dashboard_from_db');
+        const html = await generateDashboardFromDB(stationId);
+        
+        // HTML zurückgeben
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
+        
+    } catch (error) {
+        console.error('Fehler beim Generieren des Dashboard-HTML:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// DEBUG: Zeige alle Validierungsläufe
+app.get('/api/debug/runs/:stationId', async (req, res) => {
+    const { Pool } = require('pg');
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    
+    try {
+        const result = await pool.query(
+            `SELECT run_id, station_id, run_timestamp, source_zip_file 
+             FROM validation_runs 
+             WHERE station_id = $1 
+             ORDER BY run_timestamp DESC`,
+            [req.params.stationId]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Flexibles Dashboard mit Datum-Auswahl
+app.get('/api/dashboard-flex/:stationId', async (req, res) => {
+    try {
+        const { stationId } = req.params;
+        const { startDate, endDate } = req.query;
+        
+        // Default: Letzte 7 Tage
+        const end = endDate || new Date().toISOString().split('T')[0];
+        const start = startDate || new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0];
+        
+        console.log(`Generiere flexibles Dashboard für ${stationId} vom ${start} bis ${end}`);
+        
+        const { getDashboardDataByDateRange } = require('./db/postgres');
+        const dashboardData = await getDashboardDataByDateRange(stationId, start, end);
+        
+        res.json(dashboardData);
+    } catch (error) {
+        console.error('Fehler:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// HTML-Version des flexiblen Dashboards
+app.get('/api/dashboard-flex-html/:stationId', async (req, res) => {
+    try {
+        const { stationId } = req.params;
+        const { startDate, endDate } = req.query;
+        
+        // Default: Letzte 7 Tage
+        const end = endDate || new Date().toISOString().split('T')[0];
+        const start = startDate || new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0];
+        
+        console.log(`Generiere flexibles Dashboard-HTML für ${stationId} vom ${start} bis ${end}`);
+        
+        // Modifiziere dashboard_from_db.js um diese Funktion zu nutzen
+        const { generateFlexibleDashboardFromDB } = require('./daten_pipeline/dashboard_from_db_flex');
+        const html = await generateFlexibleDashboardFromDB(stationId, start, end);
+        
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
+        
+    } catch (error) {
+        console.error('Fehler:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// API für Station-Liste
+app.get('/api/stations', async (req, res) => {
+    const { Pool } = require('pg');
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    
+    try {
+        const result = await pool.query(
+            `SELECT DISTINCT s.station_code, s.station_name 
+             FROM stations s
+             JOIN daily_aggregations da ON s.station_code = da.station_id
+             ORDER BY s.station_code`
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Kommentar- und Benutzer-API (unverändert)
 const requiredEnvVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'ADMIN_EMAIL'];
 for (const varName of requiredEnvVars) {
@@ -276,21 +402,29 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
             const hourlyFile = getNewestFile(outputDir, `stundenwerte_${stationId}_`);
             const hourlyDataPath = hourlyFile ? path.join(outputDir, hourlyFile) : null;
             
-            // AKTIVIERT: Speichere in Datenbank mit Stundenwerten
+            // NEU: Finde die fehlerhafte_werte.json
+            const errorFile = getNewestFile(outputDir, `validierung_details_${stationId}_`) 
+                ? getNewestFile(outputDir, `validierung_details_${stationId}_`).replace('.txt', '_fehlerhafte_werte.json')
+                : null;
+            const errorData = errorFile && fs.existsSync(path.join(outputDir, errorFile))
+                ? JSON.parse(fs.readFileSync(path.join(outputDir, errorFile), 'utf-8'))
+                : null;
+            
+            // ERWEITERT: Speichere ALLE Daten in Datenbank
             try {
                 await saveValidationData(
                     fullAnalysisData.basis_validierung, 
                     req.file.originalname, 
                     stationId,
-                    hourlyDataPath  // NEU: Pfad zu Stundenwerten
+                    hourlyDataPath,
+                    fullAnalysisData  // NEU: Die kompletten erweiterten Daten!
                 );
-                console.log('✅ Validierungsdaten inkl. Stundenwerte erfolgreich in Datenbank gespeichert!');
+                console.log('✅ Alle Dashboard-Daten erfolgreich in Datenbank gespeichert!');
             } catch (dbError) {
                 console.error('❌ Fehler beim Speichern in Datenbank:', dbError);
-                // Trotzdem weitermachen, damit der User sein Dashboard bekommt
             }
         }
-        // ====================================================================================
+                // ====================================================================================
 
         let publicDashboardUrl = null;
         if (dashboardFile) {

@@ -874,7 +874,355 @@ const saveValidationErrors = async (runId, errors, stationId, client) => {
     }
 };
 
+// Dashboard-Daten aus DB laden
+const getDashboardData = async (stationId, date) => {
+    const client = await pool.connect();
+    try {
+        // 1. Finde den neuesten Validierungslauf für diese Station
+        let runQuery = `
+            SELECT run_id, run_timestamp 
+            FROM validation_runs 
+            WHERE station_id = $1
+        `;
+        const params = [stationId];
+        
+        // Optional: Nach Datum filtern
+        if (date) {
+            runQuery += ` AND DATE(run_timestamp) = $2`;
+            params.push(date);
+        }
+        
+        runQuery += ` ORDER BY run_timestamp DESC LIMIT 1`;
+        
+        const runResult = await client.query(runQuery, params);
+        
+        if (runResult.rows.length === 0) {
+            return { error: 'Keine Validierungsdaten gefunden' };
+        }
+        
+        const runId = runResult.rows[0].run_id;
+        const runTimestamp = runResult.rows[0].run_timestamp;
+        
+        // 2. Hole alle Daten für dieses run_id
+        const [
+            dailyData,
+            analyses,
+            summary,
+            errors
+        ] = await Promise.all([
+            // Tageswerte
+            client.query(
+                `SELECT * FROM daily_aggregations 
+                 WHERE station_id = $1 AND validation_run_id = $2
+                 ORDER BY date, parameter`,
+                [stationId, runId]
+            ),
+            // Erweiterte Analysen
+            client.query(
+                `SELECT * FROM validation_analyses 
+                 WHERE run_id = $1`,
+                [runId]
+            ),
+            // Zusammenfassung
+            client.query(
+                `SELECT * FROM validation_summaries 
+                 WHERE run_id = $1`,
+                [runId]
+            ),
+            // Fehlerhafte Werte
+            client.query(
+                `SELECT * FROM validation_errors 
+                 WHERE run_id = $1 
+                 ORDER BY timestamp, parameter`,
+                [runId]
+            )
+        ]);
+        
+        // 3. Formatiere die Daten für das Dashboard
+        const dashboardData = {
+            station_id: stationId,
+            run_timestamp: runTimestamp,
+            zeitraum: {
+                von: null,
+                bis: null
+            },
+            basis_validierung: {},
+            erweiterte_analysen: {},
+            zusammenfassung: {},
+            fehlerhafte_werte: errors.rows
+        };
+        
+        // Konvertiere Tageswerte in das erwartete Format
+        dailyData.rows.forEach(row => {
+            const dateStr = row.date.toISOString().split('T')[0];
+            
+            if (!dashboardData.basis_validierung[dateStr]) {
+                dashboardData.basis_validierung[dateStr] = {};
+            }
+            
+            // Setze Zeitraum
+            if (!dashboardData.zeitraum.von || dateStr < dashboardData.zeitraum.von) {
+                dashboardData.zeitraum.von = dateStr;
+            }
+            if (!dashboardData.zeitraum.bis || dateStr > dashboardData.zeitraum.bis) {
+                dashboardData.zeitraum.bis = dateStr;
+            }
+            
+            // Füge Parameter-Daten hinzu
+            const param = row.parameter;
+            dashboardData.basis_validierung[dateStr][`${param}_Mittelwert`] = row.mean_value;
+            dashboardData.basis_validierung[dateStr][`${param}_Min`] = row.min_value;
+            dashboardData.basis_validierung[dateStr][`${param}_Max`] = row.max_value;
+            dashboardData.basis_validierung[dateStr][`${param}_StdAbw`] = row.std_dev;
+            dashboardData.basis_validierung[dateStr][`${param}_Median`] = row.median_value;
+            dashboardData.basis_validierung[dateStr][`${param}_Anteil_Guter_Werte_Prozent`] = row.good_values_percentage;
+            dashboardData.basis_validierung[dateStr][`${param}_Aggregat_QARTOD_Flag`] = row.aggregated_flag;
+            dashboardData.basis_validierung[dateStr][`${param}_Aggregat_Gruende`] = row.aggregated_reasons;
+        });
+        
+        // Konvertiere erweiterte Analysen
+        analyses.rows.forEach(row => {
+            dashboardData.erweiterte_analysen[row.analysis_type] = row.analysis_data;
+        });
+        
+        // Konvertiere Zusammenfassung
+        if (summary.rows.length > 0) {
+            const sum = summary.rows[0];
+            dashboardData.zusammenfassung = {
+                status: sum.status,
+                hauptprobleme: sum.main_problems || [],
+                sofortmassnahmen: sum.immediate_actions || [],
+                meldepflichten: sum.reporting_obligations || []
+            };
+        }
+        
+        return dashboardData;
+        
+    } catch (err) {
+        console.error('Fehler beim Laden der Dashboard-Daten:', err);
+        throw new Error(`DB-Fehler: ${err.message}`);
+    } finally {
+        client.release();
+    }
+};
 
+// Hole Konfigurations-Daten für Dashboard
+// Hole Konfigurations-Daten für Dashboard
+const getStationConfig = async (stationId) => {
+    const client = await pool.connect();
+    try {
+        // 1. Hole Station-Details
+        const stationQuery = `
+            SELECT s.*, 
+                   sc.latitude, sc.longitude,
+                   sca.agrar_anteil_prozent, sca.wald_anteil_prozent, 
+                   sca.siedlung_anteil_prozent, sca.sonstiger_anteil_prozent
+            FROM stations s
+            LEFT JOIN station_coordinates sc ON s.station_id = sc.station_id
+            LEFT JOIN station_catchment_areas sca ON s.station_id = sca.station_id
+            WHERE s.station_code = $1
+        `;
+        const stationResult = await client.query(stationQuery, [stationId]);
+        
+        // 2. Hole ALLE validation_range Regeln (auch ohne parameter_id)
+        const rulesQuery = `
+            SELECT p.parameter_name, r.config_json, r.rule_type
+            FROM config_rules r
+            LEFT JOIN parameters p ON r.parameter_id = p.parameter_id
+            WHERE r.rule_type IN ('validation_range', 'RANGE', 'RANGE_REGIONAL')
+            AND (r.station_id IS NULL OR r.station_id = (
+                SELECT station_id FROM stations WHERE station_code = $1
+            ))
+        `;
+        const rulesResult = await client.query(rulesQuery, [stationId]);
+        
+        // 3. FALLBACK: Hole globale Regeln aus parameters Tabelle
+        const globalRulesQuery = `
+            SELECT parameter_name, 
+                   json_build_object('min', 0, 'max', 100) as config_json
+            FROM parameters
+            WHERE parameter_name IN (
+                'Nitrat', 'pH', 'Gelöster Sauerstoff', 'Wassertemperatur',
+                'Chl-a', 'Trübung', 'Leitfähigkeit'
+            )
+        `;
+        const globalRulesResult = await client.query(globalRulesQuery);
+        
+        // Formatiere Ergebnis
+        const config = {
+            station: stationResult.rows[0] || {
+                station_name: stationId,
+                gemeinde: 'Unbekannt',
+                latitude: 54.0,
+                longitude: 13.0
+            },
+            validation_rules: {}
+        };
+        
+        // Erst globale Regeln
+        globalRulesResult.rows.forEach(row => {
+            config.validation_rules[row.parameter_name] = row.config_json;
+        });
+        
+        // Dann spezifische Regeln (überschreiben globale)
+        rulesResult.rows.forEach(row => {
+            if (row.parameter_name) {
+                config.validation_rules[row.parameter_name] = row.config_json;
+            }
+        });
+        
+        // TEMPORÄR: Füge Standard-Grenzwerte hinzu falls keine gefunden
+        if (Object.keys(config.validation_rules).length === 0) {
+            config.validation_rules = {
+                'Wassertemperatur': { min: -0.5, max: 32.0 },
+                'pH': { min: 6.0, max: 10.0 },
+                'Nitrat': { min: 0.0, max: 50.0 },
+                'Gelöster Sauerstoff': { min: 0.0, max: 20.0 },
+                'Chl-a': { min: 0.0, max: 250.0 },
+                'Trübung': { min: 0.0, max: 150.0 },
+                'Leitfähigkeit': { min: 100, max: 1500 }
+            };
+        }
+        
+        return config;
+        
+    } catch (err) {
+        console.error('Fehler beim Laden der Station-Config:', err);
+        throw new Error(`DB-Fehler: ${err.message}`);
+    } finally {
+        client.release();
+    }
+};
+
+// Hole Dashboard-Daten für Station und Zeitraum (unabhängig von Läufen)
+const getDashboardDataByDateRange = async (stationId, startDate, endDate) => {
+    const client = await pool.connect();
+    try {
+        console.log(`Lade Daten für ${stationId} vom ${startDate} bis ${endDate}`);
+        
+        // 1. Hole Tageswerte für den Zeitraum
+        const dailyData = await client.query(
+            `SELECT * FROM daily_aggregations 
+             WHERE station_id = $1 
+             AND date >= $2 
+             AND date <= $3
+             ORDER BY date, parameter`,
+            [stationId, startDate, endDate]
+        );
+        
+        // 2. Hole die neuesten erweiterten Analysen für diesen Zeitraum
+        const analyses = await client.query(
+            `SELECT DISTINCT ON (analysis_type) 
+                    analysis_type, analysis_data
+             FROM validation_analyses va
+             JOIN validation_runs vr ON va.run_id = vr.run_id
+             WHERE vr.station_id = $1
+             AND vr.run_timestamp >= $2
+             ORDER BY analysis_type, vr.run_timestamp DESC`,
+            [stationId, startDate]
+        );
+        
+        // 3. Hole fehlerhafte Werte für den Zeitraum
+        const errors = await client.query(
+            `SELECT * FROM validation_errors 
+             WHERE station_id = $1 
+             AND DATE(timestamp) >= $2 
+             AND DATE(timestamp) <= $3
+             ORDER BY timestamp, parameter`,
+            [stationId, startDate, endDate]
+        );
+        
+        // 4. Generiere Zusammenfassung basierend auf den Daten
+        const summary = generateSummaryFromData(dailyData.rows, errors.rows);
+        
+        // 5. Formatiere wie gewohnt
+        const dashboardData = {
+            station_id: stationId,
+            zeitraum: {
+                von: startDate,
+                bis: endDate
+            },
+            basis_validierung: {},
+            erweiterte_analysen: {},
+            zusammenfassung: summary,
+            fehlerhafte_werte: errors.rows
+        };
+        
+        // Konvertiere Tageswerte
+        dailyData.rows.forEach(row => {
+            const dateStr = row.date.toISOString().split('T')[0];
+            
+            if (!dashboardData.basis_validierung[dateStr]) {
+                dashboardData.basis_validierung[dateStr] = {};
+            }
+            
+            const param = row.parameter;
+            dashboardData.basis_validierung[dateStr][`${param}_Mittelwert`] = row.mean_value;
+            dashboardData.basis_validierung[dateStr][`${param}_Min`] = row.min_value;
+            dashboardData.basis_validierung[dateStr][`${param}_Max`] = row.max_value;
+            dashboardData.basis_validierung[dateStr][`${param}_StdAbw`] = row.std_dev;
+            dashboardData.basis_validierung[dateStr][`${param}_Median`] = row.median_value;
+            dashboardData.basis_validierung[dateStr][`${param}_Anteil_Guter_Werte_Prozent`] = row.good_values_percentage;
+            dashboardData.basis_validierung[dateStr][`${param}_Aggregat_QARTOD_Flag`] = row.aggregated_flag;
+            dashboardData.basis_validierung[dateStr][`${param}_Aggregat_Gruende`] = row.aggregated_reasons;
+        });
+        
+        // Konvertiere Analysen
+        analyses.rows.forEach(row => {
+            dashboardData.erweiterte_analysen[row.analysis_type] = row.analysis_data;
+        });
+        
+        return dashboardData;
+        
+    } catch (err) {
+        console.error('Fehler beim Laden der Dashboard-Daten:', err);
+        throw new Error(`DB-Fehler: ${err.message}`);
+    } finally {
+        client.release();
+    }
+};
+
+// Hilfsfunktion für Zusammenfassung
+function generateSummaryFromData(dailyData, errors) {
+    let status = 'gut';
+    const hauptprobleme = [];
+    const sofortmassnahmen = [];
+    
+    // Analysiere Fehler
+    const errorCount = errors.length;
+    const criticalErrors = errors.filter(e => e.flag === 4).length;
+    
+    if (criticalErrors > 10) {
+        status = 'kritisch';
+        hauptprobleme.push(`${criticalErrors} kritische Messfehler`);
+        sofortmassnahmen.push('Sensoren prüfen');
+    } else if (errorCount > 20) {
+        status = 'warnung';
+        hauptprobleme.push(`${errorCount} fehlerhafte Messungen`);
+    }
+    
+    // Analysiere Grenzwertüberschreitungen
+    const parameterProblems = {};
+    dailyData.forEach(row => {
+        if (row.aggregated_flag === 4) {
+            parameterProblems[row.parameter] = (parameterProblems[row.parameter] || 0) + 1;
+        }
+    });
+    
+    Object.entries(parameterProblems).forEach(([param, count]) => {
+        if (count > 3) {
+            status = status === 'gut' ? 'warnung' : status;
+            hauptprobleme.push(`${param} häufig außerhalb Grenzwerte`);
+        }
+    });
+    
+    return {
+        status,
+        hauptprobleme,
+        sofortmassnahmen,
+        meldepflichten: []
+    };
+}
 
 module.exports = {
     testConnection,
@@ -891,5 +1239,8 @@ module.exports = {
     saveHourlyMeasurements,
      saveExtendedAnalyses,
     saveValidationSummary,
-    saveValidationErrors
+    saveValidationErrors,
+    getDashboardData,
+    getStationConfig,
+    getDashboardDataByDateRange
 };
