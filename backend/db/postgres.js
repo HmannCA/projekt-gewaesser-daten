@@ -215,6 +215,70 @@ const createDatabaseTables = async () => {
         await client.query(createLatestDailyView);
         console.log('View "latest_daily_values" erfolgreich erstellt.');
 
+        // NEUE TABELLEN FÜR DASHBOARD-DATEN
+        
+        // Erweiterte Analysen
+        const createAnalysesTable = `
+            CREATE TABLE IF NOT EXISTS validation_analyses (
+                id SERIAL PRIMARY KEY,
+                run_id INTEGER REFERENCES validation_runs(run_id) ON DELETE CASCADE,
+                analysis_type VARCHAR(50) NOT NULL,
+                analysis_data JSONB NOT NULL,
+                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            );
+        `;
+        await client.query(createAnalysesTable);
+        console.log('Tabelle "validation_analyses" erfolgreich geprüft/erstellt.');
+        
+        // Index für bessere Performance
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_validation_analyses_run_type 
+            ON validation_analyses(run_id, analysis_type);
+        `);
+
+        // Fehlerhafte Einzelwerte
+        const createErrorsTable = `
+            CREATE TABLE IF NOT EXISTS validation_errors (
+                id SERIAL PRIMARY KEY,
+                run_id INTEGER REFERENCES validation_runs(run_id) ON DELETE CASCADE,
+                station_id VARCHAR(50) NOT NULL,
+                timestamp TIMESTAMPTZ NOT NULL,
+                parameter VARCHAR(100) NOT NULL,
+                value NUMERIC,
+                flag INTEGER NOT NULL,
+                flag_name VARCHAR(50),
+                reason TEXT,
+                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            );
+        `;
+        await client.query(createErrorsTable);
+        console.log('Tabelle "validation_errors" erfolgreich geprüft/erstellt.');
+        
+        // Index für Zeitabfragen
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_validation_errors_timestamp 
+            ON validation_errors(run_id, timestamp);
+        `);
+
+        // Validierungs-Zusammenfassung
+        const createSummariesTable = `
+            CREATE TABLE IF NOT EXISTS validation_summaries (
+                id SERIAL PRIMARY KEY,
+                run_id INTEGER REFERENCES validation_runs(run_id) ON DELETE CASCADE,
+                status VARCHAR(20) NOT NULL,
+                main_problems TEXT[],
+                immediate_actions TEXT[],
+                reporting_obligations TEXT[],
+                risk_indicators JSONB,
+                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(run_id)
+            );
+        `;
+        await client.query(createSummariesTable);
+        console.log('Tabelle "validation_summaries" erfolgreich geprüft/erstellt.');
+
+        await client.query('COMMIT');
+
         await client.query('COMMIT');
         return { success: true, message: 'Alle Tabellen erfolgreich geprüft/erstellt.' };
     } catch (err) {
@@ -401,7 +465,7 @@ const getStationId = (resultData) => {
     return 'wamo_placeholder';
 };
 
-const saveValidationData = async (resultData, sourceFile, stationId = null, hourlyDataPath = null) => {
+const saveValidationData = async (resultData, sourceFile, stationId = null, hourlyDataPath = null, extendedData = null) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -420,7 +484,6 @@ const saveValidationData = async (resultData, sourceFile, stationId = null, hour
         if (hourlyDataPath && fs.existsSync(hourlyDataPath)) {
             console.log('Lade und speichere Stundenwerte...');
             const hourlyData = JSON.parse(fs.readFileSync(hourlyDataPath, 'utf-8'));
-            //await saveHourlyMeasurements(hourlyData, runId);
             await saveHourlyMeasurements(hourlyData, runId, client);
         }
 
@@ -523,6 +586,26 @@ const saveValidationData = async (resultData, sourceFile, stationId = null, hour
                         ]
                     );
                 }
+            }
+        }
+        
+        // 4. NEU: Erweiterte Daten speichern (wenn übergeben)
+        if (extendedData) {
+            console.log('\n=== Speichere erweiterte Dashboard-Daten ===');
+            
+            // Erweiterte Analysen
+            if (extendedData.erweiterte_analysen) {
+                await saveExtendedAnalyses(runId, extendedData.erweiterte_analysen, client);
+            }
+            
+            // Zusammenfassung
+            if (extendedData.zusammenfassung) {
+                await saveValidationSummary(runId, extendedData.zusammenfassung, client);
+            }
+            
+            // Fehlerhafte Werte
+            if (extendedData.fehlerhafte_werte) {
+                await saveValidationErrors(runId, extendedData.fehlerhafte_werte, actualStationId, client);
             }
         }
         
@@ -685,11 +768,113 @@ const saveHourlyMeasurements = async (hourlyData, runId, client) => {
     //}
 };
 
-// Export hinzufügen
-module.exports = {
-    // ... andere Exports ...
-    saveHourlyMeasurements
+// ========================================================
+// --- NEUE DASHBOARD DATEN FUNKTIONEN ---
+// ========================================================
+
+const saveExtendedAnalyses = async (runId, analyses, client) => {
+    try {
+        console.log('Speichere erweiterte Analysen...');
+        
+        for (const [analysisType, analysisData] of Object.entries(analyses)) {
+            await client.query(
+                `INSERT INTO validation_analyses (run_id, analysis_type, analysis_data) 
+                 VALUES ($1, $2, $3)`,
+                [runId, analysisType, analysisData]
+            );
+            console.log(`  - ${analysisType} gespeichert`);
+        }
+        
+        console.log('✅ Alle erweiterten Analysen erfolgreich gespeichert');
+    } catch (err) {
+        console.error('Fehler beim Speichern der erweiterten Analysen:', err);
+        throw new Error(`DB-Fehler bei erweiterten Analysen: ${err.message}`);
+    }
 };
+
+const saveValidationSummary = async (runId, summary, client) => {
+    try {
+        console.log('Speichere Validierungs-Zusammenfassung...');
+        
+        await client.query(
+            `INSERT INTO validation_summaries 
+             (run_id, status, main_problems, immediate_actions, 
+              reporting_obligations, risk_indicators) 
+             VALUES ($1, $2, $3, $4, $5, $6)
+             ON CONFLICT (run_id) DO UPDATE SET
+                status = EXCLUDED.status,
+                main_problems = EXCLUDED.main_problems,
+                immediate_actions = EXCLUDED.immediate_actions,
+                reporting_obligations = EXCLUDED.reporting_obligations,
+                risk_indicators = EXCLUDED.risk_indicators`,
+            [
+                runId,
+                summary.status || 'unbekannt',
+                summary.hauptprobleme || [],
+                summary.sofortmassnahmen || [],
+                summary.meldepflichten || [],
+                summary.risk_indicators || {}
+            ]
+        );
+        
+        console.log('✅ Validierungs-Zusammenfassung erfolgreich gespeichert');
+    } catch (err) {
+        console.error('Fehler beim Speichern der Zusammenfassung:', err);
+        throw new Error(`DB-Fehler bei Zusammenfassung: ${err.message}`);
+    }
+};
+
+const saveValidationErrors = async (runId, errors, stationId, client) => {
+    try {
+        if (!errors || errors.length === 0) {
+            console.log('Keine fehlerhaften Werte zu speichern');
+            return;
+        }
+        
+        console.log(`Speichere ${errors.length} fehlerhafte Werte...`);
+        
+        // Batch-Insert für bessere Performance
+        const values = [];
+        const placeholders = [];
+        let paramIndex = 1;
+        
+        errors.forEach((error) => {
+            placeholders.push(
+                `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, 
+                  $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, 
+                  $${paramIndex++}, $${paramIndex++})`
+            );
+            
+            values.push(
+                runId,
+                stationId,
+                error.zeitpunkt,
+                error.parameter,
+                error.wert,
+                error.flag,
+                error.flag_name,
+                error.grund
+            );
+        });
+        
+        if (placeholders.length > 0) {
+            const query = `
+                INSERT INTO validation_errors 
+                (run_id, station_id, timestamp, parameter, value, flag, flag_name, reason)
+                VALUES ${placeholders.join(', ')}
+            `;
+            
+            await client.query(query, values);
+            console.log(`✅ ${errors.length} fehlerhafte Werte erfolgreich gespeichert`);
+        }
+        
+    } catch (err) {
+        console.error('Fehler beim Speichern der fehlerhaften Werte:', err);
+        throw new Error(`DB-Fehler bei fehlerhaften Werten: ${err.message}`);
+    }
+};
+
+
 
 module.exports = {
     testConnection,
@@ -702,5 +887,9 @@ module.exports = {
     saveValidationData,
     getLatestValidationData,
     logUserLogin,
-    getAllTableData
+    getAllTableData,
+    saveHourlyMeasurements,
+     saveExtendedAnalyses,
+    saveValidationSummary,
+    saveValidationErrors
 };
