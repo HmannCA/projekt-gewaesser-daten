@@ -22,6 +22,8 @@ const {
     getAllTableData
 } = require('./db/postgres');
 
+console.log('GELADENE DATABASE_URL:', process.env.DATABASE_URL);
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -40,13 +42,17 @@ app.get('/api/setup-database-bitte-loeschen', async (req, res) => {
     }
 });
 
+// MIT DIESEM BLOCK (mit erweitertem Logging):
 app.get('/api/show-db-content', async (req, res) => {
     try {
         console.log('Anfrage zum Anzeigen des gesamten DB-Inhalts erhalten...');
+        console.log('DATABASE_URL:', process.env.DATABASE_URL); // DEBUG
         const data = await getAllTableData();
         res.setHeader('Content-Type', 'application/json');
         res.status(200).send(JSON.stringify(data, null, 2));
     } catch (error) {
+        console.error('FEHLER in getAllTableData:', error.message); // DEBUG
+        console.error('Stack:', error.stack); // DEBUG
         res.status(500).json({ error: error.message });
     }
 });
@@ -258,13 +264,31 @@ app.post('/api/validate-data-zip', upload.single('file'), async (req, res) => {
         }
         const chartJsonPayload = JSON.parse(fs.readFileSync(openDataPath, 'utf-8'));
 
-        // Finde und verarbeite die Haupt-Analyse-Datei (auskommentierter DB-Teil bleibt)
+        
+        // Finde und verarbeite die Haupt-Analyse-Datei und speichere in DB
         const fullAnalysisPath = path.join(outputDir, fullAnalysisFile);
         if (fs.existsSync(fullAnalysisPath)) {
             const fullAnalysisData = JSON.parse(fs.readFileSync(fullAnalysisPath, 'utf-8'));
             const stationIdMatch = fullAnalysisFile.match(/_wamo(\d+)_/);
             const stationId = stationIdMatch ? `wamo${stationIdMatch[1]}` : 'unbekannt';
-            // await saveValidationData(...) bleibt auskommentiert
+            
+            // Finde die Stundenwerte-Datei
+            const hourlyFile = getNewestFile(outputDir, `stundenwerte_${stationId}_`);
+            const hourlyDataPath = hourlyFile ? path.join(outputDir, hourlyFile) : null;
+            
+            // AKTIVIERT: Speichere in Datenbank mit Stundenwerten
+            try {
+                await saveValidationData(
+                    fullAnalysisData.basis_validierung, 
+                    req.file.originalname, 
+                    stationId,
+                    hourlyDataPath  // NEU: Pfad zu Stundenwerten
+                );
+                console.log('✅ Validierungsdaten inkl. Stundenwerte erfolgreich in Datenbank gespeichert!');
+            } catch (dbError) {
+                console.error('❌ Fehler beim Speichern in Datenbank:', dbError);
+                // Trotzdem weitermachen, damit der User sein Dashboard bekommt
+            }
         }
         // ====================================================================================
 

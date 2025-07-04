@@ -1,30 +1,361 @@
 // backend/db/postgres.js
-// HINWEIS: Ergänzt um die Logik zum Speichern der Validierungsergebnisse
+// Vollständige Version mit allen Funktionen
 
 const { Pool } = require('pg');
+const fs = require('fs');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // SSL wird nur in der Produktionsumgebung (auf Fly.io) aktiviert.
-  // Lokal (für den Proxy) wird es deaktiviert.
   ssl: isProduction ? { rejectUnauthorized: false } : false
 });
 
-const testConnection = async () => { /* ... bleibt unverändert ... */ };
-const createDatabaseTables = async () => { /* ... bleibt unverändert ... */ };
-const getComments = async (req, res) => { /* ... bleibt unverändert ... */ };
-const addComment = async (req, res) => { /* ... bleibt unverändert ... */ };
-const deleteComment = async (req, res) => { /* ... bleibt unverändert ... */ };
-const loginUser = async (req, res) => { /* ... bleibt unverändert ... */ };
+const testConnection = async () => {
+    try {
+        const client = await pool.connect();
+        console.log('✅ Datenbank erfolgreich verbunden');
+        client.release();
+        return true;
+    } catch (err) {
+        console.error('❌ Datenbankverbindung fehlgeschlagen:', err);
+        return false;
+    }
+};
 
+// ========================================================
+// --- TABELLEN ERSTELLEN (Ihre wiederhergestellte Version) ---
+const createDatabaseTables = async () => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
 
-// --- BEGINN DER NEUEN FUNKTION ZUM DATEN-AUSLESEN ---
+        // Validation tables
+        const createRunsTable = `
+            CREATE TABLE IF NOT EXISTS validation_runs (
+                run_id SERIAL PRIMARY KEY,
+                station_id VARCHAR(255) NOT NULL,
+                run_timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                source_zip_file VARCHAR(255)
+            );
+        `;
+        await client.query(createRunsTable);
+        console.log('Tabelle "validation_runs" erfolgreich geprüft/erstellt.');
+
+        const createRawPointsTable = `
+            CREATE TABLE IF NOT EXISTS raw_data_points (
+                point_id SERIAL PRIMARY KEY,
+                run_id INTEGER NOT NULL REFERENCES validation_runs(run_id) ON DELETE CASCADE,
+                station_id VARCHAR(255) NOT NULL,
+                "timestamp" TIMESTAMPTZ NOT NULL,
+                parameter_name VARCHAR(255) NOT NULL,
+                raw_value FLOAT,
+                final_qartod_flag INTEGER,
+                final_reason TEXT
+            );
+        `;
+        await client.query(createRawPointsTable);
+        console.log('Tabelle "raw_data_points" erfolgreich geprüft/erstellt.');
+
+        const createResultsTable = `
+            CREATE TABLE IF NOT EXISTS daily_results (
+                result_id SERIAL PRIMARY KEY,
+                run_id INTEGER NOT NULL REFERENCES validation_runs(run_id) ON DELETE CASCADE,
+                result_date DATE NOT NULL,
+                parameter_name VARCHAR(255) NOT NULL,
+                mean_value FLOAT,
+                min_value FLOAT,
+                max_value FLOAT,
+                std_dev FLOAT,
+                median_value FLOAT,
+                qartod_flag INTEGER,
+                qartod_reason TEXT,
+                good_value_percentage FLOAT,
+                UNIQUE(run_id, result_date, parameter_name) 
+            );
+        `;
+        await client.query(createResultsTable);
+        console.log('Tabelle "daily_results" erfolgreich geprüft/erstellt.');
+
+        // KOMMENTARE TABELLE
+        const createCommentsTable = `
+            CREATE TABLE IF NOT EXISTS comments (
+                id SERIAL PRIMARY KEY,
+                comment_id VARCHAR(255) UNIQUE NOT NULL,
+                timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                author VARCHAR(255) NOT NULL,
+                text TEXT NOT NULL,
+                step_id VARCHAR(255),
+                section_id VARCHAR(255),
+                level VARCHAR(50)
+            );
+        `;
+        await client.query(createCommentsTable);
+        console.log('Tabelle "comments" erfolgreich geprüft/erstellt.');
+
+        // BENUTZER ANMELDUNGEN TABELLE (existiert schon, aber zur Sicherheit)
+        const createUsersTable = `
+            CREATE TABLE IF NOT EXISTS benutzer_anmeldungen (
+                id SERIAL PRIMARY KEY,
+                vorname VARCHAR(255) NOT NULL,
+                nachname VARCHAR(255) NOT NULL,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                benachrichtigungen VARCHAR(50),
+                erstellt_am TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                aktualisiert_am TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            );
+        `;
+        await client.query(createUsersTable);
+        console.log('Tabelle "benutzer_anmeldungen" erfolgreich geprüft/erstellt.');
+
+        // MESSWERTE TABELLE (für die Python Pipeline)
+        const createMesswerteTable = `
+            CREATE TABLE IF NOT EXISTS messwerte (
+                id SERIAL PRIMARY KEY,
+                zeitstempel DATE NOT NULL,
+                see VARCHAR(50) NOT NULL,
+                parameter VARCHAR(100) NOT NULL,
+                wert NUMERIC,
+                qualitaets_flag INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(zeitstempel, see, parameter)
+            );
+        `;
+        await client.query(createMesswerteTable);
+        console.log('Tabelle "messwerte" erfolgreich geprüft/erstellt.');
+
+        // In der createDatabaseTables Funktion, nach den bestehenden Tabellen hinzufügen:
+
+        // NEUE TABELLE: Stündliche Messwerte (roh + validiert)
+        const createHourlyMeasurementsTable = `
+            CREATE TABLE IF NOT EXISTS hourly_measurements (
+                id SERIAL PRIMARY KEY,
+                station_id VARCHAR(50) NOT NULL,
+                timestamp TIMESTAMPTZ NOT NULL,
+                parameter VARCHAR(100) NOT NULL,
+                
+                -- Rohdaten
+                raw_value NUMERIC,
+                raw_quality_flag INTEGER,
+                
+                -- Validierte Daten
+                validated_value NUMERIC,
+                validation_flag INTEGER,
+                validation_reason TEXT,
+                
+                -- Metadaten
+                validation_run_id INTEGER REFERENCES validation_runs(run_id),
+                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                
+                UNIQUE(station_id, timestamp, parameter)
+            );
+        `;
+        await client.query(createHourlyMeasurementsTable);
+        console.log('Tabelle "hourly_measurements" erfolgreich geprüft/erstellt.');
+
+        // Index für bessere Performance bei Zeitabfragen
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_hourly_measurements_timestamp 
+            ON hourly_measurements(timestamp);
+        `);
+
+        // NEUE TABELLE: Tages-Aggregationen
+        const createDailyAggregationsTable = `
+            CREATE TABLE IF NOT EXISTS daily_aggregations (
+                id SERIAL PRIMARY KEY,
+                station_id VARCHAR(50) NOT NULL,
+                date DATE NOT NULL,
+                parameter VARCHAR(100) NOT NULL,
+                
+                -- Aggregierte Werte
+                mean_value NUMERIC,
+                min_value NUMERIC,
+                max_value NUMERIC,
+                std_dev NUMERIC,
+                median_value NUMERIC,
+                
+                -- Qualitätsinformationen
+                hourly_count INTEGER,
+                good_values_count INTEGER,
+                good_values_percentage NUMERIC,
+                aggregated_flag INTEGER,
+                aggregated_reasons TEXT,
+                
+                -- Metadaten
+                validation_run_id INTEGER REFERENCES validation_runs(run_id),
+                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                
+                UNIQUE(station_id, date, parameter)
+            );
+        `;
+        await client.query(createDailyAggregationsTable);
+        console.log('Tabelle "daily_aggregations" erfolgreich geprüft/erstellt.');
+
+        // Index für bessere Performance
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_daily_aggregations_date 
+            ON daily_aggregations(date);
+        `);
+
+        // OPTIONAL: View für einfachen Zugriff auf die neuesten Tageswerte
+        const createLatestDailyView = `
+            CREATE OR REPLACE VIEW latest_daily_values AS
+            SELECT DISTINCT ON (station_id, parameter) 
+                station_id,
+                date,
+                parameter,
+                mean_value,
+                min_value,
+                max_value,
+                good_values_percentage,
+                aggregated_flag
+            FROM daily_aggregations
+            ORDER BY station_id, parameter, date DESC;
+        `;
+        await client.query(createLatestDailyView);
+        console.log('View "latest_daily_values" erfolgreich erstellt.');
+
+        await client.query('COMMIT');
+        return { success: true, message: 'Alle Tabellen erfolgreich geprüft/erstellt.' };
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Fehler beim Erstellen der Tabellen:', err);
+        return { success: false, message: `Fehler beim Erstellen der Tabellen: ${err.message}` };
+    } finally {
+        client.release();
+    }
+};
+
+// ========================================================
+// --- KOMMENTAR FUNKTIONEN ---
+
+const getComments = async () => {
+    const client = await pool.connect();
+    try {
+        const result = await client.query('SELECT * FROM comments ORDER BY timestamp DESC');
+        return result.rows;
+    } catch (err) {
+        console.error('[DB] Fehler beim Abrufen der Kommentare:', err);
+        throw new Error(`DB-Fehler: ${err.message}`);
+    } finally {
+        client.release();
+    }
+};
+
+const addComment = async (commentData) => {
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO comments (comment_id, author, text, step_id, section_id, level, timestamp)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING *
+        `;
+        const values = [
+            Date.now().toString(), // comment_id
+            commentData.author,
+            commentData.text,
+            commentData.stepId,
+            commentData.sectionId,
+            commentData.level,
+            new Date() // timestamp
+        ];
+        
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } catch (err) {
+        console.error('[DB] Fehler beim Hinzufügen des Kommentars:', err);
+        throw new Error(`DB-Fehler: ${err.message}`);
+    } finally {
+        client.release();
+    }
+};
+
+const deleteComment = async (commentId) => {
+    const client = await pool.connect();
+    try {
+        const query = 'DELETE FROM comments WHERE comment_id = $1 RETURNING *';
+        const result = await client.query(query, [commentId]);
+        
+        if (result.rowCount === 0) {
+            throw new Error('Kommentar nicht gefunden');
+        }
+        
+        return { success: true, message: 'Kommentar gelöscht' };
+    } catch (err) {
+        console.error('[DB] Fehler beim Löschen des Kommentars:', err);
+        throw new Error(`DB-Fehler: ${err.message}`);
+    } finally {
+        client.release();
+    }
+};
+
+// ========================================================
+// --- BENUTZER FUNKTIONEN ---
+
+const loginUser = async (userData) => {
+    const client = await pool.connect();
+    try {
+        // Prüfe ob Benutzer existiert
+        const checkQuery = 'SELECT * FROM benutzer_anmeldungen WHERE email = $1';
+        const existingUser = await client.query(checkQuery, [userData.email]);
+        
+        if (existingUser.rows.length > 0) {
+            // Update existing user
+            const updateQuery = `
+                UPDATE benutzer_anmeldungen 
+                SET vorname = $1, nachname = $2, benachrichtigungen = $3, aktualisiert_am = CURRENT_TIMESTAMP
+                WHERE email = $4
+                RETURNING *
+            `;
+            const result = await client.query(updateQuery, [
+                userData.firstName,
+                userData.lastName,
+                userData.notificationFrequency,
+                userData.email
+            ]);
+            return result.rows[0];
+        } else {
+            // Insert new user
+            const insertQuery = `
+                INSERT INTO benutzer_anmeldungen (vorname, nachname, email, benachrichtigungen)
+                VALUES ($1, $2, $3, $4)
+                RETURNING *
+            `;
+            const result = await client.query(insertQuery, [
+                userData.firstName,
+                userData.lastName,
+                userData.email,
+                userData.notificationFrequency
+            ]);
+            return result.rows[0];
+        }
+    } catch (err) {
+        console.error('[DB] Fehler beim Login/Registrierung:', err);
+        throw new Error(`DB-Fehler: ${err.message}`);
+    } finally {
+        client.release();
+    }
+};
+
+const getAllUsers = async () => {
+    const client = await pool.connect();
+    try {
+        const result = await client.query('SELECT * FROM benutzer_anmeldungen ORDER BY email');
+        return result.rows;
+    } catch (err) {
+        console.error('[DB] Fehler beim Abrufen der Benutzer:', err);
+        throw new Error(`DB-Fehler: ${err.message}`);
+    } finally {
+        client.release();
+    }
+};
+
+// ========================================================
+// --- VALIDIERUNGS-DATEN FUNKTIONEN ---
+
 const getLatestValidationData = async () => {
     const client = await pool.connect();
     try {
-        // 1. Finde den letzten Validierungslauf
         const lastRunRes = await client.query(
             'SELECT * FROM validation_runs ORDER BY run_timestamp DESC LIMIT 1'
         );
@@ -34,21 +365,18 @@ const getLatestValidationData = async () => {
         }
         const lastRun = lastRunRes.rows[0];
 
-        // 2. Hole alle zugehörigen Tagesergebnisse für diesen Lauf
         const dailyResultsRes = await client.query(
             'SELECT * FROM daily_results WHERE run_id = $1 ORDER BY result_date, parameter_name',
             [lastRun.run_id]
         );
         const dailyResults = dailyResultsRes.rows;
 
-        // 3. (Optional) Hole die ersten paar Rohdatenpunkte für diesen Lauf
         const rawDataRes = await client.query(
             'SELECT * FROM raw_data_points WHERE run_id = $1 ORDER BY "timestamp" LIMIT 10',
             [lastRun.run_id]
         );
         const rawDataSample = rawDataRes.rows;
 
-        // 4. Stelle alles in einem schönen Objekt zusammen
         return {
             zuletzt_ausgefuehrter_job: lastRun,
             aggregierte_tagesergebnisse: dailyResults,
@@ -63,75 +391,142 @@ const getLatestValidationData = async () => {
     }
 };
 
-
-// ========================================================
-// --- BEGINN DER ERGÄNZUNG ---
-
-// Hilfsfunktion, um die station_id aus dem Ergebnis-JSON zu extrahieren
 const getStationId = (resultData) => {
     if (!resultData) return null;
-    // Wir nehmen den ersten Datums-Eintrag
     const firstDayKey = Object.keys(resultData)[0];
     if (!firstDayKey) return null;
     const firstDayData = resultData[firstDayKey];
-    // Wir nehmen den ersten Parameter-Eintrag
     const firstParamKey = Object.keys(firstDayData)[0];
     if (!firstParamKey || !firstParamKey.includes('_')) return null;
-    // Wir extrahieren die station_id aus dem Schlüssel (Annahme: "Parameter_Mittelwert")
-    // Dies muss ggf. angepasst werden, falls der Schlüssel anders aussieht
-    return 'wamo_placeholder'; // Platzhalter, da die ID nicht direkt in der JSON ist
+    return 'wamo_placeholder';
 };
 
-/**
- * Speichert die Ergebnisse eines kompletten Validierungslaufs in der Datenbank.
- * @param {Object} resultData - Das JSON-Objekt aus der Python-Pipeline.
- * @param {string} sourceFile - Der Name der hochgeladenen ZIP-Datei.
- */
-const saveValidationData = async (resultData, sourceFile) => {
+const saveValidationData = async (resultData, sourceFile, stationId = null, hourlyDataPath = null) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
-        const stationId = getStationId(resultData) || 'unbekannte_station';
+        const actualStationId = stationId || 'wamo_placeholder';
 
-        // 1. Einen neuen Eintrag für den Validierungslauf erstellen
+        // 1. Validierungslauf erstellen
         const runResult = await client.query(
             'INSERT INTO validation_runs (station_id, source_zip_file) VALUES ($1, $2) RETURNING run_id',
-            [stationId, sourceFile]
+            [actualStationId, sourceFile]
         );
         const runId = runResult.rows[0].run_id;
-        console.log(`Neuer Validierungslauf mit ID ${runId} für Station ${stationId} erstellt.`);
+        console.log(`Neuer Validierungslauf mit ID ${runId} für Station ${actualStationId} erstellt.`);
 
-        // 2. Die aggregierten Tagesergebnisse speichern
+        // 2. Stundenwerte speichern (wenn vorhanden)
+        if (hourlyDataPath && fs.existsSync(hourlyDataPath)) {
+            console.log('Lade und speichere Stundenwerte...');
+            const hourlyData = JSON.parse(fs.readFileSync(hourlyDataPath, 'utf-8'));
+            //await saveHourlyMeasurements(hourlyData, runId);
+            await saveHourlyMeasurements(hourlyData, runId, client);
+        }
+
+        // 3. Tageswerte speichern (wie vorher)
         for (const dateStr in resultData) {
             const dayData = resultData[dateStr];
-            const resultDate = new Date(dateStr).toISOString().split('T')[0]; // Format YYYY-MM-DD
+            const resultDate = new Date(dateStr).toISOString().split('T')[0];
 
+            // Gruppiere die Daten nach Parameter
             const parameters = {};
-            // Daten aus dem flachen JSON-Format in ein strukturiertes Objekt umwandeln
+            
             for (const key in dayData) {
-                const parts = key.split('_');
-                const valueType = parts.pop();
-                const paramName = parts.join('_');
-
+                let paramName, valueType;
+                
+                if (key.endsWith('_Mittelwert')) {
+                    paramName = key.replace('_Mittelwert', '');
+                    valueType = 'Mittelwert';
+                } else if (key.endsWith('_Min')) {
+                    paramName = key.replace('_Min', '');
+                    valueType = 'Min';
+                } else if (key.endsWith('_Max')) {
+                    paramName = key.replace('_Max', '');
+                    valueType = 'Max';
+                } else if (key.endsWith('_StdAbw')) {
+                    paramName = key.replace('_StdAbw', '');
+                    valueType = 'StdAbw';
+                } else if (key.endsWith('_Median')) {
+                    paramName = key.replace('_Median', '');
+                    valueType = 'Median';
+                } else if (key.endsWith('_Anteil_Guter_Werte_Prozent')) {
+                    paramName = key.replace('_Anteil_Guter_Werte_Prozent', '');
+                    valueType = 'Anteil';
+                } else if (key.endsWith('_Aggregat_QARTOD_Flag')) {
+                    paramName = key.replace('_Aggregat_QARTOD_Flag', '');
+                    valueType = 'Flag';
+                } else if (key.endsWith('_Aggregat_Gruende')) {
+                    paramName = key.replace('_Aggregat_Gruende', '');
+                    valueType = 'Gruende';
+                } else if (key.endsWith('_Anzahl_Stunden')) {
+                    paramName = key.replace('_Anzahl_Stunden', '');
+                    valueType = 'AnzahlStunden';
+                } else {
+                    continue;
+                }
+                
                 if (!parameters[paramName]) parameters[paramName] = {};
                 parameters[paramName][valueType] = dayData[key];
             }
 
-            // Jeden Parameter als eigene Zeile in die DB schreiben
+            // Speichere in beiden Tabellen
             for (const paramName in parameters) {
                 const p = parameters[paramName];
-                await client.query(
-                    `INSERT INTO daily_results (run_id, result_date, parameter_name, mean_value, min_value, max_value, std_dev, median_value, qartod_flag, qartod_reason, good_value_percentage)
-                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-                    [runId, resultDate, paramName, p.Mittelwert, p.Min, p.Max, p.StdAbw, p.Median, p.Aggregat, p.Aggregat, p.Anteil]
-                    // HINWEIS: Hier müssen die Schlüsselnamen (p.Mittelwert etc.) exakt mit denen in Ihrer JSON übereinstimmen!
-                );
+                
+                if (p.Mittelwert !== undefined || p.Min !== undefined || p.Max !== undefined) {
+                    
+                    // ALTE Tabelle (daily_results)
+                    await client.query(
+                        `INSERT INTO daily_results 
+                         (run_id, result_date, parameter_name, mean_value, min_value, max_value, 
+                          std_dev, median_value, qartod_flag, qartod_reason, good_value_percentage)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+                        [
+                            runId, resultDate, paramName, 
+                            p.Mittelwert || null, p.Min || null, p.Max || null,
+                            p.StdAbw || null, p.Median || null,
+                            p.Flag || null, p.Gruende || null, p.Anteil || null
+                        ]
+                    );
+
+                    // NEUE Tabelle (daily_aggregations)
+                    const hourlyCount = p.AnzahlStunden || 24;
+                    const goodPercentage = p.Anteil || 0;
+                    const goodCount = Math.round((goodPercentage / 100) * hourlyCount);
+
+                    await client.query(
+                        `INSERT INTO daily_aggregations 
+                         (station_id, date, parameter, mean_value, min_value, max_value, 
+                          std_dev, median_value, hourly_count, good_values_count, 
+                          good_values_percentage, aggregated_flag, aggregated_reasons, validation_run_id)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                         ON CONFLICT (station_id, date, parameter) 
+                         DO UPDATE SET 
+                            mean_value = EXCLUDED.mean_value,
+                            min_value = EXCLUDED.min_value,
+                            max_value = EXCLUDED.max_value,
+                            std_dev = EXCLUDED.std_dev,
+                            median_value = EXCLUDED.median_value,
+                            hourly_count = EXCLUDED.hourly_count,
+                            good_values_count = EXCLUDED.good_values_count,
+                            good_values_percentage = EXCLUDED.good_values_percentage,
+                            aggregated_flag = EXCLUDED.aggregated_flag,
+                            aggregated_reasons = EXCLUDED.aggregated_reasons,
+                            validation_run_id = EXCLUDED.validation_run_id`,
+                        [
+                            actualStationId, resultDate, paramName,
+                            p.Mittelwert || null, p.Min || null, p.Max || null,
+                            p.StdAbw || null, p.Median || null,
+                            hourlyCount, goodCount, goodPercentage,
+                            p.Flag || null, p.Gruende || null, runId
+                        ]
+                    );
+                }
             }
         }
-        console.log(`Alle Tagesergebnisse für Lauf ${runId} gespeichert.`);
         
-        // TODO: Hier fehlt noch die Logik zum Speichern der Rohdaten (`raw_data_points`)
+        console.log(`✅ Alle Daten erfolgreich gespeichert.`);
 
         await client.query('COMMIT');
         return { success: true, runId: runId };
@@ -149,6 +544,10 @@ const logUserLogin = async (userData) => {
     const query = `
         INSERT INTO benutzer_anmeldungen (vorname, nachname, email, benachrichtigungen)
         VALUES ($1, $2, $3, $4)
+        ON CONFLICT (email) 
+        DO UPDATE SET 
+            aktualisiert_am = CURRENT_TIMESTAMP,
+            benachrichtigungen = EXCLUDED.benachrichtigungen
     `;
     try {
         await pool.query(query, [
@@ -168,34 +567,54 @@ const logUserLogin = async (userData) => {
 const getAllTableData = async () => {
     const client = await pool.connect();
     try {
-        // Wir fragen alle Tabellen ab, die in der DB existieren könnten.
-        const tables = [
-            'stations', 
-            'station_coordinates', 
-            'station_catchment_areas', 
-            'station_data_status',
-            'parameters', 
-            'config_rules', 
-            'benutzer_anmeldungen', 
-            'messwerte', 
-            'validation_runs', 
-            'daily_results', 
-            'raw_data_points'
-        ];
+        // Erst alle Tabellen aus dem public Schema ermitteln
+        const tablesQuery = `
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_type = 'BASE TABLE'
+            ORDER BY table_name;
+        `;
+        
+        const tablesResult = await client.query(tablesQuery);
+        const tables = tablesResult.rows.map(row => row.table_name);
+        
+        console.log(`Gefundene Tabellen: ${tables.join(', ')}`);
+        
         const allData = {};
 
+        // Dann alle Tabellen durchgehen
         for (const table of tables) {
             try {
-                // Wir fragen die 100 neuesten Einträge ab, sortiert nach der ersten Spalte (oft die ID oder ein Timestamp)
                 const res = await client.query(`SELECT * FROM ${table} ORDER BY 1 DESC LIMIT 100`);
                 allData[table] = res.rows;
             } catch (e) {
-                // Wenn eine Tabelle nicht existiert, ignorieren wir den Fehler und fahren fort.
-                if (e.code === '42P01') { // 'undefined_table' error code in PostgreSQL
-                    console.log(`[DB Info] Tabelle '${table}' nicht gefunden, wird übersprungen.`);
-                    allData[table] = { "status": "Tabelle nicht gefunden." };
-                } else {
-                    throw e; // Andere Fehler werfen wir weiter
+                console.error(`Fehler beim Lesen der Tabelle '${table}':`, e.message);
+                allData[table] = { "error": e.message };
+            }
+        }
+        
+        // Optional: Auch Views einbeziehen
+        const viewsQuery = `
+            SELECT table_name 
+            FROM information_schema.views 
+            WHERE table_schema = 'public'
+            ORDER BY table_name;
+        `;
+        
+        const viewsResult = await client.query(viewsQuery);
+        const views = viewsResult.rows.map(row => row.table_name);
+        
+        if (views.length > 0) {
+            console.log(`Gefundene Views: ${views.join(', ')}`);
+            
+            for (const view of views) {
+                try {
+                    const res = await client.query(`SELECT * FROM ${view} LIMIT 100`);
+                    allData[`VIEW: ${view}`] = res.rows;
+                } catch (e) {
+                    console.error(`Fehler beim Lesen der View '${view}':`, e.message);
+                    allData[`VIEW: ${view}`] = { "error": e.message };
                 }
             }
         }
@@ -210,15 +629,78 @@ const getAllTableData = async () => {
     }
 };
 
+const saveHourlyMeasurements = async (hourlyData, runId, client) => {
+    // const client = await pool.connect();
+    try {
+        console.log(`Speichere ${hourlyData.stundenwerte.length} Stundenwerte...`);
+        
+        // Batch-Insert für bessere Performance
+        const values = [];
+        const placeholders = [];
+        let paramIndex = 1;
+        
+        hourlyData.stundenwerte.forEach((measurement) => {
+            placeholders.push(
+                `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, 
+                  $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`
+            );
+            
+            values.push(
+                measurement.station_id,
+                measurement.timestamp,
+                measurement.parameter,
+                measurement.raw_value,
+                measurement.validated_value,
+                measurement.validation_flag,
+                measurement.validation_reason,
+                runId
+            );
+        });
+        
+        if (placeholders.length > 0) {
+            const query = `
+                INSERT INTO hourly_measurements 
+                (station_id, timestamp, parameter, raw_value, validated_value, 
+                 validation_flag, validation_reason, validation_run_id)
+                VALUES ${placeholders.join(', ')}
+                ON CONFLICT (station_id, timestamp, parameter) 
+                DO UPDATE SET 
+                    validated_value = EXCLUDED.validated_value,
+                    validation_flag = EXCLUDED.validation_flag,
+                    validation_reason = EXCLUDED.validation_reason,
+                    validation_run_id = EXCLUDED.validation_run_id
+            `;
+            
+            await client.query(query, values);
+            console.log(`✅ ${hourlyData.stundenwerte.length} Stundenwerte erfolgreich gespeichert.`);
+        }
+        
+        return { success: true };
+    } catch (err) {
+        console.error('Fehler beim Speichern der Stundenwerte:', err);
+        throw new Error(`DB-Fehler: ${err.message}`);
+    } 
+    //finally {
+    //    client.release();
+    //}
+};
+
+// Export hinzufügen
 module.exports = {
-  testConnection,
-  createDatabaseTables, // Behalten wir vorerst
-  getComments,
-  addComment,
-  deleteComment,
-  loginUser,
-  saveValidationData,
-  getLatestValidationData,
-  logUserLogin,
-  getAllTableData
+    // ... andere Exports ...
+    saveHourlyMeasurements
+};
+
+module.exports = {
+    testConnection,
+    createDatabaseTables,
+    getComments,
+    addComment,
+    deleteComment,
+    loginUser,
+    getAllUsers,
+    saveValidationData,
+    getLatestValidationData,
+    logUserLogin,
+    getAllTableData
 };

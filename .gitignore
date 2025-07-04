@@ -46,3 +46,17 @@ __pycache__/
 
 # Test-Rohdaten der lokalen Python-Pipeline ignorieren
 /backend/daten_pipeline/input/
+
+# Ergebnisse der lokalen Python-Pipeline, die in der Datenbank landen
+/backend/daten_pipeline/output_db/
+/backend/public_results/*.html
+/backend/public_results/*.json
+
+# Debugging-Ordner der lokalen Python-Pipeline ignorieren
+/backend/daten_pipeline/debugging/
+
+# Lokale Startinformationen ignorieren'
+start_information_local.txt
+
+
+

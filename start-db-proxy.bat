@@ -1,0 +1,3 @@
+@echo off
+echo Starte Datenbank-Proxy auf Port 5433...
+fly proxy 5433:5432 -a wasserguete-db

@@ -442,6 +442,8 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
                 processed_data[f'flag_{param_name}'] = final_flags
                 processed_data[f'reason_{param_name}'] = final_reasons
 
+        
+        
         # NEU: Generiere Validierungs-Detailbericht NACH ALLEN Validierungen
         try:
             from validation_detail_report import generate_validation_details
@@ -454,6 +456,9 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
         except Exception as e:
             print(f"Fehler beim Erstellen des Detail-Berichts: {e}")
 
+        # Nach der Tageskonsolidierung hinzufügen:
+        hourly_filename = save_hourly_data_for_db(processed_data, station_id, output_dir)
+        
         # 9. Tageskonsolidierung
         print("Erstelle Tageskonsolidierung...")
 
@@ -733,6 +738,46 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
     print("Pipeline-Durchlauf abgeschlossen.")
     print("=" * 60)
 
+def save_hourly_data_for_db(processed_data, station_id, output_dir):
+    """
+    Speichert stündliche Roh- und validierte Daten für die Datenbank
+    """
+    hourly_data = []
+    
+    # Sammle alle Parameter (ohne flag_ und reason_ Spalten)
+    parameters = [col for col in processed_data.columns 
+                 if not col.startswith('flag_') and not col.startswith('reason_')]
+    
+    for timestamp, row in processed_data.iterrows():
+        for param in parameters:
+            hourly_entry = {
+                'station_id': station_id,
+                'timestamp': timestamp.isoformat(),
+                'parameter': param,
+                'raw_value': float(row[param]) if pd.notna(row[param]) else None,
+                'validated_value': float(row[param]) if pd.notna(row[param]) else None,  # Später unterscheiden
+                'validation_flag': int(row[f'flag_{param}']) if f'flag_{param}' in row else 1,
+                'validation_reason': str(row[f'reason_{param}']) if f'reason_{param}' in row and pd.notna(row[f'reason_{param}']) else ''
+            }
+            hourly_data.append(hourly_entry)
+    
+    # Speichere als JSON
+    timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    hourly_filename = f"stundenwerte_{station_id}_{timestamp_str}.json"
+    hourly_filepath = os.path.join(output_dir, hourly_filename)
+    
+    with open(hourly_filepath, 'w', encoding='utf-8') as f:
+        json.dump({
+            'station_id': station_id,
+            'zeitraum': {
+                'von': processed_data.index.min().isoformat(),
+                'bis': processed_data.index.max().isoformat()
+            },
+            'stundenwerte': hourly_data
+        }, f, indent=2, ensure_ascii=False, default=str)
+    
+    print(f"Stundenwerte gespeichert in: {hourly_filepath}")
+    return hourly_filename
 
 if __name__ == '__main__':
     # Argument-Parser einrichten, um die Pfade von Node.js zu empfangen
