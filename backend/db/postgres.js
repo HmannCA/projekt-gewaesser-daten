@@ -4,6 +4,18 @@
 const { Pool } = require('pg');
 const fs = require('fs');
 
+// Hilfsfunktion für lokale Datumsformatierung
+function formatDateLocal(date) {
+    if (!date) return null;
+    if (typeof date === 'string') return date.split('T')[0];
+    
+    // Für Date-Objekte: lokale Zeit verwenden
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 const isProduction = process.env.NODE_ENV === 'production';
 
 const pool = new Pool({
@@ -669,7 +681,7 @@ const getAllTableData = async () => {
         // Dann alle Tabellen durchgehen
         for (const table of tables) {
             try {
-                const res = await client.query(`SELECT * FROM ${table} ORDER BY 1 DESC LIMIT 100`);
+                const res = await client.query(`SELECT * FROM ${table} ORDER BY 1 DESC LIMIT 200`);
                 allData[table] = res.rows;
             } catch (e) {
                 console.error(`Fehler beim Lesen der Tabelle '${table}':`, e.message);
@@ -954,7 +966,11 @@ const getDashboardData = async (stationId, date) => {
         
         // Konvertiere Tageswerte in das erwartete Format
         dailyData.rows.forEach(row => {
-            const dateStr = row.date.toISOString().split('T')[0];
+            // PostgreSQL gibt ein Date-Objekt zurück, das wir lokal formatieren
+            const year = row.date.getFullYear();
+            const month = String(row.date.getMonth() + 1).padStart(2, '0');
+            const day = String(row.date.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
             
             if (!dashboardData.basis_validierung[dateStr]) {
                 dashboardData.basis_validierung[dateStr] = {};
@@ -1102,11 +1118,11 @@ const getDashboardDataByDateRange = async (stationId, startDate, endDate) => {
         
         // 1. Hole Tageswerte für den Zeitraum
         const dailyData = await client.query(
-            `SELECT * FROM daily_aggregations 
-             WHERE station_id = $1 
-             AND date >= $2 
-             AND date <= $3
-             ORDER BY date, parameter`,
+            `SELECT *, date::text as date_string FROM daily_aggregations 
+            WHERE station_id = $1 
+            AND date >= $2::date 
+            AND date <= $3::date
+            ORDER BY date, parameter`,
             [stationId, startDate, endDate]
         );
         
@@ -1148,9 +1164,11 @@ const getDashboardDataByDateRange = async (stationId, startDate, endDate) => {
             fehlerhafte_werte: errors.rows
         };
         
-        // Konvertiere Tageswerte
+
+        // Konvertiere Tageswerte - verwende date_string aus SQL
         dailyData.rows.forEach(row => {
-            const dateStr = row.date.toISOString().split('T')[0];
+            // Verwende den date_string aus der SQL-Abfrage
+            const dateStr = row.date_string || formatDateLocal(row.date);
             
             if (!dashboardData.basis_validierung[dateStr]) {
                 dashboardData.basis_validierung[dateStr] = {};

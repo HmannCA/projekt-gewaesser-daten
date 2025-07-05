@@ -48,6 +48,14 @@ async function generateFlexibleDashboardFromDB(stationId, startDate, endDate) {
         if (dashboardData.error) {
             throw new Error(dashboardData.error);
         }
+
+        // KORREKTUR: Stelle sicher, dass die Zeitraum-Daten korrekt sind
+        if (dashboardData.basis_validierung && Object.keys(dashboardData.basis_validierung).length > 0) {
+            const allDates = Object.keys(dashboardData.basis_validierung).sort();
+            dashboardData.zeitraum.von = allDates[0];
+            dashboardData.zeitraum.bis = allDates[allDates.length - 1];
+            console.log(`Korrigierter Zeitraum: ${dashboardData.zeitraum.von} bis ${dashboardData.zeitraum.bis}`);
+        }
         
         // NEU: Prüfe ob überhaupt Daten vorhanden sind
         const hasData = dashboardData.basis_validierung && 

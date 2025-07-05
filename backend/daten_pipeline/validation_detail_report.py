@@ -61,7 +61,7 @@ class ValidationDetailReport:
                 
                 for idx, row in bad_data.iterrows():
                     error_entry = {
-                        "zeitpunkt": idx.strftime("%Y-%m-%d %H:%M:%S"),
+                        "zeitpunkt": idx.tz_localize(None).strftime("%Y-%m-%d %H:%M:%S"),
                         "parameter": param,
                         "wert": float(row[param]) if pd.notna(row[param]) else None,
                         "flag": int(row[flag_col]),

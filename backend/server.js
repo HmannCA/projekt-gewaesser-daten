@@ -193,8 +193,8 @@ app.get('/api/stations-with-data', async (req, res) => {
             `SELECT 
                 s.station_code, 
                 s.station_name,
-                TO_CHAR(MIN(da.date), 'YYYY-MM-DD') as min_date,
-                TO_CHAR(MAX(da.date), 'YYYY-MM-DD') as max_date,
+                MIN(da.date)::text as min_date,
+                MAX(da.date)::text as max_date,
                 COUNT(DISTINCT da.date) as data_days
              FROM stations s
              JOIN daily_aggregations da ON s.station_code = da.station_id
@@ -221,8 +221,8 @@ app.get('/api/stations-overview', async (req, res) => {
                 s.station_code, 
                 s.station_name,
                 s.gemeinde,
-                TO_CHAR(MIN(da.date), 'YYYY-MM-DD') as first_data,
-                TO_CHAR(MAX(da.date), 'YYYY-MM-DD') as last_data,
+                MIN(da.date)::text as first_data,
+                MAX(da.date)::text as last_data,
                 COUNT(DISTINCT da.date) as total_days,
                 MAX(da.date)::date - MIN(da.date)::date + 1 as span_days,
                 ROUND(COUNT(DISTINCT da.date)::numeric / 
