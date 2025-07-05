@@ -500,9 +500,28 @@ const saveValidationData = async (resultData, sourceFile, stationId = null, hour
         }
 
         // 3. Tageswerte speichern (wie vorher)
+        // Debug-Ausgabe DIREKT am Anfang der for-Schleife
         for (const dateStr in resultData) {
+            console.log(`\n=== DEBUG saveValidationData ===`);
+            console.log(`JavaScript empfängt dateStr: ${dateStr}`);
+            
             const dayData = resultData[dateStr];
-            const resultDate = new Date(dateStr).toISOString().split('T')[0];
+            let resultDate;
+            if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                // Bereits ein reines Datum
+                resultDate = dateStr;
+            } else if (dateStr.includes('T')) {
+                // Datum mit Zeit - extrahiere nur Datum
+                resultDate = dateStr.split('T')[0];
+            } else {
+                // Fallback
+                resultDate = dateStr;
+            }
+
+            console.log(`Finales Datum für DB: ${resultDate}`);
+            
+            console.log(`Nach new Date() Konvertierung: ${resultDate}`);
+            console.log(`================================\n`);
 
             // Gruppiere die Daten nach Parameter
             const parameters = {};
@@ -556,7 +575,7 @@ const saveValidationData = async (resultData, sourceFile, stationId = null, hour
                         `INSERT INTO daily_results 
                          (run_id, result_date, parameter_name, mean_value, min_value, max_value, 
                           std_dev, median_value, qartod_flag, qartod_reason, good_value_percentage)
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+                         VALUES ($1, $2::date, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                         [
                             runId, resultDate, paramName, 
                             p.Mittelwert || null, p.Min || null, p.Max || null,
@@ -575,7 +594,7 @@ const saveValidationData = async (resultData, sourceFile, stationId = null, hour
                          (station_id, date, parameter, mean_value, min_value, max_value, 
                           std_dev, median_value, hourly_count, good_values_count, 
                           good_values_percentage, aggregated_flag, aggregated_reasons, validation_run_id)
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                         VALUES ($1, $2::date, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
                          ON CONFLICT (station_id, date, parameter) 
                          DO UPDATE SET 
                             mean_value = EXCLUDED.mean_value,
@@ -1164,11 +1183,11 @@ const getDashboardDataByDateRange = async (stationId, startDate, endDate) => {
             fehlerhafte_werte: errors.rows
         };
         
-
-        // Konvertiere Tageswerte - verwende date_string aus SQL
+        // HIER IST DIE WICHTIGE ÄNDERUNG:
+        // Verwende NUR date_string, KEINE weitere Konvertierung!
         dailyData.rows.forEach(row => {
-            // Verwende den date_string aus der SQL-Abfrage
-            const dateStr = row.date_string || formatDateLocal(row.date);
+            // Verwende IMMER den date_string aus der SQL-Abfrage
+            const dateStr = row.date_string;
             
             if (!dashboardData.basis_validierung[dateStr]) {
                 dashboardData.basis_validierung[dateStr] = {};

@@ -210,8 +210,13 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
             if raw_data.index.dtype == 'object':
                 raw_data = raw_data[~raw_data.index.str.contains('Timestamp', na=False)]
             
-            # Konvertiere Index zu DateTime
-            raw_data.index = pd.to_datetime(raw_data.index, errors='coerce').tz_localize(None)
+            # Konvertiere zu lokaler Zeit und behalte diese bei
+            raw_data.index = pd.to_datetime(raw_data.index, errors='coerce')
+            if raw_data.index.tz is not None:
+                # Konvertiere zur lokalen Zeit der Zeitzone
+                raw_data.index = raw_data.index.tz_convert('Europe/Berlin').tz_localize(None)
+            else:
+                raw_data.index = raw_data.index.tz_localize(None)
             raw_data = raw_data[raw_data.index.notna()]
             raw_data.sort_index(inplace=True)
         except Exception as e:
@@ -541,7 +546,7 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
                 "von": processed_data.index.min().isoformat(),
                 "bis": processed_data.index.max().isoformat()
             },
-            "basis_validierung": {date.isoformat(): values for date, values in daily_results.to_dict(orient='index').items()} if not daily_results.empty else {},
+            "basis_validierung": {date.strftime('%Y-%m-%d'): values for date, values in daily_results.to_dict(orient='index').items()} if not daily_results.empty else {},
             "erweiterte_analysen": {}
         }
         
@@ -685,6 +690,11 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
         # 13. DATEN IN DIE DATENBANK SCHREIBEN (Korrigierte, robuste Version)
         if not daily_results.empty:
             print("\nStarte das Laden der Daten in die Datenbank...")
+            # Debug-Ausgabe hinzufügen
+            print(f"\n=== DEBUG: Speichere Tageswerte ===")
+            for date_key in erweiterte_ergebnisse["basis_validierung"]:
+                print(f"Python sendet Datum: {date_key}")
+            print("===================================\n")
             db_loader = DatabaseLoader()
             if db_loader.conn:
                 try:
