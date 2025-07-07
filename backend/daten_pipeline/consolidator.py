@@ -1,4 +1,5 @@
 import pandas as pd
+from config_file import QARTOD_AGGREGATION
 
 class QartodFlags:
     """Definiert die standardisierten QARTOD-Flag-Werte."""

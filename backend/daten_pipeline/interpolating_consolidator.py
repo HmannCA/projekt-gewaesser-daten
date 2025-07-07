@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from config_file import QARTOD_AGGREGATION
 
 class QartodFlags:
     """Definiert die standardisierten QARTOD-Flag-Werte."""
@@ -19,13 +20,13 @@ def apply_precision(value, precision: int):
 
 def get_aggregation_flag(good_ratio: float):
     """Bestimmt das finale QARTOD-Flag für einen aggregierten Wert."""
-    if good_ratio >= 50:  # Reduziert von 75%
+    if good_ratio >= QARTOD_AGGREGATION['GOOD_THRESHOLD']:
         agg_flag = QartodFlags.GOOD
-    elif 25 <= good_ratio < 50:  # Reduziert von 50%
+    elif good_ratio >= QARTOD_AGGREGATION['SUSPECT_THRESHOLD']:
         agg_flag = QartodFlags.SUSPECT
     else:
         agg_flag = QartodFlags.BAD
-    return agg_flag    
+    return agg_flag 
 
 def interpolate_and_aggregate(hourly_data: pd.DataFrame, parameter_rules: dict, precision_rules: dict, **kwargs):
     """
@@ -45,8 +46,18 @@ def interpolate_and_aggregate(hourly_data: pd.DataFrame, parameter_rules: dict, 
         reasons = hourly_data[reason_col_name] if reason_col_name in hourly_data.columns else pd.Series("", index=hourly_data.index)
         
         # Sammle alle einzigartigen Gründe des Tages
-        all_reasons = set(r for r in reasons if r is not None and r != '')
-        final_reason_string = '; '.join(sorted(list(all_reasons))) if all_reasons else "Alle Werte plausibel"
+        
+        # all_reasons = set(r for r in reasons if r is not None and r != '')
+        # Sammle Gründe mit Zeitangaben (keine Deduplizierung bei Stuck-Values)
+        all_reasons = []
+        for r in reasons:
+            if r and r != '' and r not in all_reasons:
+                # Bei Stuck-Values mit unterschiedlichen Zeiten alle behalten
+                if "unverändert" in r:
+                    all_reasons.append(r)
+                elif r not in all_reasons:
+                    all_reasons.append(r)
+        final_reason_string = '; '.join(all_reasons) if all_reasons else "Alle Werte plausibel"
 
         valid_mask = series.notna()  # Nur Zeiten mit echten Werten
         good_values_count = (flags[valid_mask] == QartodFlags.GOOD).sum()

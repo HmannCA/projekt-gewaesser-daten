@@ -39,6 +39,13 @@ VALIDATION_MODULES = {
     'regional': True            # Regionale Anpassungen MV
 }
 
+# QARTOD Aggregations-Schwellenwerte
+QARTOD_AGGREGATION = {
+    'GOOD_THRESHOLD': 90,      # ≥90% für GOOD (streng für Badegewässer)
+    'SUSPECT_THRESHOLD': 75,   # ≥75% für SUSPECT
+    # <75% automatisch BAD
+}
+
 """
 # ========================================
 # STATIONEN

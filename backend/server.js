@@ -347,6 +347,316 @@ app.get('/api/stations-overview', async (req, res) => {
     }
 });
 
+// Stündliche Messwerte als HTML-Tabelle anzeigen
+app.get('/api/hourly-measurements/:stationId', async (req, res) => {
+    const { Pool } = require('pg');
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    
+    try {
+        const { stationId } = req.params;
+        const { date, parameter } = req.query;
+        
+        // Basis-Query
+        let query = `
+            SELECT 
+                timestamp AT TIME ZONE 'Europe/Berlin' as local_time,
+                parameter,
+                raw_value,
+                validated_value,
+                validation_flag,
+                validation_reason
+            FROM hourly_measurements
+            WHERE station_id = $1
+        `;
+        
+        const params = [stationId];
+        
+        // Optional: Nach Datum filtern
+        if (date) {
+            query += ` AND DATE(timestamp AT TIME ZONE 'Europe/Berlin') = $${params.length + 1}`;
+            params.push(date);
+        }
+        
+        // Optional: Nach Parameter filtern
+        if (parameter) {
+            query += ` AND parameter = $${params.length + 1}`;
+            params.push(parameter);
+        }
+        
+        query += ` ORDER BY timestamp DESC, parameter LIMIT 500`;
+        
+        const result = await pool.query(query, params);
+        
+        // Generiere HTML-Tabelle
+        let html = `
+        <!DOCTYPE html>
+        <html lang="de">
+        <head>
+            <meta charset="UTF-8">
+            <title>Stündliche Messwerte - ${stationId}</title>
+            <style>
+                body { 
+                    font-family: Arial, sans-serif; 
+                    margin: 20px; 
+                    background: #f5f5f5; 
+                }
+                .header {
+                    background: #0066CC;
+                    color: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    margin-bottom: 20px;
+                }
+                .filters {
+                    background: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    margin-bottom: 20px;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                }
+                table { 
+                    width: 100%; 
+                    background: white; 
+                    border-collapse: collapse; 
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                }
+                th, td { 
+                    padding: 10px; 
+                    text-align: left; 
+                    border-bottom: 1px solid #ddd; 
+                }
+                th { 
+                    background: #0066CC; 
+                    color: white; 
+                    position: sticky;
+                    top: 0;
+                }
+                tr:hover { background: #f5f5f5; }
+                .flag-1 { background: #d4edda; color: #155724; }
+                .flag-3 { background: #fff3cd; color: #856404; }
+                .flag-4 { background: #f8d7da; color: #721c24; }
+                .flag-9 { background: #e2e3e5; color: #383d41; }
+                .value-changed { font-weight: bold; color: #dc3545; }
+                .stuck-value { background: #ffe5b4; }
+                input, select { 
+                    padding: 8px; 
+                    margin: 5px;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                }
+                button {
+                    padding: 8px 15px;
+                    background: #0066CC;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                }
+                button:hover { background: #0052a3; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Stündliche Messwerte - Station ${stationId}</h1>
+                <p>Anzahl Datensätze: ${result.rows.length}</p>
+            </div>
+            
+            <div class="filters">
+                <form method="get">
+                    <label>Datum: <input type="date" name="date" value="${date || ''}"></label>
+                    <label>Parameter: 
+                        <select name="parameter">
+                            <option value="">Alle</option>
+                            <option value="pH" ${parameter === 'pH' ? 'selected' : ''}>pH</option>
+                            <option value="Wassertemperatur" ${parameter === 'Wassertemperatur' ? 'selected' : ''}>Wassertemperatur</option>
+                            <option value="Gelöster Sauerstoff" ${parameter === 'Gelöster Sauerstoff' ? 'selected' : ''}>Gelöster Sauerstoff</option>
+                            <option value="Nitrat" ${parameter === 'Nitrat' ? 'selected' : ''}>Nitrat</option>
+                            <option value="Leitfähigkeit" ${parameter === 'Leitfähigkeit' ? 'selected' : ''}>Leitfähigkeit</option>
+                            <option value="Trübung" ${parameter === 'Trübung' ? 'selected' : ''}>Trübung</option>
+                            <option value="Chl-a" ${parameter === 'Chl-a' ? 'selected' : ''}>Chl-a</option>
+                        </select>
+                    </label>
+                    <button type="submit">Filtern</button>
+                    <a href="/api/hourly-measurements/${stationId}"><button type="button">Zurücksetzen</button></a>
+                </form>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Zeit (Lokal)</th>
+                        <th>Parameter</th>
+                        <th>Rohwert</th>
+                        <th>Validiert</th>
+                        <th>Änderung</th>
+                        <th>Flag</th>
+                        <th>Grund</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        
+        // Gruppiere nach Parameter für Änderungserkennung
+        const parameterGroups = {};
+        result.rows.forEach(row => {
+            if (!parameterGroups[row.parameter]) {
+                parameterGroups[row.parameter] = [];
+            }
+            parameterGroups[row.parameter].push(row);
+        });
+        
+        // Zeige Daten mit Änderungsmarkierung
+        // Zeige Daten mit Änderungsmarkierung
+        result.rows.forEach((row, index) => {
+            const localTime = new Date(row.local_time).toLocaleString('de-DE');
+            const flagClass = `flag-${row.validation_flag}`;
+            const flagName = getFlagName(row.validation_flag);
+            
+            // Sichere Konvertierung zu Zahlen
+            const rawValue = row.raw_value !== null ? parseFloat(row.raw_value) : null;
+            const validatedValue = row.validated_value !== null ? parseFloat(row.validated_value) : null;
+            
+            // Prüfe ob sich der Wert geändert hat
+            let valueChange = '';
+            let rowClass = '';
+            
+            // Finde vorherigen Wert für diesen Parameter
+            const paramData = parameterGroups[row.parameter];
+            const currentIndex = paramData.findIndex(r => r === row);
+            if (currentIndex > 0 && validatedValue !== null) {
+                const prevValueRaw = paramData[currentIndex - 1].validated_value;
+                if (prevValueRaw !== null) {
+                    const prevValue = parseFloat(prevValueRaw);
+                    const change = validatedValue - prevValue;
+                    if (Math.abs(change) > 0.001) { // Kleine Toleranz für Rundungsfehler
+                        valueChange = `<span class="value-changed">${change > 0 ? '+' : ''}${change.toFixed(2)}</span>`;
+                    } else {
+                        rowClass = 'stuck-value';
+                    }
+                }
+            }
+            
+            // Prüfe ob "stuck value"
+            if (row.validation_reason && row.validation_reason.includes('unverändert')) {
+                rowClass = 'stuck-value';
+            }
+            
+            html += `
+                    <tr class="${rowClass}">
+                        <td>${localTime}</td>
+                        <td>${row.parameter}</td>
+                        <td>${rawValue !== null ? rawValue.toFixed(2) : '-'}</td>
+                        <td>${validatedValue !== null ? validatedValue.toFixed(2) : '-'}</td>
+                        <td>${valueChange}</td>
+                        <td class="${flagClass}">${flagName}</td>
+                        <td>${row.validation_reason || '-'}</td>
+                    </tr>`;
+        });
+        
+        html += `
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 20px; padding: 20px; background: white; border-radius: 10px;">
+                <h3>Legende:</h3>
+                <p>
+                    <span style="display: inline-block; width: 20px; height: 20px; background: #d4edda;"></span> Gut (Flag 1) &nbsp;&nbsp;
+                    <span style="display: inline-block; width: 20px; height: 20px; background: #fff3cd;"></span> Verdächtig (Flag 3) &nbsp;&nbsp;
+                    <span style="display: inline-block; width: 20px; height: 20px; background: #f8d7da;"></span> Schlecht (Flag 4) &nbsp;&nbsp;
+                    <span style="display: inline-block; width: 20px; height: 20px; background: #e2e3e5;"></span> Fehlend (Flag 9)
+                </p>
+                <p>
+                    <span style="display: inline-block; width: 20px; height: 20px; background: #ffe5b4;"></span> Stuck Value (Wert unverändert)
+                </p>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <a href="/api/hourly-measurements-csv/${stationId}?date=${date || ''}&parameter=${parameter || ''}">
+                    <button>Als CSV exportieren</button>
+                </a>
+            </div>
+        </body>
+        </html>`;
+        
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
+        
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    } finally {
+        await pool.end();
+    }
+});
+
+// Hilfsfunktion für Flag-Namen
+function getFlagName(flag) {
+    const names = {
+        1: 'GUT',
+        2: 'NICHT BEWERTET',
+        3: 'VERDÄCHTIG',
+        4: 'SCHLECHT',
+        9: 'FEHLEND'
+    };
+    return names[flag] || `Flag ${flag}`;
+}
+
+// CSV-Export für stündliche Messwerte
+app.get('/api/hourly-measurements-csv/:stationId', async (req, res) => {
+    const { Pool } = require('pg');
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    
+    try {
+        const { stationId } = req.params;
+        const { date, parameter } = req.query;
+        
+        let query = `
+            SELECT 
+                timestamp AT TIME ZONE 'Europe/Berlin' as local_time,
+                parameter,
+                raw_value,
+                validated_value,
+                validation_flag,
+                validation_reason
+            FROM hourly_measurements
+            WHERE station_id = $1
+        `;
+
+        const params = [stationId];
+
+        // Optional: Nach Datum filtern (in lokaler Zeit!)
+        if (date) {
+            query += ` AND DATE(timestamp AT TIME ZONE 'Europe/Berlin') = $${params.length + 1}`;
+            params.push(date);
+        }
+
+        // Optional: Nach Parameter filtern
+        if (parameter) {
+            query += ` AND parameter = $${params.length + 1}`;
+            params.push(parameter);
+        }
+
+        query += ` ORDER BY timestamp DESC, parameter LIMIT 500`;
+        
+        const result = await pool.query(query, params);
+        
+        // CSV erstellen
+        let csv = 'Zeit;Parameter;Rohwert;Validiert;Flag;Grund\n';
+        
+        result.rows.forEach(row => {
+            const localTime = new Date(row.local_time).toLocaleString('de-DE');
+            csv += `${localTime};${row.parameter};${row.raw_value || ''};${row.validated_value || ''};${row.validation_flag};${row.validation_reason || ''}\n`;
+        });
+        
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="stundenwerte_${stationId}_${date || 'alle'}.csv"`);
+        res.send('\ufeff' + csv); // BOM für Excel
+        
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    } finally {
+        await pool.end();
+    }
+});
+
 // Kommentar- und Benutzer-API (unverändert)
 const requiredEnvVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'ADMIN_EMAIL'];
 for (const varName of requiredEnvVars) {

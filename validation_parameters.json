@@ -1,0 +1,121 @@
+{
+  "validation_parameters": Schwellenwerte sind saisonal anzupassen."
+    },
+    {
+      "parameter_name": "Wassertemperatur (alle Tiefen)",
+      "unit": "°C",
+      "gross_range_min": -2,
+      "gross_range_max": 38,
+      "climatology_thresholds": {
+        "winter": {
+          "min": 0,
+          "max": 6
+        },
+        "summer": {
+          "min": 15,
+          "max": 28
+        }
+      },
+      "notes": "Untergrenze berücksichtigt Gefrierpunkt. Obergrenze übertrifft Hitzewellen-Szenarien. Schwellenwerte saisonal.[3] Tiefenstaffelung auf Konsistenz prüfen."
+    },
+    {
+      "parameter_name": "pH-Wert",
+      "unit": "(keine)",
+      "gross_range_min": 0,
+      "gross_range_max": 14,
+      "climatology_min": 6.5,
+      "climatology_max": 9.5,
+      "notes": "Sensor-Range. Schwellenwerte basieren auf typ. Pufferkapazität und biolog. Aktivität (Photosynthese) in nordd. Seen.[4, 5]"
+    },
+    {
+      "parameter_name": "Redoxpotential",
+      "unit": "mV",
+      "gross_range_min": -1500,
+      "gross_range_max": 1500,
+      "climatology_min": 100,
+      "climatology_max": 600,
+      "notes": "Sensor-Range. Schwellenwerte für oxisches Oberflächenwasser. Werte < +100 mV sind im Epilimnion sehr verdächtig.[6, 7]"
+    },
+    {
+      "parameter_name": "Leitfähigkeit",
+      "unit": "µS/cm",
+      "gross_range_min": 0,
+      "gross_range_max": 2500,
+      "climatology_min": 100,
+      "climatology_max": 1000,
+      "notes": "Typischer Bereich für Süßwasser. Schwellenwerte basieren auf Daten für geologisch ähnliche Tieflandseen.[8, 9]"
+    },
+    {
+      "parameter_name": "Gelöster Sauerstoff",
+      "unit": "mg/L",
+      "gross_range_min": 0,
+      "gross_range_max": 25,
+      "climatology_min": 4.0,
+      "climatology_max": 18.0,
+      "notes": "Obergrenze berücksichtigt starke Übersättigung durch Photosynthese. Unterer Schwellenwert ist kritische Grenze für Fische.[3, 10]"
+    },
+    {
+      "parameter_name": "Trübung",
+      "unit": "NTU",
+      "gross_range_min": 0,
+      "gross_range_max": 4000,
+      "climatology_min": 1.0,
+      "climatology_max": 50.0,
+      "notes": "Sensor-Range. Oberer Schwellenwert repräsentiert stark getrübtes Wasser durch Algenblüte oder Sedimenteintrag.[11, 12]"
+    },
+    {
+      "parameter_name": "Chl-a",
+      "unit": "µg/L",
+      "gross_range_min": 0,
+      "gross_range_max": 500,
+      "climatology_min": 1.0,
+      "climatology_max": 150.0,
+      "notes": "Oberer Schwellenwert repräsentiert eine sehr starke Algenblüte. Werte > 50 µg/L deuten auf hypereutrophe Bedingungen hin.[12, 13]"
+    },
+    {
+      "parameter_name": "Phycocyanin Abs. (comp)",
+      "unit": "Abs/m",
+      "gross_range_min": 0,
+      "gross_range_max": 1000,
+      "climatology_min": 0.1,
+      "climatology_max": 100.0,
+      "notes": "WICHTIG: Schwellenwerte sind grobe Schätzungen. Eine standort- und sensor-spezifische Kalibrierung ist für eine valide Interpretation unerlässlich.[14, 15]"
+    },
+    {
+      "parameter_name": "Phycocyanin Abs.",
+      "unit": "Abs/m",
+      "gross_range_min": 0,
+      "gross_range_max": 1000,
+      "climatology_min": 0.1,
+      "climatology_max": 100.0,
+      "notes": "Siehe Phycocyanin (comp). Die unkompensierte Messung ist anfälliger für Störungen durch Trübung und Gelbstoffe."
+    },
+    {
+      "parameter_name": "TOC",
+      "unit": "mg/L",
+      "gross_range_min": 0,
+      "gross_range_max": 100,
+      "climatology_min": 2.0,
+      "climatology_max": 25.0,
+      "notes": "Schwellenwerte spiegeln den typischen Bereich für huminstoffbeeinflusste norddeutsche Tieflandseen wider.[16, 17]"
+    },
+    {
+      "parameter_name": "DOC",
+      "unit": "mg/L",
+      "gross_range_min": 0,
+      "gross_range_max": 100,
+      "climatology_min": 2.0,
+      "climatology_max": 25.0,
+      "notes": "In der Regel >90% des TOC. Dieselben Werte wie für TOC sind anwendbar."
+    },
+    {
+      "parameter_name": "Nitrat",
+      "unit": "mg/L",
+      "gross_range_min": 0,
+      "gross_range_max": 100,
+      "climatology_min": 0.01,
+      "climatology_max": 5.0,
+      "notes": "Oberer Schwellenwert für die Vegetationsperiode. Im Sommer sind Werte nahe der Nachweisgrenze durch Algenzehrung zu erwarten.[18, 19]"
+    }
+  ]
+}

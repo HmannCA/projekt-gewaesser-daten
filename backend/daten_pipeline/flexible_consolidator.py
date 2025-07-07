@@ -5,6 +5,7 @@ Funktioniert auch mit nur wenigen Stunden pro Tag
 
 import pandas as pd
 import numpy as np
+from config_file import QARTOD_AGGREGATION
 
 class QartodFlags:
     """Definiert die standardisierten QARTOD-Flag-Werte."""
@@ -68,9 +69,9 @@ def flexible_daily_aggregate(hourly_data: pd.DataFrame, parameter_rules: dict,
         good_ratio = (good_values_count / total_values_count) * 100
         
         # Bestimme Aggregat-Flag
-        if good_ratio >= 75:
+        if good_ratio >= QARTOD_AGGREGATION['GOOD_THRESHOLD']:
             agg_flag = QartodFlags.GOOD
-        elif good_ratio >= 50:
+        elif good_ratio >= QARTOD_AGGREGATION['SUSPECT_THRESHOLD']:
             agg_flag = QartodFlags.SUSPECT
         else:
             agg_flag = QartodFlags.BAD

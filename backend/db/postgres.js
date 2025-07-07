@@ -513,6 +513,7 @@ const saveValidationData = async (resultData, sourceFile, stationId = null, hour
             } else if (dateStr.includes('T')) {
                 // Datum mit Zeit - extrahiere nur Datum
                 resultDate = dateStr.split('T')[0];
+                resultDate = new Date(resultDate + 'T12:00:00').toISOString().split('T')[0];
             } else {
                 // Fallback
                 resultDate = dateStr;
@@ -573,10 +574,10 @@ const saveValidationData = async (resultData, sourceFile, stationId = null, hour
                     // ALTE Tabelle (daily_results)
                     await client.query(
                         `INSERT INTO daily_results 
-                         (run_id, result_date, parameter_name, mean_value, min_value, max_value, 
-                          std_dev, median_value, qartod_flag, qartod_reason, good_value_percentage)
-                         VALUES ($1, $2::date, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-                        [
+                        (run_id, result_date, parameter_name, mean_value, min_value, max_value, 
+                        std_dev, median_value, qartod_flag, qartod_reason, good_value_percentage)
+                        VALUES ($1, $2::date, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,  // <- Backtick und Komma hier
+                        [  // <- Parameter-Array als zweites Argument
                             runId, resultDate, paramName, 
                             p.Mittelwert || null, p.Min || null, p.Max || null,
                             p.StdAbw || null, p.Median || null,
@@ -584,10 +585,15 @@ const saveValidationData = async (resultData, sourceFile, stationId = null, hour
                         ]
                     );
 
+                    /* DEAKTIVIERT - daily_aggregations werden jetzt direkt von Python geschrieben
                     // NEUE Tabelle (daily_aggregations)
                     const hourlyCount = p.AnzahlStunden || 24;
                     const goodPercentage = p.Anteil || 0;
                     const goodCount = Math.round((goodPercentage / 100) * hourlyCount);
+
+                    console.log(`\n=== NODE.JS SCHREIBT IN daily_aggregations ===`);
+                    console.log(`Datum: ${resultDate}, Parameter: ${paramName}`);
+                    console.log(`================================================\n`);
 
                     await client.query(
                         `INSERT INTO daily_aggregations 
@@ -616,6 +622,7 @@ const saveValidationData = async (resultData, sourceFile, stationId = null, hour
                             p.Flag || null, p.Gruende || null, runId
                         ]
                     );
+                    */
                 }
             }
         }
@@ -700,8 +707,34 @@ const getAllTableData = async () => {
         // Dann alle Tabellen durchgehen
         for (const table of tables) {
             try {
-                const res = await client.query(`SELECT * FROM ${table} ORDER BY 1 DESC LIMIT 200`);
-                allData[table] = res.rows;
+                let queryResult;
+                
+                // Spezialbehandlung für Tabellen mit DATE-Feldern
+                if (table === 'daily_aggregations') {
+                    queryResult = await client.query(
+                        `SELECT *, date::text as date_string FROM daily_aggregations ORDER BY id DESC LIMIT 200`
+                    );
+                    // Ersetze das Date-Feld mit der Text-Version
+                    queryResult.rows.forEach(row => {
+                        row.date = row.date_string;
+                        delete row.date_string;
+                    });
+                } else if (table === 'daily_results') {
+                    queryResult = await client.query(
+                        `SELECT *, result_date::text as date_string FROM daily_results ORDER BY result_id DESC LIMIT 200`
+                    );
+                    // Ersetze das Date-Feld mit der Text-Version
+                    queryResult.rows.forEach(row => {
+                        row.result_date = row.date_string;
+                        delete row.date_string;
+                    });
+                } else {
+                    // Standard-Query für alle anderen Tabellen
+                    queryResult = await client.query(`SELECT * FROM ${table} ORDER BY 1 DESC LIMIT 200`);
+                }
+                
+                allData[table] = queryResult.rows;
+                
             } catch (e) {
                 console.error(`Fehler beim Lesen der Tabelle '${table}':`, e.message);
                 allData[table] = { "error": e.message };

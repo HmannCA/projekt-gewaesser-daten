@@ -205,6 +205,7 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
             df_list = [pd.read_csv(f, sep=',', header=None, index_col=0, on_bad_lines='skip', encoding='utf-8-sig') 
                       for f in station_files]
             raw_data = pd.concat(df_list)
+            raw_data.index = raw_data.index.str.replace(r'[+-]\d{4}$', '', regex=True)
             
             # Bereinige Header-Zeilen
             if raw_data.index.dtype == 'object':
@@ -247,70 +248,7 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
                 spike_rules[rule['parameter_name']] = rule['config_json']['threshold']
         
         print(f"  - {len(validation_rules)} Range-Regeln und {len(spike_rules)} Spike-Regeln für diese Station geladen.")        
-
-        """
-        Diese Werte werden zukünftig in der Datenbank gepflegt.
-        # 2. Definition der Validierungsregeln
-        validation_rules = {
-            'Phycocyanin Abs.': {'min': 0.0, 'max': 200.0},
-            'Phycocyanin Abs. (comp)': {'min': 0.0, 'max': 200.0},
-            'TOC': {'min': 1.0, 'max': 70.0},
-            'Trübung': {'min': 0.0, 'max': 150.0},
-            'Chl-a': {'min': 0.0, 'max': 250.0},
-            'DOC': {'min': 1.0, 'max': 60.0},
-            'Nitrat': {'min': 0.0, 'max': 50.0},
-            'Gelöster Sauerstoff': {'min': 0.0, 'max': 20.0},
-            'Leitfähigkeit': {'min': 100, 'max': 1500},
-            'pH': {'min': 6.0, 'max': 10.0},
-            'Redoxpotential': {'min': -300, 'max': 600},
-            'Wassertemp. (0.5m)': {'min': -0.5, 'max': 32.0},
-            'Wassertemp. (1m)': {'min': -0.5, 'max': 32.0},
-            'Wassertemp. (2m)': {'min': -0.5, 'max': 32.0},
-            'Lufttemperatur': {'min': -25.0, 'max': 40.0}
-        }
-        
-        spike_rules = {
-            'Wassertemp. (0.5m)': 2.0, 'Wassertemp. (1m)': 2.0, 'Wassertemp. (2m)': 2.0,
-            'pH': 0.5, 'Trübung': 50.0, 'Gelöster Sauerstoff': 5.0,
-            'Leitfähigkeit': 100.0, 'Nitrat': 10.0
-        }
-
-        # Station-spezifische Anpassungen
-        if station_id == 'wamo00019':  # Löcknitzer See
-            validation_rules.update({
-                'Lufttemperatur': {'min': -10.0, 'max': 35.0},
-                'Phycocyanin Abs.': {'min': 0.0, 'max': 500.0},
-                'Phycocyanin Abs. (comp)': {'min': 0.0, 'max': 500.0},
-                'Chl-a': {'min': 0.0, 'max': 400.0},
-                'Trübung': {'min': 0.0, 'max': 300.0},
-                'pH': {'min': 6.0, 'max': 11.0},
-                'Nitrat': {'min': 0.0, 'max': 50.0},
-                'DOC': {'min': 5.0, 'max': 50.0},
-                'TOC': {'min': 5.0, 'max': 80.0},
-                'Gelöster Sauerstoff': {'min': 0.0, 'max': 20.0},
-                'Leitfähigkeit': {'min': 200, 'max': 2000},
-                'Redoxpotential': {'min': -400, 'max': 800},
-                'Wassertemp. (0.5m)': {'min': -1.0, 'max': 35.0},
-                'Wassertemp. (1m)': {'min': -1.0, 'max': 35.0},
-                'Wassertemp. (2m)': {'min': -1.0, 'max': 35.0},
-                'Supply Current': {'min': 0, 'max': 1000}
-            })
-            
-            # Angepasste Spike-Regeln
-            spike_rules = {
-                'Wassertemp. (0.5m)': 5.0,
-                'Wassertemp. (1m)': 5.0,
-                'Wassertemp. (2m)': 5.0,
-                'pH': 1.0,
-                'Trübung': 100.0,
-                'Gelöster Sauerstoff': 8.0,
-                'Leitfähigkeit': 200.0,
-                'Nitrat': 20.0
-            }
-                
-            print(f"Verwende angepasste Grenzwerte für Löcknitzer See (eutropher Flachsee)")
-            """
-        
+    
         # 3. Basis-Validierungen durchführen
         print("Führe Basis-Validierungen durch...")
         validator = WaterQualityValidator()
@@ -336,6 +274,13 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
                 flags, reasons = check_spikes(processed_data[param_name], max_rate_of_change=max_change)
                 flags_per_test[f'flag_{param_name}_spike'] = flags
                 reasons_per_test[f'reason_{param_name}_spike'] = reasons
+            
+        # Speichere die tatsächlich angewendeten Regeln
+        applied_rules_dict = {
+            'validation_rules': validation_rules,
+            'spike_rules': spike_rules,
+            'stuck_tolerance': 3  # aus stuck_value_validator
+        }
 
         # 4. Multivariate Validierung
         cross_validation_cols = ['Wassertemp. (0.5m)', 'pH', 'Gelöster Sauerstoff', 'Leitfähigkeit', 'Trübung']
@@ -462,7 +407,12 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
             print(f"Fehler beim Erstellen des Detail-Berichts: {e}")
 
         # Nach der Tageskonsolidierung hinzufügen:
-        hourly_filename = save_hourly_data_for_db(processed_data, station_id, output_dir)
+        hourly_filename = save_hourly_data_for_db(
+            processed_data, 
+            station_id, 
+            output_dir,
+            applied_rules_dict
+        )
         
         # 9. Tageskonsolidierung
         print("Erstelle Tageskonsolidierung...")
@@ -506,7 +456,8 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
         daily_results_list = []
         
         for day, group_df in processed_data.groupby(processed_data.index.date):
-            day = pd.Timestamp(day)  # Konvertiere date zu Timestamp
+            day = pd.Timestamp(str(day))  # Konvertiere date zu Timestamp über String
+            # day = pd.Timestamp(str(day))  # Konvertiere date zu Timestamp über String
             hours_in_day = len(group_df)
             
             if hours_in_day == 0:
@@ -523,6 +474,8 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
                 
                 if daily_summary is not None and not daily_summary.empty:
                     daily_summary.name = day
+                    # daily_summary.name = day.strftime('%Y-%m-%d') if hasattr(day, 'strftime') else str(day)
+                    
                     daily_results_list.append(daily_summary)
                     
             except Exception as e:
@@ -547,6 +500,8 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
                 "bis": processed_data.index.max().isoformat()
             },
             "basis_validierung": {date.strftime('%Y-%m-%d'): values for date, values in daily_results.to_dict(orient='index').items()} if not daily_results.empty else {},
+            
+            # "basis_validierung": {pd.to_datetime(date).strftime('%Y-%m-%d'): values for date, values in daily_results.to_dict(orient='index').items()} if not daily_results.empty else {},
             "erweiterte_analysen": {}
         }
         
@@ -724,6 +679,9 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
                     # Schritt 4: Die fertige Liste an den Loader übergeben
                     db_loader.insert_validated_data(records_to_insert)
 
+                    # NEU: Speichere auch daily_aggregations direkt (wie messwerte!)
+                    db_loader.insert_daily_aggregations(station_id, daily_results)
+
                 except Exception as e:
                     print(f"\n[FEHLER] Bei der Aufbereitung der Daten für die Datenbank ist ein Fehler aufgetreten: {e}")
         else:
@@ -748,7 +706,7 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
     print("Pipeline-Durchlauf abgeschlossen.")
     print("=" * 60)
 
-def save_hourly_data_for_db(processed_data, station_id, output_dir):
+def save_hourly_data_for_db(processed_data, station_id, output_dir, applied_rules=None):
     """
     Speichert stündliche Roh- und validierte Daten für die Datenbank
     """
@@ -767,7 +725,12 @@ def save_hourly_data_for_db(processed_data, station_id, output_dir):
                 'raw_value': float(row[param]) if pd.notna(row[param]) else None,
                 'validated_value': float(row[param]) if pd.notna(row[param]) else None,  # Später unterscheiden
                 'validation_flag': int(row[f'flag_{param}']) if f'flag_{param}' in row else 1,
-                'validation_reason': str(row[f'reason_{param}']) if f'reason_{param}' in row and pd.notna(row[f'reason_{param}']) else ''
+                'validation_reason': str(row[f'reason_{param}']) if f'reason_{param}' in row and pd.notna(row[f'reason_{param}']) else '',
+                'applied_rules': {  # NEU
+                    'range': validation_rules.get(param, {}),
+                    'spike': spike_rules.get(param),
+                    'stuck_tolerance': 3
+                }
             }
             hourly_data.append(hourly_entry)
     
