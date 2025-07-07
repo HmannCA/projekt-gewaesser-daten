@@ -43,9 +43,9 @@ def aggregate_daily_values(hourly_data: pd.DataFrame, parameter_rules: dict, pre
             good_ratio = (good_values_count / total_values_count) * 100 if total_values_count > 0 else 0
             
             agg_flag = QartodFlags.NOT_EVALUATED
-            if good_ratio >= 75:
+            if good_ratio >= QARTOD_AGGREGATION['GOOD_THRESHOLD']:
                 agg_flag = QartodFlags.GOOD
-            elif 50 <= good_ratio < 75:
+            elif good_ratio >= QARTOD_AGGREGATION['SUSPECT_THRESHOLD']:
                 agg_flag = QartodFlags.SUSPECT
             else:
                 agg_flag = QartodFlags.BAD

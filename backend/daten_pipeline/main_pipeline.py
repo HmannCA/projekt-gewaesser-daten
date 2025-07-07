@@ -716,6 +716,10 @@ def save_hourly_data_for_db(processed_data, station_id, output_dir, applied_rule
     parameters = [col for col in processed_data.columns 
                  if not col.startswith('flag_') and not col.startswith('reason_')]
     
+    # Extrahiere die Regeln aus applied_rules, falls vorhanden
+    validation_rules = applied_rules.get('validation_rules', {}) if applied_rules else {}
+    spike_rules = applied_rules.get('spike_rules', {}) if applied_rules else {}
+    
     for timestamp, row in processed_data.iterrows():
         for param in parameters:
             hourly_entry = {
@@ -723,16 +727,18 @@ def save_hourly_data_for_db(processed_data, station_id, output_dir, applied_rule
                 'timestamp': timestamp.isoformat(),
                 'parameter': param,
                 'raw_value': float(row[param]) if pd.notna(row[param]) else None,
-                'validated_value': float(row[param]) if pd.notna(row[param]) else None,  # Später unterscheiden
+                'validated_value': float(row[param]) if pd.notna(row[param]) else None,
                 'validation_flag': int(row[f'flag_{param}']) if f'flag_{param}' in row else 1,
                 'validation_reason': str(row[f'reason_{param}']) if f'reason_{param}' in row and pd.notna(row[f'reason_{param}']) else '',
-                'applied_rules': {  # NEU
+                'applied_rules': {
                     'range': validation_rules.get(param, {}),
                     'spike': spike_rules.get(param),
                     'stuck_tolerance': 3
                 }
             }
             hourly_data.append(hourly_entry)
+    
+    # Rest der Funktion bleibt gleich...
     
     # Speichere als JSON
     timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")

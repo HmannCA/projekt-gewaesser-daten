@@ -18,10 +18,7 @@ function formatDateLocal(date) {
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: isProduction ? { rejectUnauthorized: false } : false
-});
+const pool = require('./pool');
 
 const testConnection = async () => {
     try {
@@ -154,6 +151,7 @@ const createDatabaseTables = async () => {
                 validated_value NUMERIC,
                 validation_flag INTEGER,
                 validation_reason TEXT,
+                applied_rules JSONB,
                 
                 -- Metadaten
                 validation_run_id INTEGER REFERENCES validation_runs(run_id),
@@ -777,11 +775,9 @@ const getAllTableData = async () => {
 };
 
 const saveHourlyMeasurements = async (hourlyData, runId, client) => {
-    // const client = await pool.connect();
     try {
         console.log(`Speichere ${hourlyData.stundenwerte.length} Stundenwerte...`);
         
-        // Batch-Insert für bessere Performance
         const values = [];
         const placeholders = [];
         let paramIndex = 1;
@@ -789,7 +785,7 @@ const saveHourlyMeasurements = async (hourlyData, runId, client) => {
         hourlyData.stundenwerte.forEach((measurement) => {
             placeholders.push(
                 `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, 
-                  $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`
+                  $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`
             );
             
             values.push(
@@ -800,7 +796,8 @@ const saveHourlyMeasurements = async (hourlyData, runId, client) => {
                 measurement.validated_value,
                 measurement.validation_flag,
                 measurement.validation_reason,
-                runId
+                runId,
+                JSON.stringify(measurement.applied_rules || {})  // NEU: applied_rules als JSON
             );
         });
         
@@ -808,14 +805,15 @@ const saveHourlyMeasurements = async (hourlyData, runId, client) => {
             const query = `
                 INSERT INTO hourly_measurements 
                 (station_id, timestamp, parameter, raw_value, validated_value, 
-                 validation_flag, validation_reason, validation_run_id)
+                 validation_flag, validation_reason, validation_run_id, applied_rules)
                 VALUES ${placeholders.join(', ')}
                 ON CONFLICT (station_id, timestamp, parameter) 
                 DO UPDATE SET 
                     validated_value = EXCLUDED.validated_value,
                     validation_flag = EXCLUDED.validation_flag,
                     validation_reason = EXCLUDED.validation_reason,
-                    validation_run_id = EXCLUDED.validation_run_id
+                    validation_run_id = EXCLUDED.validation_run_id,
+                    applied_rules = EXCLUDED.applied_rules
             `;
             
             await client.query(query, values);
@@ -826,10 +824,7 @@ const saveHourlyMeasurements = async (hourlyData, runId, client) => {
     } catch (err) {
         console.error('Fehler beim Speichern der Stundenwerte:', err);
         throw new Error(`DB-Fehler: ${err.message}`);
-    } 
-    //finally {
-    //    client.release();
-    //}
+    }
 };
 
 // ========================================================

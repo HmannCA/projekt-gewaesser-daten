@@ -101,8 +101,7 @@ app.get('/api/dashboard-html/:stationId', async (req, res) => {
 
 // DEBUG: Zeige alle Validierungsläufe
 app.get('/api/debug/runs/:stationId', async (req, res) => {
-    const { Pool } = require('pg');
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const pool = require('./db/pool');
     
     try {
         const result = await pool.query(
@@ -167,8 +166,7 @@ app.get('/api/dashboard-flex-html/:stationId', async (req, res) => {
 
 // API für Station-Liste
 app.get('/api/stations', async (req, res) => {
-    const { Pool } = require('pg');
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const pool = require('./db/pool');
     
     try {
         const result = await pool.query(
@@ -185,8 +183,7 @@ app.get('/api/stations', async (req, res) => {
 
 // API für Station-Liste MIT verfügbaren Datumsbereichen
 app.get('/api/stations-with-data', async (req, res) => {
-    const { Pool } = require('pg');
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const pool = require('./db/pool');
     
     try {
         const result = await pool.query(
@@ -205,15 +202,12 @@ app.get('/api/stations-with-data', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
-    } finally {
-        await pool.end();
-    }
+    } 
 });
 
 // Optionaler Endpunkt für eine Übersichtsseite aller Stationen
 app.get('/api/stations-overview', async (req, res) => {
-    const { Pool } = require('pg');
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const pool = require('./db/pool');
     
     try {
         const result = await pool.query(
@@ -342,19 +336,33 @@ app.get('/api/stations-overview', async (req, res) => {
         
     } catch (err) {
         res.status(500).json({ error: err.message });
-    } finally {
-        await pool.end();
-    }
+    } 
 });
 
 // Stündliche Messwerte als HTML-Tabelle anzeigen
 app.get('/api/hourly-measurements/:stationId', async (req, res) => {
-    const { Pool } = require('pg');
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const pool = require('./db/pool');
     
     try {
         const { stationId } = req.params;
         const { date, parameter } = req.query;
+        
+        // NEU: Lade alle verfügbaren Stationen
+        const stationsResult = await pool.query(
+            `SELECT DISTINCT s.station_code, s.station_name 
+             FROM stations s
+             JOIN hourly_measurements hm ON s.station_code = hm.station_id
+             ORDER BY s.station_code`
+        );
+        
+        // NEU: Lade alle verfügbaren Parameter für diese Station
+        const parametersResult = await pool.query(
+            `SELECT DISTINCT parameter 
+             FROM hourly_measurements 
+             WHERE station_id = $1 
+             ORDER BY parameter`,
+            [stationId]
+        );
         
         // Basis-Query
         let query = `
@@ -364,7 +372,8 @@ app.get('/api/hourly-measurements/:stationId', async (req, res) => {
                 raw_value,
                 validated_value,
                 validation_flag,
-                validation_reason
+                validation_reason,
+                applied_rules
             FROM hourly_measurements
             WHERE station_id = $1
         `;
@@ -387,13 +396,16 @@ app.get('/api/hourly-measurements/:stationId', async (req, res) => {
         
         const result = await pool.query(query, params);
         
+        // NEU: Finde aktuelle Station für die Anzeige
+        const currentStation = stationsResult.rows.find(s => s.station_code === stationId) || { station_name: 'Unbekannt' };
+        
         // Generiere HTML-Tabelle
         let html = `
         <!DOCTYPE html>
         <html lang="de">
         <head>
             <meta charset="UTF-8">
-            <title>Stündliche Messwerte - ${stationId}</title>
+            <title>Stündliche Messwerte - ${currentStation.station_name} (${stationId})</title>
             <style>
                 body { 
                     font-family: Arial, sans-serif; 
@@ -413,6 +425,13 @@ app.get('/api/hourly-measurements/:stationId', async (req, res) => {
                     border-radius: 10px;
                     margin-bottom: 20px;
                     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                }
+                .filter-row {
+                    display: flex;
+                    gap: 15px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    margin-bottom: 15px;
                 }
                 table { 
                     width: 100%; 
@@ -444,6 +463,9 @@ app.get('/api/hourly-measurements/:stationId', async (req, res) => {
                     border: 1px solid #ddd;
                     border-radius: 5px;
                 }
+                select {
+                    min-width: 200px;
+                }
                 button {
                     padding: 8px 15px;
                     background: #0066CC;
@@ -457,27 +479,49 @@ app.get('/api/hourly-measurements/:stationId', async (req, res) => {
         </head>
         <body>
             <div class="header">
-                <h1>Stündliche Messwerte - Station ${stationId}</h1>
-                <p>Anzahl Datensätze: ${result.rows.length}</p>
+                <h1>Stündliche Messwerte - ${currentStation.station_name}</h1>
+                <p>Station: ${stationId} | Anzahl Datensätze: ${result.rows.length}</p>
             </div>
             
             <div class="filters">
-                <form method="get">
-                    <label>Datum: <input type="date" name="date" value="${date || ''}"></label>
-                    <label>Parameter: 
-                        <select name="parameter">
-                            <option value="">Alle</option>
-                            <option value="pH" ${parameter === 'pH' ? 'selected' : ''}>pH</option>
-                            <option value="Wassertemperatur" ${parameter === 'Wassertemperatur' ? 'selected' : ''}>Wassertemperatur</option>
-                            <option value="Gelöster Sauerstoff" ${parameter === 'Gelöster Sauerstoff' ? 'selected' : ''}>Gelöster Sauerstoff</option>
-                            <option value="Nitrat" ${parameter === 'Nitrat' ? 'selected' : ''}>Nitrat</option>
-                            <option value="Leitfähigkeit" ${parameter === 'Leitfähigkeit' ? 'selected' : ''}>Leitfähigkeit</option>
-                            <option value="Trübung" ${parameter === 'Trübung' ? 'selected' : ''}>Trübung</option>
-                            <option value="Chl-a" ${parameter === 'Chl-a' ? 'selected' : ''}>Chl-a</option>
-                        </select>
-                    </label>
-                    <button type="submit">Filtern</button>
-                    <a href="/api/hourly-measurements/${stationId}"><button type="button">Zurücksetzen</button></a>
+                <form method="get" id="filterForm">
+                    <div class="filter-row">
+                        <label>Station: 
+                            <select name="station" onchange="changeStation(this.value)">`;
+        
+        // NEU: Stations-Dropdown
+        stationsResult.rows.forEach(station => {
+            const selected = station.station_code === stationId ? 'selected' : '';
+            html += `<option value="${station.station_code}" ${selected}>${station.station_name} (${station.station_code})</option>`;
+        });
+        
+        html += `
+                            </select>
+                        </label>
+                        
+                        <label>Datum: 
+                            <input type="date" name="date" value="${date || ''}">
+                        </label>
+                        
+                        <label>Parameter: 
+                            <select name="parameter">
+                                <option value="">Alle Parameter</option>`;
+        
+        // NEU: Dynamisches Parameter-Dropdown
+        parametersResult.rows.forEach(param => {
+            const selected = parameter === param.parameter ? 'selected' : '';
+            html += `<option value="${param.parameter}" ${selected}>${param.parameter}</option>`;
+        });
+        
+        html += `
+                            </select>
+                        </label>
+                    </div>
+                    <div class="filter-row">
+                        <button type="submit">Filtern</button>
+                        <button type="button" onclick="resetFilters()">Zurücksetzen</button>
+                        <a href="/api/stations-overview"><button type="button">Zur Übersicht</button></a>
+                    </div>
                 </form>
             </div>
             
@@ -491,6 +535,7 @@ app.get('/api/hourly-measurements/:stationId', async (req, res) => {
                         <th>Änderung</th>
                         <th>Flag</th>
                         <th>Grund</th>
+                        <th>Grenzwerte</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -504,7 +549,6 @@ app.get('/api/hourly-measurements/:stationId', async (req, res) => {
             parameterGroups[row.parameter].push(row);
         });
         
-        // Zeige Daten mit Änderungsmarkierung
         // Zeige Daten mit Änderungsmarkierung
         result.rows.forEach((row, index) => {
             const localTime = new Date(row.local_time).toLocaleString('de-DE');
@@ -540,16 +584,40 @@ app.get('/api/hourly-measurements/:stationId', async (req, res) => {
                 rowClass = 'stuck-value';
             }
             
+            // Formatiere die angewendeten Regeln
+            let rulesDisplay = '-';
+            if (row.applied_rules) {
+                try {
+                    const rules = typeof row.applied_rules === 'string' 
+                        ? JSON.parse(row.applied_rules) 
+                        : row.applied_rules;
+                    
+                    if (rules && rules.range && (rules.range.min !== undefined || rules.range.max !== undefined)) {
+                        const minVal = rules.range.min !== undefined ? rules.range.min : '-';
+                        const maxVal = rules.range.max !== undefined ? rules.range.max : '-';
+                        rulesDisplay = `${minVal} - ${maxVal}`;
+                        
+                        if (rules.spike) {
+                            rulesDisplay += `<br>Spike: ±${rules.spike}`;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Fehler beim Parsen der applied_rules:', e);
+                    rulesDisplay = '-';
+                }
+            }
+            
             html += `
-                    <tr class="${rowClass}">
-                        <td>${localTime}</td>
-                        <td>${row.parameter}</td>
-                        <td>${rawValue !== null ? rawValue.toFixed(2) : '-'}</td>
-                        <td>${validatedValue !== null ? validatedValue.toFixed(2) : '-'}</td>
-                        <td>${valueChange}</td>
-                        <td class="${flagClass}">${flagName}</td>
-                        <td>${row.validation_reason || '-'}</td>
-                    </tr>`;
+                <tr class="${rowClass}">
+                    <td>${localTime}</td>
+                    <td>${row.parameter}</td>
+                    <td>${rawValue !== null ? rawValue.toFixed(2) : '-'}</td>
+                    <td>${validatedValue !== null ? validatedValue.toFixed(2) : '-'}</td>
+                    <td>${valueChange}</td>
+                    <td class="${flagClass}">${flagName}</td>
+                    <td>${row.validation_reason || '-'}</td>
+                    <td style="font-size: 0.9em;">${rulesDisplay}</td>
+                </tr>`;
         });
         
         html += `
@@ -574,6 +642,24 @@ app.get('/api/hourly-measurements/:stationId', async (req, res) => {
                     <button>Als CSV exportieren</button>
                 </a>
             </div>
+            
+            <script>
+                function changeStation(stationCode) {
+                    if (stationCode) {
+                        // Behalte die aktuellen Filter-Werte
+                        const currentParams = new URLSearchParams(window.location.search);
+                        const date = currentParams.get('date') || '';
+                        // Parameter zurücksetzen, da verschiedene Stationen unterschiedliche Parameter haben können
+                        window.location.href = '/api/hourly-measurements/' + stationCode + '?date=' + date;
+                    }
+                }
+                
+                function resetFilters() {
+                    const stationSelect = document.querySelector('select[name="station"]');
+                    const currentStation = stationSelect.value;
+                    window.location.href = '/api/hourly-measurements/' + currentStation;
+                }
+            </script>
         </body>
         </html>`;
         
@@ -582,9 +668,7 @@ app.get('/api/hourly-measurements/:stationId', async (req, res) => {
         
     } catch (err) {
         res.status(500).json({ error: err.message });
-    } finally {
-        await pool.end();
-    }
+    } 
 });
 
 // Hilfsfunktion für Flag-Namen
@@ -601,8 +685,7 @@ function getFlagName(flag) {
 
 // CSV-Export für stündliche Messwerte
 app.get('/api/hourly-measurements-csv/:stationId', async (req, res) => {
-    const { Pool } = require('pg');
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const pool = require('./db/pool');
     
     try {
         const { stationId } = req.params;
@@ -652,9 +735,7 @@ app.get('/api/hourly-measurements-csv/:stationId', async (req, res) => {
         
     } catch (err) {
         res.status(500).json({ error: err.message });
-    } finally {
-        await pool.end();
-    }
+    } 
 });
 
 // Kommentar- und Benutzer-API (unverändert)
@@ -952,4 +1033,17 @@ app.listen(PORT, HOST, () => {
     console.log(`✅ Backend-Server wurde erfolgreich gestartet.`);
     console.log(`✅ Lauscht auf http://${HOST}:${PORT}`);
     console.log(`================================================`);
+});
+
+// Graceful Shutdown
+process.on('SIGTERM', async () => {
+    console.log('SIGTERM erhalten. Schließe Server...');
+    await pool.end();
+    process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+    console.log('SIGINT erhalten. Schließe Server...');
+    await pool.end();
+    process.exit(0);
 });
