@@ -51,6 +51,42 @@ const createDatabaseTables = async () => {
         await client.query(createRunsTable);
         console.log('Tabelle "validation_runs" erfolgreich geprüft/erstellt.');
 
+        // NEUE TABELLE: Validierungsparameter
+        const createValidationParametersTable = `
+            CREATE TABLE IF NOT EXISTS validation_parameters (
+                id SERIAL PRIMARY KEY,
+                parameter_name VARCHAR(255) UNIQUE NOT NULL,
+                unit VARCHAR(50),
+                gross_range_min NUMERIC,
+                gross_range_max NUMERIC,
+                climatology_min NUMERIC,
+                climatology_max NUMERIC,
+                climatology_thresholds JSONB,
+                notes TEXT,
+                is_active BOOLEAN DEFAULT true,
+                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                updated_by VARCHAR(255)
+            );
+        `;
+        await client.query(createValidationParametersTable);
+        console.log('Tabelle "validation_parameters" erfolgreich geprüft/erstellt.');
+
+        // NEUE TABELLE: Änderungshistorie
+        const createParameterHistoryTable = `
+            CREATE TABLE IF NOT EXISTS validation_parameter_history (
+                id SERIAL PRIMARY KEY,
+                parameter_id INTEGER REFERENCES validation_parameters(id),
+                changed_by VARCHAR(255) NOT NULL,
+                change_timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                old_values JSONB,
+                new_values JSONB,
+                change_reason TEXT
+            );
+        `;
+        await client.query(createParameterHistoryTable);
+        console.log('Tabelle "validation_parameter_history" erfolgreich geprüft/erstellt.');
+
         const createRawPointsTable = `
             CREATE TABLE IF NOT EXISTS raw_data_points (
                 point_id SERIAL PRIMARY KEY,

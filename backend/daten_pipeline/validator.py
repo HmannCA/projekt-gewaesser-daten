@@ -59,29 +59,87 @@ class WaterQualityValidator:
         
         return final_flags, final_reasons
 
-    def validate_range(self, series: pd.Series, plausible_min, plausible_max):
+    def validate_range(self, series: pd.Series, plausible_min=None, plausible_max=None, 
+                      param_name=None, seasonal_rules=None):
         """
-        QARTOD Test: Bereichsprüfung.
-        Gibt jetzt ein Tupel zurück: (Flags, Gründe)
+        QARTOD Test: Bereichsprüfung - jetzt mit optionaler saisonaler Unterstützung.
+        
+        Args:
+            series: Zeitreihe der Messwerte
+            plausible_min: Standard-Minimum (kann durch saisonale Werte überschrieben werden)
+            plausible_max: Standard-Maximum (kann durch saisonale Werte überschrieben werden)
+            param_name: Name des Parameters (optional, für saisonale Regeln)
+            seasonal_rules: Dictionary mit saisonalen Regeln (optional)
         """
         flags = pd.Series(QartodFlags.GOOD, index=series.index, dtype=int)
         reasons = pd.Series("", index=series.index, dtype=str)
         
-        # Prüfung auf Überschreitung
-        if plausible_max is not None:
-            mask_high = series > plausible_max
-            flags[mask_high] = QartodFlags.BAD
-            reasons[mask_high] = f"Wert > Max ({plausible_max})"
-        
-        # Prüfung auf Unterschreitung
-        if plausible_min is not None:
-            mask_low = series < plausible_min
-            flags[mask_low] = QartodFlags.BAD
-            reasons[mask_low] = f"Wert < Min ({plausible_min})"
-        
-        # Prüfung auf fehlende Werte
-        mask_na = series.isna()
-        flags[mask_na] = QartodFlags.MISSING
-        reasons[mask_na] = "Fehlender Wert"
+        # Wenn saisonale Regeln vorhanden sind und param_name angegeben
+        if seasonal_rules and param_name and param_name in seasonal_rules:
+            # Verwende saisonale Validierung
+            for idx, value in series.items():
+                if pd.isna(value):
+                    flags[idx] = QartodFlags.MISSING
+                    reasons[idx] = "Fehlender Wert"
+                    continue
+                
+                # Bestimme Saison basierend auf dem Datum
+                if hasattr(idx, 'month'):
+                    season = self._get_season(idx.month)
+                    season_data = seasonal_rules[param_name].get(season, {})
+                    
+                    # Verwende saisonale Werte wenn vorhanden, sonst Standards
+                    min_val = season_data.get('min', plausible_min)
+                    max_val = season_data.get('max', plausible_max)
+                    season_info = f" ({self._get_season_name(season)})"
+                else:
+                    # Fallback auf Standard-Werte
+                    min_val = plausible_min
+                    max_val = plausible_max
+                    season_info = ""
+                
+                # Validierung
+                if max_val is not None and value > max_val:
+                    flags[idx] = QartodFlags.BAD
+                    reasons[idx] = f"Wert > Max ({max_val}){season_info}"
+                elif min_val is not None and value < min_val:
+                    flags[idx] = QartodFlags.BAD
+                    reasons[idx] = f"Wert < Min ({min_val}){season_info}"
+        else:
+            # Normale Validierung ohne saisonale Anpassung (wie bisher)
+            if plausible_max is not None:
+                mask_high = series > plausible_max
+                flags[mask_high] = QartodFlags.BAD
+                reasons[mask_high] = f"Wert > Max ({plausible_max})"
+            
+            if plausible_min is not None:
+                mask_low = series < plausible_min
+                flags[mask_low] = QartodFlags.BAD
+                reasons[mask_low] = f"Wert < Min ({plausible_min})"
+            
+            mask_na = series.isna()
+            flags[mask_na] = QartodFlags.MISSING
+            reasons[mask_na] = "Fehlender Wert"
         
         return flags, reasons
+    
+    def _get_season(self, month):
+        """Bestimmt die Jahreszeit basierend auf dem Monat."""
+        if month in [12, 1, 2]:
+            return 'winter'
+        elif month in [3, 4, 5]:
+            return 'spring'
+        elif month in [6, 7, 8]:
+            return 'summer'
+        else:  # 9, 10, 11
+            return 'autumn'
+    
+    def _get_season_name(self, season):
+        """Gibt den deutschen Namen der Jahreszeit zurück."""
+        season_names = {
+            'winter': 'Winter',
+            'spring': 'Frühling',
+            'summer': 'Sommer',
+            'autumn': 'Herbst'
+        }
+        return season_names.get(season, season)

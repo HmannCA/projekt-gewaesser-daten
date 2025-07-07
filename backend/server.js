@@ -12,6 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 const decompress = require('decompress');
+const pool = require('./db/pool');
 
 const {
     testConnection,
@@ -101,7 +102,7 @@ app.get('/api/dashboard-html/:stationId', async (req, res) => {
 
 // DEBUG: Zeige alle Validierungsläufe
 app.get('/api/debug/runs/:stationId', async (req, res) => {
-    const pool = require('./db/pool');
+    //const pool = require('./db/pool');
     
     try {
         const result = await pool.query(
@@ -166,7 +167,7 @@ app.get('/api/dashboard-flex-html/:stationId', async (req, res) => {
 
 // API für Station-Liste
 app.get('/api/stations', async (req, res) => {
-    const pool = require('./db/pool');
+    // const pool = require('./db/pool');
     
     try {
         const result = await pool.query(
@@ -183,7 +184,7 @@ app.get('/api/stations', async (req, res) => {
 
 // API für Station-Liste MIT verfügbaren Datumsbereichen
 app.get('/api/stations-with-data', async (req, res) => {
-    const pool = require('./db/pool');
+    // const pool = require('./db/pool');
     
     try {
         const result = await pool.query(
@@ -207,7 +208,7 @@ app.get('/api/stations-with-data', async (req, res) => {
 
 // Optionaler Endpunkt für eine Übersichtsseite aller Stationen
 app.get('/api/stations-overview', async (req, res) => {
-    const pool = require('./db/pool');
+    // const pool = require('./db/pool');
     
     try {
         const result = await pool.query(
@@ -341,7 +342,7 @@ app.get('/api/stations-overview', async (req, res) => {
 
 // Stündliche Messwerte als HTML-Tabelle anzeigen
 app.get('/api/hourly-measurements/:stationId', async (req, res) => {
-    const pool = require('./db/pool');
+    // const pool = require('./db/pool');
     
     try {
         const { stationId } = req.params;
@@ -685,7 +686,7 @@ function getFlagName(flag) {
 
 // CSV-Export für stündliche Messwerte
 app.get('/api/hourly-measurements-csv/:stationId', async (req, res) => {
-    const pool = require('./db/pool');
+    // const pool = require('./db/pool');
     
     try {
         const { stationId } = req.params;
@@ -736,6 +737,425 @@ app.get('/api/hourly-measurements-csv/:stationId', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message });
     } 
+});
+
+// API: Alle Validierungsparameter abrufen
+app.get('/api/validation-parameters', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT * FROM validation_parameters 
+            WHERE is_active = true 
+            ORDER BY parameter_name
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Fehler beim Abrufen der Validierungsparameter:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// API: Einzelnen Parameter abrufen
+app.get('/api/validation-parameters/:id', async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM validation_parameters WHERE id = $1',
+            [req.params.id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Parameter nicht gefunden' });
+        }
+        
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// API: Parameter aktualisieren (nur für Admins)
+app.put('/api/validation-parameters/:id', async (req, res) => {
+    const client = await pool.connect();
+    
+    try {
+        // Prüfe Admin-Rechte
+        const userEmail = req.body.userEmail;
+        if (userEmail !== process.env.ADMIN_EMAIL) {
+            return res.status(403).json({ error: 'Keine Berechtigung' });
+        }
+        
+        const { id } = req.params;
+        const updates = req.body.updates;
+        const changeReason = req.body.changeReason;
+        
+        await client.query('BEGIN');
+        
+        // Hole alte Werte für Historie
+        const oldResult = await client.query(
+            'SELECT * FROM validation_parameters WHERE id = $1',
+            [id]
+        );
+        
+        if (oldResult.rows.length === 0) {
+            throw new Error('Parameter nicht gefunden');
+        }
+        
+        const oldValues = oldResult.rows[0];
+        
+        // Update Parameter
+        const updateResult = await client.query(`
+            UPDATE validation_parameters 
+            SET gross_range_min = $1,
+                gross_range_max = $2,
+                climatology_min = $3,
+                climatology_max = $4,
+                climatology_thresholds = $5,
+                notes = $6,
+                updated_at = CURRENT_TIMESTAMP,
+                updated_by = $7
+            WHERE id = $8
+            RETURNING *
+        `, [
+            updates.gross_range_min,
+            updates.gross_range_max,
+            updates.climatology_min,
+            updates.climatology_max,
+            updates.climatology_thresholds ? JSON.stringify(updates.climatology_thresholds) : null,
+            updates.notes,
+            userEmail,
+            id
+        ]);
+        
+        // Speichere Historie
+        await client.query(`
+            INSERT INTO validation_parameter_history 
+            (parameter_id, changed_by, old_values, new_values, change_reason)
+            VALUES ($1, $2, $3, $4, $5)
+        `, [
+            id,
+            userEmail,
+            JSON.stringify(oldValues),
+            JSON.stringify(updateResult.rows[0]),
+            changeReason
+        ]);
+        
+        await client.query('COMMIT');
+        res.json({ 
+            success: true, 
+            parameter: updateResult.rows[0],
+            message: 'Parameter erfolgreich aktualisiert'
+        });
+        
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Fehler beim Aktualisieren:', err);
+        res.status(500).json({ error: err.message });
+    } finally {
+        client.release();
+    }
+});
+
+// API: Parameter-Historie abrufen
+app.get('/api/validation-parameters/:id/history', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT h.*, p.parameter_name 
+            FROM validation_parameter_history h
+            JOIN validation_parameters p ON h.parameter_id = p.id
+            WHERE h.parameter_id = $1
+            ORDER BY h.change_timestamp DESC
+        `, [req.params.id]);
+        
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// API: Admin-Übersichtsseite
+app.get('/api/validation-parameters-admin', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT * FROM validation_parameters 
+            ORDER BY parameter_name
+        `);
+        
+        // Generiere HTML-Seite
+        let html = `
+        <!DOCTYPE html>
+        <html lang="de">
+        <head>
+            <meta charset="UTF-8">
+            <title>Validierungsparameter - Verwaltung</title>
+            <style>
+                body { 
+                    font-family: Arial, sans-serif; 
+                    margin: 20px; 
+                    background: #f5f5f5; 
+                }
+                .container {
+                    max-width: 1400px;
+                    margin: 0 auto;
+                }
+                .header {
+                    background: #0066CC;
+                    color: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    margin-bottom: 20px;
+                }
+                table {
+                    width: 100%;
+                    background: white;
+                    border-collapse: collapse;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                }
+                th, td {
+                    padding: 12px;
+                    text-align: left;
+                    border-bottom: 1px solid #ddd;
+                }
+                th {
+                    background: #f0f0f0;
+                    font-weight: bold;
+                }
+                .edit-btn {
+                    background: #0066CC;
+                    color: white;
+                    padding: 5px 10px;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                }
+                .edit-btn:hover {
+                    background: #0052a3;
+                }
+                .notes {
+                    font-size: 0.9em;
+                    color: #666;
+                    max-width: 300px;
+                }
+                .seasonal {
+                    background: #e3f2fd;
+                    padding: 5px;
+                    border-radius: 3px;
+                    font-size: 0.9em;
+                }
+                .modal {
+                    display: none;
+                    position: fixed;
+                    z-index: 1000;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                }
+                .modal-content {
+                    background: white;
+                    margin: 5% auto;
+                    padding: 20px;
+                    width: 80%;
+                    max-width: 600px;
+                    border-radius: 10px;
+                }
+                .close {
+                    float: right;
+                    font-size: 28px;
+                    cursor: pointer;
+                }
+                input[type="number"] {
+                    width: 100px;
+                    padding: 5px;
+                    margin: 5px;
+                }
+                .save-btn {
+                    background: #28a745;
+                    color: white;
+                    padding: 10px 20px;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    margin-top: 10px;
+                }
+                .info-box {
+                    background: #fff3cd;
+                    color: #856404;
+                    padding: 15px;
+                    border-radius: 5px;
+                    margin-bottom: 20px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Validierungsparameter - Verwaltung</h1>
+                    <p>Grenz- und Schwellenwerte für die Datenvalidierung</p>
+                </div>
+                
+                <div class="info-box">
+                    <strong>Hinweis:</strong> Diese Werte werden für die automatische Validierung der Messdaten verwendet. 
+                    Änderungen sollten nur nach fachlicher Prüfung vorgenommen werden.
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Einheit</th>
+                            <th>Grobe Grenzen</th>
+                            <th>Klimatologie</th>
+                            <th>Saisonale Werte</th>
+                            <th>Notizen</th>
+                            <th>Letzte Änderung</th>
+                            <th>Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+        
+        result.rows.forEach(param => {
+            const updatedAt = new Date(param.updated_at).toLocaleDateString('de-DE');
+            const hasSeasonalThresholds = param.climatology_thresholds && 
+                                         Object.keys(param.climatology_thresholds).length > 0;
+            
+            html += `
+                <tr>
+                    <td><strong>${param.parameter_name}</strong></td>
+                    <td>${param.unit || '-'}</td>
+                    <td>${param.gross_range_min} - ${param.gross_range_max}</td>
+                    <td>${param.climatology_min} - ${param.climatology_max}</td>
+                    <td>
+                        ${hasSeasonalThresholds ? 
+                            '<span class="seasonal">✓ Vorhanden</span>' : 
+                            '<span style="color: #999;">-</span>'}
+                    </td>
+                    <td class="notes">${param.notes || ''}</td>
+                    <td>${updatedAt}<br><small>${param.updated_by || ''}</small></td>
+                    <td>
+                        <button class="edit-btn" onclick="editParameter(${param.id})">
+                            Bearbeiten
+                        </button>
+                    </td>
+                </tr>`;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+                
+                <!-- Edit Modal -->
+                <div id="editModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeModal()">&times;</span>
+                        <h2>Parameter bearbeiten</h2>
+                        <div id="editForm"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                let currentParam = null;
+                
+                async function editParameter(id) {
+                    const response = await fetch('/api/validation-parameters/' + id);
+                    currentParam = await response.json();
+                    
+                    const form = document.getElementById('editForm');
+                    form.innerHTML = \`
+                        <h3>\${currentParam.parameter_name} (\${currentParam.unit})</h3>
+                        
+                        <div>
+                            <h4>Grobe Grenzen (Sensor-Bereich)</h4>
+                            <label>Min: <input type="number" id="gross_min" value="\${currentParam.gross_range_min}" step="any"></label>
+                            <label>Max: <input type="number" id="gross_max" value="\${currentParam.gross_range_max}" step="any"></label>
+                        </div>
+                        
+                        <div>
+                            <h4>Klimatologie (Plausible Werte)</h4>
+                            <label>Min: <input type="number" id="clim_min" value="\${currentParam.climatology_min}" step="any"></label>
+                            <label>Max: <input type="number" id="clim_max" value="\${currentParam.climatology_max}" step="any"></label>
+                        </div>
+                        
+                        <div>
+                            <h4>Notizen</h4>
+                            <textarea id="notes" rows="4" style="width: 100%;">\${currentParam.notes || ''}</textarea>
+                        </div>
+                        
+                        <div>
+                            <h4>Grund für Änderung</h4>
+                            <input type="text" id="changeReason" style="width: 100%;" placeholder="z.B. Anpassung nach Expertengutachten">
+                        </div>
+                        
+                        <div>
+                            <label>Admin-Email: <input type="email" id="userEmail" required></label>
+                        </div>
+                        
+                        <button class="save-btn" onclick="saveChanges()">Änderungen speichern</button>
+                    \`;
+                    
+                    document.getElementById('editModal').style.display = 'block';
+                }
+                
+                function closeModal() {
+                    document.getElementById('editModal').style.display = 'none';
+                }
+                
+                async function saveChanges() {
+                    const updates = {
+                        gross_range_min: parseFloat(document.getElementById('gross_min').value),
+                        gross_range_max: parseFloat(document.getElementById('gross_max').value),
+                        climatology_min: parseFloat(document.getElementById('clim_min').value),
+                        climatology_max: parseFloat(document.getElementById('clim_max').value),
+                        notes: document.getElementById('notes').value,
+                        climatology_thresholds: currentParam.climatology_thresholds
+                    };
+                    
+                    const changeReason = document.getElementById('changeReason').value;
+                    const userEmail = document.getElementById('userEmail').value;
+                    
+                    if (!changeReason || !userEmail) {
+                        alert('Bitte alle Felder ausfüllen');
+                        return;
+                    }
+                    
+                    try {
+                        const response = await fetch('/api/validation-parameters/' + currentParam.id, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ updates, changeReason, userEmail })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            alert('Änderungen erfolgreich gespeichert!');
+                            closeModal();
+                            location.reload();
+                        } else {
+                            alert('Fehler: ' + (result.error || 'Unbekannter Fehler'));
+                        }
+                    } catch (err) {
+                        alert('Fehler beim Speichern: ' + err.message);
+                    }
+                }
+                
+                // Close modal when clicking outside
+                window.onclick = function(event) {
+                    const modal = document.getElementById('editModal');
+                    if (event.target == modal) {
+                        closeModal();
+                    }
+                }
+            </script>
+        </body>
+        </html>`;
+        
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
+        
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Kommentar- und Benutzer-API (unverändert)

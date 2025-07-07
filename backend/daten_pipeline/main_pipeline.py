@@ -240,10 +240,16 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
         # Baue die Regel-Dictionaries dynamisch aus den DB-Daten auf
         validation_rules = {}
         spike_rules = {}
+        seasonal_rules = {}
 
         for rule in rules_for_station:
             if rule['rule_type'] == 'RANGE' or rule['rule_type'] == 'RANGE_REGIONAL':
                 validation_rules[rule['parameter_name']] = rule['config_json']
+                
+                # NEU: Extrahiere saisonale Schwellenwerte falls vorhanden
+                if 'climatology_thresholds' in rule['config_json']:
+                    seasonal_rules[rule['parameter_name']] = rule['config_json']['climatology_thresholds']
+                    
             elif rule['rule_type'] == 'SPIKE':
                 spike_rules[rule['parameter_name']] = rule['config_json']['threshold']
         
@@ -259,7 +265,13 @@ def run_validation_pipeline(input_dir: str, output_dir: str, metadata_path: str)
         for param_name in processed_data.columns:
             if param_name in validation_rules:
                 rules = validation_rules[param_name]
-                flags, reasons = validator.validate_range(processed_data[param_name], rules['min'], rules['max'])
+                flags, reasons = validator.validate_range(
+                    processed_data[param_name], 
+                    rules['min'], 
+                    rules['max'],
+                    param_name=param_name,
+                    seasonal_rules=seasonal_rules
+                )
                 flags_per_test[f'flag_{param_name}_range'] = flags
                 reasons_per_test[f'reason_{param_name}_range'] = reasons
             

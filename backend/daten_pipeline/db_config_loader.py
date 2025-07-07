@@ -53,6 +53,70 @@ class DbConfigLoader:
         parameters = {row['parameter_name']: dict(row) for row in cur.fetchall()}
         print(f"  - {len(parameters)} Parameter geladen.")
         return parameters
+    
+from datetime import datetime
+
+def _load_validation_parameters(self, cur):
+    """Lädt die aktuellen Validierungsparameter aus der Datenbank."""
+    cur.execute("""
+        SELECT parameter_name, gross_range_min, gross_range_max,
+               climatology_min, climatology_max, climatology_thresholds,
+               use_seasonal_values
+        FROM validation_parameters
+        WHERE is_active = true
+    """)
+    
+    validation_rules = {}
+    spike_thresholds = {}
+    seasonal_rules = {}  # NEU: Speichert saisonale Regeln
+    
+    for row in cur.fetchall():
+        param_name = row['parameter_name']
+        
+        # Standard-Validierungsregeln
+        validation_rules[param_name] = {
+            'min': row['climatology_min'],
+            'max': row['climatology_max']
+        }
+        
+        # Saisonale Regeln wenn vorhanden
+        if row['use_seasonal_values'] and row['climatology_thresholds']:
+            seasonal_rules[param_name] = row['climatology_thresholds']
+        
+        # Spike-Detection
+        if row['climatology_min'] is not None and row['climatology_max'] is not None:
+            range_size = row['climatology_max'] - row['climatology_min']
+            spike_thresholds[param_name] = range_size * 0.2
+    
+    print(f"  - {len(validation_rules)} Validierungsparameter geladen.")
+    print(f"  - {len(seasonal_rules)} Parameter mit saisonalen Werten.")
+    
+    return validation_rules, spike_thresholds, seasonal_rules
+
+def get_seasonal_limits(self, param_name, date):
+    """Gibt die saisonalen Grenzwerte für einen Parameter zurück."""
+    if param_name not in self.seasonal_rules:
+        return None
+    
+    month = date.month
+    season = self._get_season(month)
+    
+    seasonal_data = self.seasonal_rules[param_name]
+    if season in seasonal_data:
+        return seasonal_data[season]
+    
+    return None
+
+def _get_season(self, month):
+    """Bestimmt die Jahreszeit basierend auf dem Monat."""
+    if month in [12, 1, 2]:
+        return 'winter'
+    elif month in [3, 4, 5]:
+        return 'spring'
+    elif month in [6, 7, 8]:
+        return 'summer'
+    elif month in [9, 10, 11]:
+        return 'autumn'
 
     def _load_stations(self, cur):
         """
